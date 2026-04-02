@@ -64,21 +64,19 @@ interface BookingDetail {
   }>;
 }
 
-type CancelTarget = {
-  scope: "FULL";
-} | {
-  scope: "PARTIAL";
-  partialTargetType: "PASSENGER" | "VEHICLE" | "CABIN";
-  partialTargetId: string;
-  label: string;
-};
+type CancelTarget =
+  | { scope: "FULL" }
+  | {
+      scope: "PARTIAL";
+      partialTargetType: "PASSENGER" | "VEHICLE" | "CABIN";
+      partialTargetId: string;
+      label: string;
+    };
 
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
   const bookingId = params.id;
-  const { data, loading, error, refetch } = useApi<BookingDetail>(
-    `/api/bookings/${bookingId}`
-  );
+  const { data, loading, error, refetch } = useApi<BookingDetail>(`/api/bookings/${bookingId}`);
 
   const [cancelTarget, setCancelTarget] = useState<CancelTarget | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -90,7 +88,8 @@ export default function BookingDetailPage() {
     const body: Record<string, unknown> = {
       scope: cancelTarget.scope,
       initiatedBy: "user",
-      refundAmountKurus: cancelTarget.scope === "FULL" ? (data.payment?.amount_kurus ?? 0) : 0,
+      refundAmountKurus:
+        cancelTarget.scope === "FULL" ? (data.payment?.amount_kurus ?? 0) : 0,
     };
 
     if (cancelTarget.scope === "PARTIAL") {
@@ -106,225 +105,240 @@ export default function BookingDetailPage() {
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error ?? `Hata: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(json.error ?? `Hata: ${res.status}`);
 
       setCancelTarget(null);
       refetch();
     } catch (err) {
-      setCancelError(err instanceof Error ? err.message : "Iptal islemi basarisiz");
+      setCancelError(err instanceof Error ? err.message : "İptal işlemi başarısız");
     }
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Yukleniyor...</p>;
-  if (error || !data) return <p className="text-sm text-red-600">{error ?? "Rezervasyon bulunamadi."}</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <svg className="h-5 w-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </div>
+    );
+  }
 
-  const { booking, passengers, vehicles, cabins, payment, refunds, cancellations } = data;
+  if (error || !data) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <p className="text-sm text-red-600">{error ?? "Rezervasyon bulunamadı."}</p>
+      </div>
+    );
+  }
+
+  const { booking, passengers, vehicles, cabins, payment, refunds } = data;
   const isActive = booking.status !== "CANCELLED";
 
   return (
-    <div className="max-w-lg">
-      <div className="mb-4 flex items-center gap-3">
-        <h1 className="text-2xl font-bold">Rezervasyon</h1>
-        <StatusBadge status={booking.status} />
-      </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-10">
+      <div className="mx-auto max-w-2xl">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Rezervasyon Detayı</h1>
+              <p className="mt-1 break-all font-mono text-sm text-slate-400">
+                {booking.booking_id}
+              </p>
+            </div>
+            <StatusBadge status={booking.status} />
+          </div>
 
-      <div className="mb-4 text-sm text-gray-500">
-        <p>ID: <span className="font-mono">{booking.booking_id}</span></p>
-        <p>Onay: {new Date(booking.confirmed_at).toLocaleString("tr-TR")}</p>
-        {booking.checked_in_at && (
-          <p>Check-in: {new Date(booking.checked_in_at).toLocaleString("tr-TR")}</p>
-        )}
-        {booking.cancelled_at && (
-          <p>Iptal: {new Date(booking.cancelled_at).toLocaleString("tr-TR")}</p>
-        )}
-      </div>
-
-      {/* Payment */}
-      {payment && (
-        <div className="mb-4 flex items-center justify-between rounded border p-3 text-sm">
-          <span>Odeme</span>
-          <div className="flex items-center gap-2">
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-slate-500">
             <span>
-              {(payment.amount_kurus / 100).toLocaleString("tr-TR", {
-                minimumFractionDigits: 2,
-              })}{" "}
-              TL
+              Onaylandı:{" "}
+              <span className="font-medium text-slate-700">
+                {new Date(booking.confirmed_at).toLocaleString("tr-TR")}
+              </span>
             </span>
+            {booking.checked_in_at && (
+              <span>
+                Check-in:{" "}
+                <span className="font-medium text-slate-700">
+                  {new Date(booking.checked_in_at).toLocaleString("tr-TR")}
+                </span>
+              </span>
+            )}
+            {booking.cancelled_at && (
+              <span>
+                İptal:{" "}
+                <span className="font-medium text-red-600">
+                  {new Date(booking.cancelled_at).toLocaleString("tr-TR")}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Payment */}
+        {payment && (
+          <div className="mb-5 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Ödeme
+              </p>
+              <p className="mt-1 text-xl font-bold text-slate-900">
+                {(payment.amount_kurus / 100).toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                })}{" "}
+                TL
+              </p>
+            </div>
             <StatusBadge status={payment.status} />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Full Cancel Button */}
-      {isActive && (
-        <button
-          onClick={() => setCancelTarget({ scope: "FULL" })}
-          className="mb-6 rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
-        >
-          Tum Rezervasyonu Iptal Et
-        </button>
-      )}
-
-      {/* Passengers with per-line cancel */}
-      {passengers.length > 0 && (
-        <div className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold">
-            Yolcular ({passengers.filter((p) => !p.cancelled_at).length})
-          </h3>
-          {passengers.map((p) => (
-            <div
-              key={p.booking_passenger_id}
-              className={`flex items-center justify-between rounded border px-3 py-2 text-sm mb-1 ${
-                p.cancelled_at ? "bg-gray-50 text-gray-400 line-through" : ""
-              }`}
-            >
-              <div>
-                <span className="font-medium">{p.full_name}</span>
-                <span className="ml-2 text-gray-500">{p.document_type} {p.document_number}</span>
-              </div>
-              {isActive && !p.cancelled_at && (
-                <button
-                  onClick={() =>
-                    setCancelTarget({
-                      scope: "PARTIAL",
-                      partialTargetType: "PASSENGER",
-                      partialTargetId: p.booking_passenger_id,
-                      label: p.full_name,
-                    })
-                  }
-                  className="text-xs text-red-500 hover:underline"
-                >
-                  Iptal
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Vehicles with per-line cancel */}
-      {vehicles.length > 0 && (
-        <div className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold">
-            Araclar ({vehicles.filter((v) => !v.cancelled_at).length})
-          </h3>
-          {vehicles.map((v) => (
-            <div
-              key={v.booking_vehicle_id}
-              className={`flex items-center justify-between rounded border px-3 py-2 text-sm mb-1 ${
-                v.cancelled_at ? "bg-gray-50 text-gray-400 line-through" : ""
-              }`}
-            >
-              <div>
-                <span className="font-medium">{v.plate_number}</span>
-                <span className="ml-2 text-gray-500">{v.vehicle_type}</span>
-                <span className="ml-2 text-gray-400">{v.lane_meters_allocated}m · {v.m2_allocated}m²</span>
-              </div>
-              {isActive && !v.cancelled_at && (
-                <button
-                  onClick={() =>
-                    setCancelTarget({
-                      scope: "PARTIAL",
-                      partialTargetType: "VEHICLE",
-                      partialTargetId: v.booking_vehicle_id,
-                      label: v.plate_number,
-                    })
-                  }
-                  className="text-xs text-red-500 hover:underline"
-                >
-                  Iptal
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Cabins with per-line cancel */}
-      {cabins.length > 0 && (
-        <div className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold">
-            Kabinler ({cabins.filter((c) => !c.cancelled_at).length})
-          </h3>
-          {cabins.map((c) => (
-            <div
-              key={c.booking_cabin_id}
-              className={`flex items-center justify-between rounded border px-3 py-2 text-sm mb-1 ${
-                c.cancelled_at ? "bg-gray-50 text-gray-400 line-through" : ""
-              }`}
-            >
-              <div>
-                <span className="font-mono text-xs">{c.cabin_type_id.slice(0, 8)}</span>
-                <span className="ml-2">× {c.count_allocated}</span>
-              </div>
-              {isActive && !c.cancelled_at && (
-                <button
-                  onClick={() =>
-                    setCancelTarget({
-                      scope: "PARTIAL",
-                      partialTargetType: "CABIN",
-                      partialTargetId: c.booking_cabin_id,
-                      label: c.cabin_type_id.slice(0, 8),
-                    })
-                  }
-                  className="text-xs text-red-500 hover:underline"
-                >
-                  Iptal
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Refund Tracker */}
-      {refunds.length > 0 && (
-        <div className="mb-4">
-          <RefundTracker refunds={refunds} />
-        </div>
-      )}
-
-      {/* Cancellation Records */}
-      {cancellations.length > 0 && (
-        <div className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold">Iptal Gecmisi</h3>
-          <div className="space-y-1">
-            {cancellations.map((cr) => (
-              <div key={cr.cancellation_record_id} className="rounded border px-3 py-2 text-xs text-gray-500">
-                <span className="font-medium">{cr.scope}</span>
-                {cr.partial_target_type && (
-                  <span> · {cr.partial_target_type} {cr.partial_target_id?.slice(0, 8)}</span>
-                )}
-                <span> · {new Date(cr.initiated_at).toLocaleString("tr-TR")}</span>
-              </div>
-            ))}
+        {/* Cancel error */}
+        {cancelError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {cancelError}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Cancel Confirmation Dialog */}
-      {cancelTarget && (
-        <ConfirmDialog
-          open
-          title={cancelTarget.scope === "FULL" ? "Tam Iptal" : "Kismi Iptal"}
-          message={
-            cancelTarget.scope === "FULL"
-              ? "Tum rezervasyon iptal edilecek ve iade sureci baslatilacak. Devam edilsin mi?"
-              : `"${cancelTarget.label}" iptal edilecek. Devam edilsin mi?`
-          }
-          confirmLabel="Iptal Et"
-          onConfirm={handleCancel}
-          onCancel={() => { setCancelTarget(null); setCancelError(null); }}
-        />
-      )}
+        {/* Passengers */}
+        {passengers.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Yolcular
+            </h3>
+            <div className="space-y-2">
+              {passengers.map((p) => (
+                <div
+                  key={p.booking_passenger_id}
+                  className={`flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 ${
+                    p.cancelled_at ? "opacity-50 line-through" : ""
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{p.full_name}</p>
+                    <p className="text-xs text-slate-400">
+                      {p.document_type} · {p.document_number} · {p.nationality}
+                    </p>
+                  </div>
+                  {isActive && !p.cancelled_at && (
+                    <button
+                      onClick={() =>
+                        setCancelTarget({
+                          scope: "PARTIAL",
+                          partialTargetType: "PASSENGER",
+                          partialTargetId: p.booking_passenger_id,
+                          label: p.full_name,
+                        })
+                      }
+                      className="ml-4 shrink-0 text-xs font-semibold text-red-500 transition hover:text-red-700"
+                    >
+                      İptal
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {cancelError && (
-        <div className="mt-2 rounded bg-red-50 p-2 text-sm text-red-600">
-          {cancelError}
-        </div>
-      )}
+        {/* Vehicles */}
+        {vehicles.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Araçlar
+            </h3>
+            <div className="space-y-2">
+              {vehicles.map((v) => (
+                <div
+                  key={v.booking_vehicle_id}
+                  className={`flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 ${
+                    v.cancelled_at ? "opacity-50 line-through" : ""
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{v.plate_number}</p>
+                    <p className="text-xs text-slate-400">
+                      {v.vehicle_type} · {v.lane_meters_allocated}m · {v.m2_allocated}m²
+                    </p>
+                  </div>
+                  {isActive && !v.cancelled_at && (
+                    <button
+                      onClick={() =>
+                        setCancelTarget({
+                          scope: "PARTIAL",
+                          partialTargetType: "VEHICLE",
+                          partialTargetId: v.booking_vehicle_id,
+                          label: v.plate_number,
+                        })
+                      }
+                      className="ml-4 shrink-0 text-xs font-semibold text-red-500 transition hover:text-red-700"
+                    >
+                      İptal
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cabins */}
+        {cabins.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Kabinler
+            </h3>
+            <BookingSummary passengers={[]} vehicles={[]} cabins={cabins} />
+          </div>
+        )}
+
+        {/* Refunds */}
+        {refunds.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              İadeler
+            </h3>
+            <RefundTracker refunds={refunds} />
+          </div>
+        )}
+
+        {/* Full cancel */}
+        {isActive && (
+          <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
+            <p className="mb-3 text-sm text-slate-500">
+              Tüm rezervasyonu iptal etmek ödemenin iade sürecini başlatır.
+            </p>
+            <button
+              onClick={() => setCancelTarget({ scope: "FULL" })}
+              className="rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Tüm Rezervasyonu İptal Et
+            </button>
+          </div>
+        )}
+
+        {/* Confirm dialog */}
+        {cancelTarget && (
+          <ConfirmDialog
+            open={true}
+            title={
+              cancelTarget.scope === "FULL"
+                ? "Rezervasyonu İptal Et"
+                : `İptal: ${(cancelTarget as { label: string }).label}`
+            }
+            message={
+              cancelTarget.scope === "FULL"
+                ? "Bu işlem geri alınamaz. Tüm rezervasyon iptal edilecek ve iade işlemi başlatılacaktır."
+                : "Bu öğeyi iptal etmek istediğinizden emin misiniz?"
+            }
+            confirmLabel="İptal Et"
+            onConfirm={handleCancel}
+            onCancel={() => setCancelTarget(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }

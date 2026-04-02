@@ -8,7 +8,7 @@ export default function PublicLayout({
   return (
     <>
       <PublicHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <main className="flex-1">{children}</main>
     </>
   );
 }
