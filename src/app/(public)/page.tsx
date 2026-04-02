@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AkgunlerBookingWizard } from "@/components/domain/akgunler/booking-wizard";
 
 export default function HomePage() {
   const [tab, setTab] = useState<"bilet" | "seferler">("bilet");
@@ -31,33 +32,13 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Bilet Tab — Akgunler iframe */}
-      {tab === "bilet" && (
-        <div>
-          <div className="mb-3 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            Anamur - Girne arasi feribot biletinizi hemen satin alabilirsiniz.
-          </div>
-          <div className="overflow-hidden rounded-lg border">
-            <iframe
-              src="https://www.akgunlerbilet.com/antso/online_bilet.php"
-              width="100%"
-              height="700"
-              style={{ border: "none", minHeight: "700px" }}
-              title="Akgunler Online Bilet"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Seferler Tab — kendi sistemimiz */}
+      {tab === "bilet" && <AkgunlerBookingWizard />}
       {tab === "seferler" && <SeferSorgula />}
     </div>
   );
 }
 
 function SeferSorgula() {
-  // Dynamic import to avoid loading voyage components when on bilet tab
   const { useState: useLocalState } = require("react");
   const { useRouter } = require("next/navigation");
   const { SearchFilters } = require("@/components/domain/search-filters");
