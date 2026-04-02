@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sweep-holds",
+      "schedule": "*/1 * * * *"
+    },
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/refund-retry",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/health",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}
