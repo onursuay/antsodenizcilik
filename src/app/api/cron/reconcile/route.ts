@@ -5,7 +5,7 @@ import { createAdminSupabase } from "@/lib/supabase/admin";
 import { detectAndQueueCounterDrift, reconcilePaymentUnknown } from "@/lib/db/reconciliation";
 import { getGateway } from "@/lib/gateway/client";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
     return jsonError("Unauthorized", 401);
   }

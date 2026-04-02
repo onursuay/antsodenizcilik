@@ -4,7 +4,7 @@ import { jsonError } from "@/lib/api/response";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { sweepExpiredHolds } from "@/lib/db/sweep";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
     return jsonError("Unauthorized", 401);
   }
