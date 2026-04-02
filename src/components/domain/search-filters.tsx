@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface FilterParams {
   origin?: string;
@@ -18,6 +18,24 @@ export function SearchFilters({ onFilter }: SearchFiltersProps) {
   const [destination, setDestination] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [ports, setPorts] = useState<string[]>([]);
+
+  // Fetch unique ports from available voyages
+  useEffect(() => {
+    fetch("/api/voyages")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.voyages) {
+          const allPorts = new Set<string>();
+          for (const v of data.voyages as Array<{ origin_port: string; destination_port: string }>) {
+            allPorts.add(v.origin_port);
+            allPorts.add(v.destination_port);
+          }
+          setPorts(Array.from(allPorts).sort());
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,23 +59,29 @@ export function SearchFilters({ onFilter }: SearchFiltersProps) {
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div>
         <label className="block text-xs font-medium text-gray-500">Kalkis</label>
-        <input
-          type="text"
+        <select
           value={origin}
           onChange={(e) => setOrigin(e.target.value)}
-          placeholder="Liman"
-          className="mt-1 w-36 rounded border px-2 py-1.5 text-sm"
-        />
+          className="mt-1 w-40 rounded border px-2 py-1.5 text-sm"
+        >
+          <option value="">Tumu</option>
+          {ports.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-500">Varis</label>
-        <input
-          type="text"
+        <select
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          placeholder="Liman"
-          className="mt-1 w-36 rounded border px-2 py-1.5 text-sm"
-        />
+          className="mt-1 w-40 rounded border px-2 py-1.5 text-sm"
+        >
+          <option value="">Tumu</option>
+          {ports.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-500">Baslangic</label>
