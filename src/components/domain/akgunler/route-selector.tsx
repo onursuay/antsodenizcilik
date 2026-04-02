@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { PassengerCountPopover, type PassengerCounts } from "./passenger-count-popover";
+import { useState, useEffect } from "react";
+import { PassengerVehiclePopover, type YolcuSayi } from "./passenger-vehicle-popover";
 
-interface GuzergahData {
+interface YolcuTur {
+  id: number;
+  title: string;
+  yolcu_kodu: string;
+  yolcu_tipi: string;
+}
+
+export interface GuzergahData {
   id: number;
   baslik: string;
   sehirler: Array<{ id: number; ad: string }>;
-  yolcu_turleri: Array<{ id: number; title: string; yolcu_kodu: string }>;
+  yolcu_turleri: YolcuTur[];
+  arac_turleri: YolcuTur[];
+  kabin_turleri: YolcuTur[];
 }
 
 interface RouteSelectorProps {
@@ -17,26 +26,54 @@ interface RouteSelectorProps {
     cikisSehirId: number;
     varisSehirId: number;
     tarih: string;
-    yolcuTurleri: Array<{ id: number; sayi: number }>;
+    donusTarih?: string;
+    tripType: "tek-gidis" | "gidis-donus";
+    yolcuTurleri: YolcuSayi[];
   }) => void;
 }
 
+function formatDateTR(dateStr: string): string {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  const date = new Date(Number(y), Number(m) - 1, Number(d));
+  const days = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+  const months = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+  return `${d} ${months[date.getMonth()]}, ${days[date.getDay()]}`;
+}
+
 export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
-  const [guzergahId, setGuzergahId] = useState(
-    guzergahlar.length === 1 ? guzergahlar[0].id : 0
-  );
+  const [tripType, setTripType] = useState<"tek-gidis" | "gidis-donus">("tek-gidis");
+  const [guzergahId, setGuzergahId] = useState(0);
   const [cikisSehirId, setCikisSehirId] = useState(0);
   const [varisSehirId, setVarisSehirId] = useState(0);
   const [tarih, setTarih] = useState("");
-  const [passengers, setPassengers] = useState<PassengerCounts>({ yetiskin: 1, cocuk: 0 });
+  const [donusTarih, setDonusTarih] = useState("");
+  const [yolcuTurleri, setYolcuTurleri] = useState<YolcuSayi[]>([{ id: 1, sayi: 1 }]);
 
   const today = new Date().toISOString().split("T")[0];
-  const selectedGuzergah = guzergahlar.find((g) => g.id === guzergahId);
+
+  // Auto-select when guzergahlar loads (handles timing issue)
+  useEffect(() => {
+    if (guzergahlar.length === 1 && guzergahId === 0) {
+      setGuzergahId(guzergahlar[0].id);
+    }
+  }, [guzergahlar, guzergahId]);
+
+  // Initialize default passenger when guzergah changes
+  useEffect(() => {
+    if (guzergahId === 0) return;
+    const g = guzergahlar.find((x) => x.id === guzergahId);
+    if (!g || g.yolcu_turleri.length === 0) return;
+    // Set default: 1 of the first passenger type (SİVİL / Yetişkin)
+    setYolcuTurleri([{ id: g.yolcu_turleri[0].id, sayi: 1 }]);
+  }, [guzergahId, guzergahlar]);
+
+  const selectedGuzergah = guzergahlar.find((g) => g.id === guzergahId) ?? null;
   const sehirler = selectedGuzergah?.sehirler ?? [];
-  const isValid = !!selectedGuzergah && !!cikisSehirId && !!varisSehirId && !!tarih;
+  const isValid = !!selectedGuzergah && !!cikisSehirId && !!varisSehirId && !!tarih &&
+    (tripType === "tek-gidis" || !!donusTarih);
 
   function handleSwap() {
-    if (!cikisSehirId || !varisSehirId) return;
     const prev = cikisSehirId;
     setCikisSehirId(varisSehirId);
     setVarisSehirId(prev);
@@ -46,23 +83,71 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     e.preventDefault();
     if (!selectedGuzergah || !cikisSehirId || !varisSehirId || !tarih) return;
 
-    const yolcuTurleri: Array<{ id: number; sayi: number }> = [];
-    if (passengers.yetiskin > 0) yolcuTurleri.push({ id: 1, sayi: passengers.yetiskin });
-    if (passengers.cocuk > 0) yolcuTurleri.push({ id: 2, sayi: passengers.cocuk });
+    const fmtDate = (s: string) => {
+      const [y, m, d] = s.split("-");
+      return `${d}/${m}/${y}`;
+    };
 
-    const [y, m, d] = tarih.split("-");
+    const filtered = yolcuTurleri.filter((y) => y.sayi > 0);
+
     onSearch({
       guzergah: selectedGuzergah,
       cikisSehirId,
       varisSehirId,
-      tarih: `${d}/${m}/${y}`,
-      yolcuTurleri,
+      tarih: fmtDate(tarih),
+      donusTarih: tripType === "gidis-donus" && donusTarih ? fmtDate(donusTarih) : undefined,
+      tripType,
+      yolcuTurleri: filtered,
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Güzergah (only show if multiple) */}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Trip type toggle */}
+      <div className="flex items-center gap-4">
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+          <span
+            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition ${
+              tripType === "tek-gidis" ? "border-blue-600" : "border-slate-300"
+            }`}
+          >
+            {tripType === "tek-gidis" && (
+              <span className="block h-2 w-2 rounded-full bg-blue-600" />
+            )}
+          </span>
+          <input
+            type="radio"
+            name="tripType"
+            value="tek-gidis"
+            checked={tripType === "tek-gidis"}
+            onChange={() => { setTripType("tek-gidis"); setDonusTarih(""); }}
+            className="sr-only"
+          />
+          Tek Yön
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+          <span
+            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition ${
+              tripType === "gidis-donus" ? "border-blue-600" : "border-slate-300"
+            }`}
+          >
+            {tripType === "gidis-donus" && (
+              <span className="block h-2 w-2 rounded-full bg-blue-600" />
+            )}
+          </span>
+          <input
+            type="radio"
+            name="tripType"
+            value="gidis-donus"
+            checked={tripType === "gidis-donus"}
+            onChange={() => setTripType("gidis-donus")}
+            className="sr-only"
+          />
+          Gidiş – Dönüş
+        </label>
+      </div>
+
+      {/* Güzergah (multi only) */}
       {guzergahlar.length > 1 && (
         <div>
           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -80,174 +165,167 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           >
             <option value={0}>Güzergah seçin…</option>
             {guzergahlar.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.baslik}
-              </option>
+              <option key={g.id} value={g.id}>{g.baslik}</option>
             ))}
           </select>
         </div>
       )}
 
-      {/* Route fields */}
-      <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_40px_1fr]">
-        <div>
-          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+      {/* Main search row */}
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-stretch">
+        {/* Nereden */}
+        <div className="flex-1">
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Nereden
           </label>
           <div className="relative">
-            <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <select
               value={cikisSehirId}
               onChange={(e) => setCikisSehirId(parseInt(e.target.value))}
               disabled={sehirler.length === 0}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-9 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 disabled:text-slate-400"
               required
             >
               <option value={0}>Kalkış limanı…</option>
               {sehirler.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.ad}
-                </option>
+                <option key={s.id} value={s.id}>{s.ad}</option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="flex justify-center pb-1">
+        {/* Swap */}
+        <div className="flex items-end justify-center pb-0.5">
           <button
             type="button"
             onClick={handleSwap}
             disabled={!cikisSehirId || !varisSehirId}
-            title="Güzergahı değiştir"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-slate-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-slate-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
             </svg>
           </button>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        {/* Nereye */}
+        <div className="flex-1">
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Nereye
           </label>
           <div className="relative">
-            <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <select
               value={varisSehirId}
               onChange={(e) => setVarisSehirId(parseInt(e.target.value))}
               disabled={sehirler.length === 0}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-9 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50 disabled:text-slate-400"
               required
             >
               <option value={0}>Varış limanı…</option>
-              {sehirler
-                .filter((s) => s.id !== cikisSehirId)
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.ad}
-                  </option>
-                ))}
+              {sehirler.filter((s) => s.id !== cikisSehirId).map((s) => (
+                <option key={s.id} value={s.id}>{s.ad}</option>
+              ))}
             </select>
           </div>
         </div>
-      </div>
 
-      {/* Date + Passengers */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Gidiş Tarihi
+        {/* Gidiş tarihi */}
+        <div className="flex-1">
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Gidiş
           </label>
           <div className="relative">
-            <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
+            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <input
               type="date"
               value={tarih}
-              onChange={(e) => setTarih(e.target.value)}
+              onChange={(e) => {
+                setTarih(e.target.value);
+                if (donusTarih && e.target.value > donusTarih) setDonusTarih("");
+              }}
               min={today}
-              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               required
             />
+            {tarih && (
+              <span className="pointer-events-none absolute inset-0 flex items-center pl-9 text-sm font-medium text-slate-900">
+                {formatDateTR(tarih)}
+              </span>
+            )}
           </div>
         </div>
-        <div>
-          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Yolcular
+
+        {/* Dönüş tarihi */}
+        {tripType === "gidis-donus" ? (
+          <div className="flex-1">
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Dönüş
+            </label>
+            <div className="relative">
+              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <input
+                type="date"
+                value={donusTarih}
+                onChange={(e) => setDonusTarih(e.target.value)}
+                min={tarih || today}
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-9 pr-8 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                required
+              />
+              {donusTarih && (
+                <span className="pointer-events-none absolute inset-0 flex items-center pl-9 pr-8 text-sm font-medium text-slate-900">
+                  {formatDateTR(donusTarih)}
+                </span>
+              )}
+              {donusTarih && (
+                <button
+                  type="button"
+                  onClick={() => setDonusTarih("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 z-10"
+                >
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Yolcu & Araç */}
+        <div className="flex-[1.4]">
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Yolcu ve Araç
           </label>
-          <PassengerCountPopover value={passengers} onChange={setPassengers} />
+          <PassengerVehiclePopover
+            guzergah={selectedGuzergah}
+            value={yolcuTurleri}
+            onChange={setYolcuTurleri}
+          />
+        </div>
+
+        {/* Search button */}
+        <div className="flex items-end">
+          <button
+            type="submit"
+            disabled={!isValid}
+            className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-40 lg:w-auto"
+          >
+            Ara
+          </button>
         </div>
       </div>
-
-      {/* CTA */}
-      <button
-        type="submit"
-        disabled={!isValid}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        Seferleri Ara
-      </button>
     </form>
   );
 }

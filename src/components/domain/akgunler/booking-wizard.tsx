@@ -10,7 +10,9 @@ interface GuzergahData {
   id: number;
   baslik: string;
   sehirler: Array<{ id: number; ad: string }>;
-  yolcu_turleri: Array<{ id: number; title: string; yolcu_kodu: string }>;
+  yolcu_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
+  arac_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
+  kabin_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
 }
 
 interface SeferData {
@@ -46,6 +48,8 @@ export function AkgunlerBookingWizard() {
   const [cikisSehirId, setCikisSehirId] = useState(0);
   const [varisSehirId, setVarisSehirId] = useState(0);
   const [tarih, setTarih] = useState("");
+  const [donusTarih, setDonusTarih] = useState<string | undefined>(undefined);
+  const [tripType, setTripType] = useState<"tek-gidis" | "gidis-donus">("tek-gidis");
   const [yolcuSayilari, setYolcuSayilari] = useState<Array<{ id: number; sayi: number }>>([]);
 
   // Sailing state
@@ -83,6 +87,8 @@ export function AkgunlerBookingWizard() {
     cikisSehirId: number;
     varisSehirId: number;
     tarih: string;
+    donusTarih?: string;
+    tripType: "tek-gidis" | "gidis-donus";
     yolcuTurleri: Array<{ id: number; sayi: number }>;
   }) {
     setError(null);
@@ -91,16 +97,22 @@ export function AkgunlerBookingWizard() {
     setCikisSehirId(params.cikisSehirId);
     setVarisSehirId(params.varisSehirId);
     setTarih(params.tarih);
+    setDonusTarih(params.donusTarih);
+    setTripType(params.tripType);
     setYolcuSayilari(params.yolcuTurleri);
 
     try {
-      const sp = new URLSearchParams({
+      const spParams: Record<string, string> = {
         sc_id: String(params.cikisSehirId),
         sv_id: String(params.varisSehirId),
         tarih: params.tarih,
-        y_mod: "tek-gidis",
+        y_mod: params.tripType,
         y_t: JSON.stringify(params.yolcuTurleri),
-      });
+      };
+      if (params.tripType === "gidis-donus" && params.donusTarih) {
+        spParams.d_tarih = params.donusTarih;
+      }
+      const sp = new URLSearchParams(spParams);
 
       const res = await fetch(`/api/akgunler/sailings?${sp}`);
       const data = await res.json();
@@ -125,7 +137,7 @@ export function AkgunlerBookingWizard() {
       const sp = new URLSearchParams({
         s_id: String(sepetId),
         gs_id: String(seferId),
-        y_mod: "tek-gidis",
+        y_mod: tripType,
       });
 
       const res = await fetch(`/api/akgunler/passengers?${sp}`);
@@ -303,6 +315,12 @@ export function AkgunlerBookingWizard() {
               </span>
               <span className="text-slate-300">·</span>
               <span className="text-slate-600">{tarih}</span>
+              {donusTarih && (
+                <>
+                  <span className="text-slate-300">→</span>
+                  <span className="text-slate-600">{donusTarih}</span>
+                </>
+              )}
               {totalPassengers > 0 && (
                 <>
                   <span className="text-slate-300">·</span>

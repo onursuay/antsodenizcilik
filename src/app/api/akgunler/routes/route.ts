@@ -20,9 +20,12 @@ export async function GET() {
             arac_turleri: bilgi.yolcu_turleri.filter(
               (yt) => yt.yolcu_tipi === "diger"
             ),
+            kabin_turleri: bilgi.yolcu_turleri.filter(
+              (yt) => yt.yolcu_tipi === "kabin"
+            ),
           };
         } catch {
-          return { id: g.id, baslik: g.baslik, sehirler: [], yolcu_turleri: [], arac_turleri: [] };
+          return { id: g.id, baslik: g.baslik, sehirler: [], yolcu_turleri: [], arac_turleri: [], kabin_turleri: [] };
         }
       })
     );
