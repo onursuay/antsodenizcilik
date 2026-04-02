@@ -41,36 +41,57 @@ function formatDateTR(dateStr: string): string {
   return `${d} ${months[date.getMonth()]}, ${days[date.getDay()]}`;
 }
 
+function getDefaultGuzergahId(guzergahlar: GuzergahData[]): number {
+  return guzergahlar.length >= 1 ? guzergahlar[0].id : 0;
+}
+
+function getDefaultYolcuTurleri(guzergahlar: GuzergahData[]): YolcuSayi[] {
+  const g = guzergahlar.length >= 1 ? guzergahlar[0] : null;
+  if (g && g.yolcu_turleri.length > 0) {
+    return [{ id: g.yolcu_turleri[0].id, sayi: 1 }];
+  }
+  return [{ id: 1, sayi: 1 }];
+}
+
 export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
   const [tripType, setTripType] = useState<"tek-gidis" | "gidis-donus">("tek-gidis");
-  const [guzergahId, setGuzergahId] = useState(0);
+  const [guzergahId, setGuzergahId] = useState<number>(() => getDefaultGuzergahId(guzergahlar));
   const [cikisSehirId, setCikisSehirId] = useState(0);
   const [varisSehirId, setVarisSehirId] = useState(0);
   const [tarih, setTarih] = useState("");
   const [donusTarih, setDonusTarih] = useState("");
-  const [yolcuTurleri, setYolcuTurleri] = useState<YolcuSayi[]>([{ id: 1, sayi: 1 }]);
+  const [yolcuTurleri, setYolcuTurleri] = useState<YolcuSayi[]>(() => getDefaultYolcuTurleri(guzergahlar));
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Auto-select when guzergahlar loads (handles timing issue)
+  // Safety net: if guzergahlar arrives after mount (shouldn't happen but just in case)
   useEffect(() => {
-    if (guzergahlar.length === 1 && guzergahId === 0) {
-      setGuzergahId(guzergahlar[0].id);
+    if (guzergahlar.length >= 1 && guzergahId === 0) {
+      const g = guzergahlar[0];
+      setGuzergahId(g.id);
+      if (g.yolcu_turleri.length > 0) {
+        setYolcuTurleri([{ id: g.yolcu_turleri[0].id, sayi: 1 }]);
+      }
     }
-  }, [guzergahlar, guzergahId]);
+  }, [guzergahlar]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initialize default passenger when guzergah changes
+  // When guzergahId changes (multi-guzergah), reset passengers
   useEffect(() => {
     if (guzergahId === 0) return;
     const g = guzergahlar.find((x) => x.id === guzergahId);
     if (!g || g.yolcu_turleri.length === 0) return;
-    // Set default: 1 of the first passenger type (SİVİL / Yetişkin)
     setYolcuTurleri([{ id: g.yolcu_turleri[0].id, sayi: 1 }]);
-  }, [guzergahId, guzergahlar]);
+    setCikisSehirId(0);
+    setVarisSehirId(0);
+  }, [guzergahId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedGuzergah = guzergahlar.find((g) => g.id === guzergahId) ?? null;
   const sehirler = selectedGuzergah?.sehirler ?? [];
-  const isValid = !!selectedGuzergah && !!cikisSehirId && !!varisSehirId && !!tarih &&
+  const isValid =
+    !!selectedGuzergah &&
+    !!cikisSehirId &&
+    !!varisSehirId &&
+    !!tarih &&
     (tripType === "tek-gidis" || !!donusTarih);
 
   function handleSwap() {
@@ -103,11 +124,15 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Trip type toggle */}
+      {/* Trip type toggle — explicit button onClick, no hidden radio tricks */}
       <div className="flex items-center gap-4">
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+        <button
+          type="button"
+          onClick={() => { setTripType("tek-gidis"); setDonusTarih(""); }}
+          className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer"
+        >
           <span
-            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition ${
+            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors ${
               tripType === "tek-gidis" ? "border-blue-600" : "border-slate-300"
             }`}
           >
@@ -115,19 +140,15 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
               <span className="block h-2 w-2 rounded-full bg-blue-600" />
             )}
           </span>
-          <input
-            type="radio"
-            name="tripType"
-            value="tek-gidis"
-            checked={tripType === "tek-gidis"}
-            onChange={() => { setTripType("tek-gidis"); setDonusTarih(""); }}
-            className="sr-only"
-          />
           Tek Yön
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+        </button>
+        <button
+          type="button"
+          onClick={() => setTripType("gidis-donus")}
+          className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer"
+        >
           <span
-            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition ${
+            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors ${
               tripType === "gidis-donus" ? "border-blue-600" : "border-slate-300"
             }`}
           >
@@ -135,16 +156,8 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
               <span className="block h-2 w-2 rounded-full bg-blue-600" />
             )}
           </span>
-          <input
-            type="radio"
-            name="tripType"
-            value="gidis-donus"
-            checked={tripType === "gidis-donus"}
-            onChange={() => setTripType("gidis-donus")}
-            className="sr-only"
-          />
           Gidiş – Dönüş
-        </label>
+        </button>
       </div>
 
       {/* Güzergah (multi only) */}
@@ -155,11 +168,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           </label>
           <select
             value={guzergahId}
-            onChange={(e) => {
-              setGuzergahId(parseInt(e.target.value));
-              setCikisSehirId(0);
-              setVarisSehirId(0);
-            }}
+            onChange={(e) => setGuzergahId(parseInt(e.target.value))}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             required
           >
@@ -266,7 +275,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </div>
 
         {/* Dönüş tarihi */}
-        {tripType === "gidis-donus" ? (
+        {tripType === "gidis-donus" && (
           <div className="flex-1">
             <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
               Dönüş
@@ -292,7 +301,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
                 <button
                   type="button"
                   onClick={() => setDonusTarih("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 z-10"
+                  className="absolute right-2.5 top-1/2 z-10 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300"
                 >
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -301,7 +310,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
               )}
             </div>
           </div>
-        ) : null}
+        )}
 
         {/* Yolcu & Araç */}
         <div className="flex-[1.4]">
