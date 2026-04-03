@@ -28,14 +28,39 @@ const COLOR_MAP: Record<string, string> = {
   RELEASED: "bg-gray-100 text-gray-700",
 };
 
+const LABEL_MAP: Record<string, string> = {
+  OPEN: "Açık",
+  ACTIVE: "Aktif",
+  CONFIRMED: "Onaylı",
+  APPROVED: "Onaylandı",
+  CLOSED: "Kapalı",
+  CHECKED_IN: "Check-in",
+  SUBMITTED: "Gönderildi",
+  DRAFT: "Taslak",
+  PENDING: "Bekliyor",
+  QUEUED: "Kuyrukta",
+  CANCELLED: "İptal",
+  FAILED: "Başarısız",
+  EXPIRED: "Süresi doldu",
+  DENIED: "Reddedildi",
+  UNKNOWN: "Bilinmiyor",
+  MANUAL_REVIEW: "Manuel inceleme",
+  ESCALATED: "Yükseltildi",
+  DEPARTED: "Kalktı",
+  SETTLED: "Tamamlandı",
+  RESOLVED: "Çözüldü",
+  RELEASED: "Serbest",
+};
+
 export function StatusBadge({ status }: { status: string }) {
   const colors = COLOR_MAP[status] ?? "bg-gray-100 text-gray-700";
+  const label = LABEL_MAP[status] ?? status;
 
   return (
     <span
-      className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${colors}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${colors}`}
     >
-      {status}
+      {label}
     </span>
   );
 }

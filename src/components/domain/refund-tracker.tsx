@@ -12,36 +12,46 @@ interface RefundTrackerProps {
   refunds: Refund[];
 }
 
+function formatDate(value: string | null) {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function RefundTracker({ refunds }: RefundTrackerProps) {
   if (refunds.length === 0) return null;
 
   return (
-    <div>
-      <h3 className="mb-2 text-sm font-semibold">Iadeler</h3>
-      <div className="space-y-2">
-        {refunds.map((r) => (
-          <div
-            key={r.refund_id}
-            className="flex items-center justify-between rounded border px-3 py-2 text-sm"
-          >
+    <div className="space-y-3">
+      {refunds.map((refund) => (
+        <div
+          key={refund.refund_id}
+          className="rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="font-medium">
-                {(r.amount_kurus / 100).toLocaleString("tr-TR", {
+              <p className="text-base font-semibold text-slate-900">
+                {(refund.amount_kurus / 100).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}{" "}
                 TL
               </p>
-              <p className="text-xs text-gray-400">
-                Kuyruk: {new Date(r.queued_at).toLocaleString("tr-TR")}
-                {r.confirmed_at &&
-                  ` · Onay: ${new Date(r.confirmed_at).toLocaleString("tr-TR")}`}
-              </p>
+              <p className="mt-2 text-sm text-slate-500">Kuyruğa alınma: {formatDate(refund.queued_at)}</p>
+              {refund.confirmed_at && (
+                <p className="mt-1 text-sm text-slate-500">Onay: {formatDate(refund.confirmed_at)}</p>
+              )}
             </div>
-            <StatusBadge status={r.status} />
+            <StatusBadge status={refund.status} />
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

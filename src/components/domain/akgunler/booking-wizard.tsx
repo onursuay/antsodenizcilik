@@ -1,18 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { RouteSelector } from "./route-selector";
-import { SailingList } from "./sailing-list";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { PassengerForm } from "./passenger-form";
 import { PaymentForm } from "./payment-form";
+import { ProcessingOverlay } from "./processing-overlay";
+import { RouteSelector } from "./route-selector";
+import { SailingList } from "./sailing-list";
 
 interface GuzergahData {
   id: number;
   baslik: string;
   sehirler: Array<{ id: number; ad: string }>;
-  yolcu_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
-  arac_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
-  kabin_turleri: Array<{ id: number; title: string; yolcu_kodu: string; yolcu_tipi: string }>;
+  yolcu_turleri: Array<{
+    id: number;
+    title: string;
+    yolcu_kodu: string;
+    yolcu_tipi: string;
+  }>;
+  arac_turleri: Array<{
+    id: number;
+    title: string;
+    yolcu_kodu: string;
+    yolcu_tipi: string;
+  }>;
+  kabin_turleri: Array<{
+    id: number;
+    title: string;
+    yolcu_kodu: string;
+    yolcu_tipi: string;
+  }>;
 }
 
 interface SeferData {
@@ -37,13 +54,63 @@ interface YolcuData {
 
 type Step = "route" | "sailing" | "passenger" | "payment";
 
+const CONTENT_STEPS = [
+  {
+    key: "sailing",
+    title: "Sefer seçimi",
+    description: "Müsaitlik ve fiyatları karşılaştırın",
+  },
+  {
+    key: "passenger",
+    title: "Yolcu bilgileri",
+    description: "Biletleme için zorunlu bilgileri tamamlayın",
+  },
+  {
+    key: "payment",
+    title: "Ödeme",
+    description: "3D Secure ile güvenli ödeme yapın",
+  },
+] as const;
+
+const HERO_FEATURES = [
+  {
+    eyebrow: "Tek rota, net akış",
+    title: "Anamur ↔ Girne",
+    description: "Karışık seçimler yerine odaklı ve hızlı bir rezervasyon deneyimi.",
+  },
+  {
+    eyebrow: "Seyahat süresi",
+    title: "Yaklaşık 2,5 saat",
+    description: "Sefer detayında güncel saat bilgisiyle planınızı netleştirin.",
+  },
+  {
+    eyebrow: "Bilet teslimi",
+    title: "Ödeme sonrası anında",
+    description: "Biletler Akgünler sistemi üzerinden tamamlanan ödeme sonrası oluşur.",
+  },
+  {
+    eyebrow: "Canlı karşılaştırma",
+    title: "Sefer ve fiyat özeti",
+    description: "Müsaitlik ve fiyat bilgilerini tek listede görerek hızlı karar verin.",
+  },
+  {
+    eyebrow: "Güven ön planda",
+    title: "3D Secure ödeme",
+    description: "Kart doğrulaması güvenli ödeme ekranında tamamlanır.",
+  },
+] as const;
+
 export function AkgunlerBookingWizard() {
   const [step, setStep] = useState<Step>("route");
   const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [overlayState, setOverlayState] = useState<{
+    title: string;
+    description: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Booking state
   const [selectedGuzergah, setSelectedGuzergah] = useState<GuzergahData | null>(null);
   const [cikisSehirId, setCikisSehirId] = useState(0);
   const [varisSehirId, setVarisSehirId] = useState(0);
@@ -52,35 +119,46 @@ export function AkgunlerBookingWizard() {
   const [tripType, setTripType] = useState<"tek-gidis" | "gidis-donus">("tek-gidis");
   const [yolcuSayilari, setYolcuSayilari] = useState<Array<{ id: number; sayi: number }>>([]);
 
-  // Sailing state
   const [seferler, setSeferler] = useState<SeferData[]>([]);
   const [sepetId, setSepetId] = useState(0);
   const [selectedSeferId, setSelectedSeferId] = useState(0);
 
-  // Passenger state
   const [yolcular, setYolcular] = useState<YolcuData[]>([]);
   const [toplamFiyat, setToplamFiyat] = useState(0);
 
-  // Derived
   const cikisSehirAd =
-    selectedGuzergah?.sehirler.find((s) => s.id === cikisSehirId)?.ad ?? "";
+    selectedGuzergah?.sehirler.find((item) => item.id === cikisSehirId)?.ad ?? "";
   const varisSehirAd =
-    selectedGuzergah?.sehirler.find((s) => s.id === varisSehirId)?.ad ?? "";
-  const selectedSefer = seferler.find((s) => s.id === selectedSeferId);
-  const totalPassengers = yolcuSayilari.reduce((sum, y) => sum + y.sayi, 0);
+    selectedGuzergah?.sehirler.find((item) => item.id === varisSehirId)?.ad ?? "";
+  const selectedSefer = seferler.find((item) => item.id === selectedSeferId);
+  const totalPassengers = yolcuSayilari.reduce((sum, item) => sum + item.sayi, 0);
+  const currentIdx = CONTENT_STEPS.findIndex((item) => item.key === step);
 
   useEffect(() => {
     fetch("/api/akgunler/routes")
-      .then((r) => r.json())
+      .then((response) => response.json())
       .then((data) => {
+        if (!data?.guzergahlar?.length && data?.error) {
+          throw new Error(data.error);
+        }
         setGuzergahlar(data.guzergahlar ?? []);
-        setLoading(false);
+        setInitialLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
+      .catch((requestError) => {
+        setError(getFriendlyRouteError(requestError));
+        setInitialLoading(false);
       });
   }, []);
+
+  function beginOverlay(title: string, description: string) {
+    setOverlayState({ title, description });
+    setLoading(true);
+  }
+
+  function endOverlay() {
+    setLoading(false);
+    setOverlayState(null);
+  }
 
   async function handleRouteSearch(params: {
     guzergah: GuzergahData;
@@ -92,7 +170,10 @@ export function AkgunlerBookingWizard() {
     yolcuTurleri: Array<{ id: number; sayi: number }>;
   }) {
     setError(null);
-    setLoading(true);
+    beginOverlay(
+      "Seferler hazırlanıyor",
+      "En güncel müsaitlik ve fiyat bilgileri getiriliyor. Lütfen birkaç saniye bekleyin."
+    );
     setSelectedGuzergah(params.guzergah);
     setCikisSehirId(params.cikisSehirId);
     setVarisSehirId(params.varisSehirId);
@@ -102,349 +183,737 @@ export function AkgunlerBookingWizard() {
     setYolcuSayilari(params.yolcuTurleri);
 
     try {
-      const spParams: Record<string, string> = {
+      const queryParams: Record<string, string> = {
         sc_id: String(params.cikisSehirId),
         sv_id: String(params.varisSehirId),
         tarih: params.tarih,
         y_mod: params.tripType,
         y_t: JSON.stringify(params.yolcuTurleri),
       };
-      if (params.tripType === "gidis-donus" && params.donusTarih) {
-        spParams.d_tarih = params.donusTarih;
-      }
-      const sp = new URLSearchParams(spParams);
 
-      const res = await fetch(`/api/akgunler/sailings?${sp}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (params.tripType === "gidis-donus" && params.donusTarih) {
+        queryParams.d_tarih = params.donusTarih;
+      }
+
+      const search = new URLSearchParams(queryParams);
+      const response = await fetch(`/api/akgunler/sailings?${search}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
 
       setSeferler(data.g_seferler ?? []);
       setSepetId(data.s_id ?? 0);
+      setSelectedSeferId(0);
       setStep("sailing");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Sefer aranamadı");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Sefer aranamadı");
     } finally {
-      setLoading(false);
+      endOverlay();
     }
   }
 
   async function handleSailingSelect(seferId: number) {
     setError(null);
-    setLoading(true);
+    beginOverlay(
+      "Yolcu bilgileri hazırlanıyor",
+      "Seçtiğiniz sefere göre gerekli alanlar hazırlanıyor."
+    );
     setSelectedSeferId(seferId);
 
     try {
-      const sp = new URLSearchParams({
+      const search = new URLSearchParams({
         s_id: String(sepetId),
         gs_id: String(seferId),
         y_mod: tripType,
       });
 
-      const res = await fetch(`/api/akgunler/passengers?${sp}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const response = await fetch(`/api/akgunler/passengers?${search}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
 
       setYolcular(data.yolcular ?? []);
       setStep("passenger");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Yolcu bilgileri yüklenemedi");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Yolcu bilgileri yüklenemedi"
+      );
     } finally {
-      setLoading(false);
+      endOverlay();
     }
   }
 
   async function handlePassengerSubmit(yolcuBilgileri: Array<Record<string, unknown>>) {
     setError(null);
-    setLoading(true);
+    beginOverlay(
+      "Ödeme adımı hazırlanıyor",
+      "Yolcu bilgileriniz kaydediliyor ve güvenli ödeme ekranı hazırlanıyor."
+    );
 
     try {
-      const res = await fetch("/api/akgunler/passengers", {
+      const response = await fetch("/api/akgunler/passengers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ s_id: sepetId, yolcular: yolcuBilgileri }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
 
       setToplamFiyat(data.toplam_fiyat ?? 0);
       setStep("payment");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Yolcu bilgileri gönderilemedi");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Yolcu bilgileri gönderilemedi"
+      );
     } finally {
-      setLoading(false);
+      endOverlay();
     }
   }
 
-  /* ───── HERO (step route) ───── */
   if (step === "route") {
     return (
-      <div>
-        {/* Hero */}
-        <section className="bg-[#0C1829] px-4 pb-24 pt-16">
-          <div className="mx-auto max-w-2xl">
-            {/* Badge */}
-            <div className="mb-7 flex justify-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide text-white/75">
-                <svg className="h-3.5 w-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Resmi Akgünler Denizcilik Acentesi
-              </span>
-            </div>
+      <div className="overflow-hidden" id="ana-sayfa">
+        <ProcessingOverlay
+          open={Boolean(overlayState)}
+          title={overlayState?.title ?? ""}
+          description={overlayState?.description ?? ""}
+        />
+        <section className="relative overflow-hidden bg-brand-ink text-white" id="bilet-al">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.3),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.22),transparent_24%),linear-gradient(180deg,#12263c_0%,#142d45_56%,#112337_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#eef4f7]" />
 
-            {/* Headline */}
-            <div className="mb-10 text-center">
-              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Anamur
-                <span className="mx-3 font-light text-blue-400">—</span>
-                Girne
-              </h1>
-              <p className="mt-3 text-base text-white/55">
-                Feribot bileti · Resmi acente · Anlık teslim
-              </p>
-            </div>
+          <div className="relative mx-auto max-w-7xl px-4 pb-28 pt-10 md:pt-14 lg:pb-32 lg:pt-20">
+            <div className="space-y-8">
+              <div className="grid items-stretch gap-12 lg:grid-cols-[1.02fr_0.98fr]">
+                <div className="antso-dark-panel flex h-full flex-col rounded-[36px] p-6 md:p-8">
+                  <div>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                      <span className="h-2 w-2 rounded-full bg-brand-sky" />
+                      Akgünler resmi satış noktası
+                    </span>
 
-            {/* Search card */}
-            <div className="rounded-2xl bg-white p-6 shadow-2xl md:p-8">
-              {loading ? (
-                <SearchSkeleton />
-              ) : (
-                <>
-                  {error && (
-                    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                      {error}
+                    <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                      Anamur ile Girne arasında
+                      <span className="mt-2 block text-brand-seafoam">
+                        hızlı, güvenli ve modern feribot rezervasyonu
+                      </span>
+                    </h1>
+
+                    <p className="mt-5 max-w-2xl text-base leading-7 text-white/[0.72] sm:text-lg">
+                      Feribot seferlerini gerçek zamanlı sorgulayın, yolcu bilgilerini tek akışta
+                      tamamlayın ve 3D Secure ile ödemenizi güvenle bitirip biletinizi anında alın.
+                    </p>
+                  </div>
+
+                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                    <HeroBalanceCard
+                      title="Hızlı ve odaklı akış"
+                      description="Bu ekran yalnızca Anamur ↔ Girne hattına odaklanır; bu sayede arama, yolcu bilgileri ve ödeme adımları daha temiz ilerler."
+                    />
+                    <HeroBalanceCard
+                      title="Kurumsal güvence"
+                      description="Sefer arama, yolcu bilgileri ve 3D Secure ödeme süreci tek akışta daha kontrollü ve anlaşılır şekilde ilerler."
+                    />
+                  </div>
+
+                  <div className="mt-auto pt-6">
+                    <div className="flex flex-wrap gap-3 text-sm text-white/[0.72]">
+                      <TrustPill label="3D Secure ödeme" />
+                      <TrustPill label="Anlık bilet üretimi" />
+                      <TrustPill label="Yolcu ve araç desteği" />
                     </div>
-                  )}
-                  <RouteSelector guzergahlar={guzergahlar} onSearch={handleRouteSearch} />
-                </>
-              )}
-            </div>
+                  </div>
+                </div>
 
-            {/* Trust strip */}
-            <div className="mt-7 flex flex-wrap justify-center gap-6 text-xs text-white/40">
-              <span className="flex items-center gap-1.5">
-                <svg className="h-3.5 w-3.5 text-white/30" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                    clipRule="evenodd"
+                <div className="relative h-full">
+                  <div className="absolute -left-6 -top-6 h-28 w-28 rounded-full bg-brand-sky/18 blur-3xl" />
+                  <div className="absolute -bottom-8 -right-6 h-36 w-36 rounded-full bg-brand-ocean/16 blur-3xl" />
+                  <div className="antso-soft-panel relative flex h-full flex-col overflow-hidden rounded-[36px] p-5 md:p-7">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-sky/45 to-transparent" />
+                    <div className="mb-6 flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">
+                          Feribot araması
+                        </p>
+                        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                          Güncel seferleri şimdi sorgulayın
+                        </h2>
+                      </div>
+                      <div className="rounded-full border border-brand-sky/12 bg-brand-mist/75 px-3 py-1 text-xs font-semibold text-brand-ocean">
+                        Tek ekranda arama
+                      </div>
+                    </div>
+
+                    {initialLoading ? (
+                      <SearchSkeleton />
+                    ) : (
+                      <RouteSelector guzergahlar={guzergahlar} onSearch={handleRouteSearch} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {HERO_FEATURES.map((item) => (
+                  <HeroFeatureCard
+                    key={item.eyebrow}
+                    eyebrow={item.eyebrow}
+                    title={item.title}
+                    description={item.description}
                   />
-                </svg>
-                3D Secure Ödeme
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg className="h-3.5 w-3.5 text-white/30" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Lisanslı Acente
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg className="h-3.5 w-3.5 text-white/30" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-                7/24 Destek
-              </span>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Route info strip */}
-        <section className="border-b border-slate-100 bg-white px-4 py-10">
-          <div className="mx-auto max-w-2xl">
-            <div className="flex flex-col items-center gap-6 text-center md:flex-row md:gap-0 md:text-left">
-              <div className="flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Kalkış Limanı
-                </p>
-                <p className="mt-1.5 text-xl font-bold text-slate-900">Anamur Limanı</p>
-                <p className="mt-0.5 text-sm text-slate-500">Mersin, Türkiye</p>
-              </div>
-              <div className="flex flex-col items-center gap-1 px-8">
-                <svg
-                  className="h-8 w-8 text-blue-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 2.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"
-                  />
-                </svg>
-                <p className="text-xs font-medium text-slate-400">~2sa 30dk</p>
-              </div>
-              <div className="flex-1 md:text-right">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Varış Limanı
-                </p>
-                <p className="mt-1.5 text-xl font-bold text-slate-900">Girne Limanı</p>
-                <p className="mt-0.5 text-sm text-slate-500">Girne, KKTC</p>
-              </div>
+        <section className="mx-auto -mt-14 max-w-7xl px-4 pb-14 md:-mt-16 lg:-mt-20 lg:pb-20">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <FeatureCard
+              title="Seferleri hızlı kıyaslayın"
+              description="Saat, gemi ve kişi başı fiyat detayını tek listede görüp doğrudan seçim yapın."
+            />
+            <FeatureCard
+              title="Bilgileri hatasız tamamlayın"
+              description="Yolcu, belge ve iletişim bilgilerini adım adım girin; özet paneli süreci canlı takip etsin."
+            />
+            <FeatureCard
+              title="Ödeme sonrası hemen devam edin"
+              description="Ödemeniz tamamlandığında bilet numaraları ve rezervasyon detayları aynı akışta görünür."
+            />
+          </div>
+        </section>
+
+        <section id="sefer-takvimi" className="mx-auto max-w-7xl px-4 pb-8 pt-2 lg:pb-12">
+          <HomeSectionHeader
+            eyebrow="Sefer Takvimi"
+            title="Planınızı güncel sefer akışına göre netleştirin"
+            description="Tek güzergah üzerinde çalışan rezervasyon akışı, seçtiğiniz tarihe göre anlık seferleri ve biletlenebilir seçenekleri listeler."
+          />
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <TimelineCard
+              title="Anamur → Girne"
+              description="Gidiş yönünde seçtiğiniz tarihe ait müsait feribotlar arama sonucunda canlı olarak listelenir."
+            />
+            <TimelineCard
+              title="Girne → Anamur"
+              description="Dönüş planlı seyahatlerde karşı yön seferi aynı akış içinde seçilerek rezervasyon tek seferde tamamlanır."
+            />
+            <TimelineCard
+              title="Biletleme akışı"
+              description="Tarih, sefer, yolcu bilgileri ve ödeme adımları ardışık ilerler; biletler ödeme sonrası anında oluşur."
+            />
+          </div>
+        </section>
+
+        <section id="kurumsal" className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
+          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[34px] bg-brand-ink p-8 text-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
+              <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Kurumsal</p>
+              <h2 className="mt-4 text-3xl font-semibold">
+                Antso Denizcilik, Anamur ve Girne hattında odaklı bir online satış deneyimi sunar
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-white/[0.7]">
+                Site, Akgünler Denizcilik biletleme altyapısını server-side entegrasyon ile kullanır.
+                Yolcu akışı tek güzergaha odaklanır; bu sayede sefer arama, yolcu bilgisi ve ödeme
+                deneyimi daha hızlı ve daha anlaşılır ilerler.
+              </p>
             </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <CorporateCard
+                title="Resmi acente akışı"
+                description="Akgünler API çağrıları tarayıcı yerine sunucu üzerinden yapılır; kritik kimlik bilgileri istemciye açılmaz."
+              />
+              <CorporateCard
+                title="Odaklı rezervasyon"
+                description="Sadece Anamur ↔ Girne hattı için tasarlanan akış, karar süresini kısaltan sade bir arayüz sunar."
+              />
+              <CorporateCard
+                title="Güvenli ödeme"
+                description="Kart bilgileri 3D Secure akışıyla işlenir; ödeme doğrulaması operatörün güvenli yönlendirmesi ile tamamlanır."
+              />
+              <CorporateCard
+                title="Rezervasyon takibi"
+                description="Ödeme sonrası confirmation ekranı ve rezervasyon detayları üzerinden bilet ve işlem durumu izlenebilir."
+              />
+            </div>
+          </div>
+        </section>
+
+        <section id="sss" className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
+          <HomeSectionHeader
+            eyebrow="Sıkca Sorulan Sorular"
+            title="Biletleme sürecinde en çok sorulan konular"
+            description="Rezervasyon akışında karar vermeyi kolaylaştıran temel bilgileri tek yerde topladık."
+          />
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <FaqCard
+              question="Sefer saatlerini nerede görüyorum?"
+              answer="Ana sayfadaki arama modülünde tarih ve yolcu bilgilerinizi seçtiğinizde, o güne ait müsait seferler sonuç ekranında canlı olarak listelenir."
+            />
+            <FaqCard
+              question="Ödeme sonrası biletler ne zaman oluşur?"
+              answer="Ödeme 3D Secure doğrulaması tamamlandıktan sonra biletler anında oluşturulur ve confirmation ekranında bilet numaraları gösterilir."
+            />
+            <FaqCard
+              question="Yolcu bilgilerini neden eksiksiz girmeliyim?"
+              answer="Biletleme işlemi operatör sistemine gerçek yolcu verileriyle işlendiği için ad, soyad, belge numarası ve doğum tarihi alanları eksiksiz olmalıdır."
+            />
+            <FaqCard
+              question="Rezervasyonumu daha sonra nereden takip ederim?"
+              answer="Hesabınıza giriş yaptıktan sonra Rezervasyonlarım ekranından rezervasyon detaylarını, ödeme ve iade durumlarını görüntüleyebilirsiniz."
+            />
+          </div>
+        </section>
+
+        <section id="iletisim" className="mx-auto max-w-7xl px-4 pb-16 pt-8 lg:pb-20 lg:pt-12">
+          <HomeSectionHeader
+            eyebrow="İletişim"
+            title="Rezervasyon ve işlem takibi için en hızlı erişim yolları"
+            description="Canlı akışta destek almanız gereken durumlarda aşağıdaki alanlar üzerinden işleminizi takip edebilirsiniz."
+          />
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <ContactCard
+              title="Yeni rezervasyon"
+              description="Bilet almak için ana arama modülüne dönün ve tarih seçiminizi yaparak seferleri yeniden listeleyin."
+              href="/#bilet-al"
+              cta="Bilet al akışına git"
+            />
+            <ContactCard
+              title="Rezervasyon takibi"
+              description="Var olan rezervasyonlarınızın durumunu, ödeme kaydını ve bilet detaylarını hesap alanınızdan görüntüleyin."
+              href="/account/bookings"
+              cta="Rezervasyonlarımı aç"
+            />
+            <ContactCard
+              title="Hesap erişimi"
+              description="Rezervasyon geçmişinize erişmek veya işlemlerinizi tek yerde toplamak için hesabınıza giriş yapın."
+              href="/auth/login"
+              cta="Giriş yap"
+            />
           </div>
         </section>
       </div>
     );
   }
 
-  /* ───── CONTENT STEPS (sailing / passenger / payment) ───── */
-  const contentSteps = ["sailing", "passenger", "payment"] as const;
-  const currentIdx = contentSteps.indexOf(step as typeof contentSteps[number]);
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white shadow-sm">
-        <div className="mx-auto max-w-5xl px-4">
-          {/* Search summary */}
-          <div className="flex items-center gap-3 py-3">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-              <span className="font-semibold text-slate-900">
-                {cikisSehirAd} → {varisSehirAd}
-              </span>
-              <span className="text-slate-300">·</span>
-              <span className="text-slate-600">{tarih}</span>
-              {donusTarih && (
-                <>
-                  <span className="text-slate-300">→</span>
-                  <span className="text-slate-600">{donusTarih}</span>
-                </>
-              )}
-              {totalPassengers > 0 && (
-                <>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-slate-600">{totalPassengers} Yolcu</span>
-                </>
-              )}
+    <div className="min-h-screen bg-transparent">
+      <ProcessingOverlay
+        open={Boolean(overlayState)}
+        title={overlayState?.title ?? ""}
+        description={overlayState?.description ?? ""}
+      />
+      <section className="relative overflow-hidden bg-brand-ink text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.22),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.16),transparent_24%),linear-gradient(180deg,#12263c_0%,#132a40_100%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 py-8 lg:py-10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">
+                Rezervasyon akışı
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold text-white">
+                {cikisSehirAd} <span className="text-white/42">→</span> {varisSehirAd}
+              </h1>
+              <p className="mt-2 text-sm text-white/[0.68]">
+                Sefer seçimi, yolcu bilgileri ve ödeme adımlarını tek akışta tamamlayın.
+              </p>
             </div>
+
             <button
+              type="button"
               onClick={() => setStep("route")}
-              className="ml-auto shrink-0 text-xs font-semibold text-blue-600 transition hover:text-blue-700"
+              className="inline-flex items-center rounded-full border border-white/[0.12] bg-white/[0.06] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/[0.1]"
             >
-              Değiştir
+              Aramayı değiştir
             </button>
           </div>
 
-          {/* Step progress */}
-          <div className="-mx-4 flex border-t border-slate-100">
-            {contentSteps.map((s, i) => (
-              <div
-                key={s}
-                className={`flex-1 border-b-2 py-2 text-center text-xs font-semibold transition-colors ${
-                  i === currentIdx
-                    ? "border-blue-600 text-blue-600"
-                    : i < currentIdx
-                    ? "border-slate-200 text-slate-400"
-                    : "border-transparent text-slate-300"
-                }`}
-              >
-                {i + 1}.{" "}
-                {s === "sailing" ? "Sefer Seç" : s === "passenger" ? "Yolcu Bilgileri" : "Ödeme"}
-              </div>
-            ))}
+          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <SummaryCard
+              title="Rota"
+              value={`${cikisSehirAd} → ${varisSehirAd}`}
+              description={tripType === "gidis-donus" ? "Gidiş - dönüş" : "Tek yön"}
+            />
+            <SummaryCard
+              title="Tarih"
+              value={donusTarih ? `${tarih} / ${donusTarih}` : tarih}
+              description="Seçilen seyahat günü"
+            />
+            <SummaryCard
+              title="Yolcu"
+              value={`${totalPassengers} yolcu`}
+              description="Yolcu ve araç bilgisi ile"
+            />
+            <SummaryCard
+              title="Seçili sefer"
+              value={selectedSefer ? selectedSefer.sefer_tarih : "Henüz seçilmedi"}
+              description={
+                selectedSefer
+                  ? `${selectedSefer.gemi}${selectedSefer.formatted_price ? ` · ${selectedSefer.formatted_price}` : ""}`
+                  : "Sonraki adımda seçilecek"
+              }
+            />
+          </div>
+
+          <div className="antso-dark-panel mt-6 rounded-[30px] p-3">
+            <div className="grid gap-2 lg:grid-cols-3">
+              {CONTENT_STEPS.map((item, index) => (
+                <StepRailItem
+                  key={item.key}
+                  index={index}
+                  active={index === currentIdx}
+                  completed={index < currentIdx}
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Error */}
-      {error && !loading && (
-        <div className="mx-auto max-w-5xl px-4 pt-5">
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <section className="mx-auto max-w-7xl px-4 py-8 lg:py-10">
+        {error && !loading && (
+          <div className="mb-6 rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
             {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="flex items-center gap-3">
-            <svg
-              className="h-5 w-5 animate-spin text-blue-600"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            <span className="text-sm font-medium text-slate-500">Yükleniyor…</span>
+        {loading && !overlayState ? (
+          <div className="antso-elevated-card rounded-[32px] p-12 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-mist text-brand-ocean">
+              <svg className="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"
+                />
+              </svg>
+            </div>
+            <p className="mt-5 text-lg font-semibold text-slate-900">Bilgileriniz hazırlanıyor</p>
+            <p className="mt-2 text-sm text-slate-500">
+              Güncel sefer, yolcu ve ödeme detayları yükleniyor.
+            </p>
           </div>
-        </div>
-      )}
+        ) : (
+          <>
+            {step === "sailing" && (
+              <SailingList
+                seferler={seferler}
+                onSelect={handleSailingSelect}
+                onBack={() => setStep("route")}
+              />
+            )}
 
-      {/* Content */}
-      {!loading && (
-        <div className="mx-auto max-w-5xl px-4 py-8">
-          {step === "sailing" && (
-            <SailingList
-              seferler={seferler}
-              onSelect={handleSailingSelect}
-              onBack={() => setStep("route")}
-            />
-          )}
-          {step === "passenger" && (
-            <PassengerForm
-              yolcular={yolcular}
-              onSubmit={handlePassengerSubmit}
-              onBack={() => setStep("sailing")}
-              sefer={selectedSefer}
-              cikisSehirAd={cikisSehirAd}
-              varisSehirAd={varisSehirAd}
-            />
-          )}
-          {step === "payment" && (
-            <PaymentForm
-              sepetId={sepetId}
-              toplamFiyat={toplamFiyat}
-              onBack={() => setStep("passenger")}
-              sefer={selectedSefer}
-              cikisSehirAd={cikisSehirAd}
-              varisSehirAd={varisSehirAd}
-              yolcular={yolcular}
-            />
-          )}
+            {step === "passenger" && (
+              <PassengerForm
+                yolcular={yolcular}
+                onSubmit={handlePassengerSubmit}
+                onBack={() => setStep("sailing")}
+                sefer={selectedSefer}
+                cikisSehirAd={cikisSehirAd}
+                varisSehirAd={varisSehirAd}
+              />
+            )}
+
+            {step === "payment" && (
+              <PaymentForm
+                sepetId={sepetId}
+                toplamFiyat={toplamFiyat}
+                onBack={() => setStep("passenger")}
+                sefer={selectedSefer}
+                cikisSehirAd={cikisSehirAd}
+                varisSehirAd={varisSehirAd}
+                yolcular={yolcular}
+              />
+            )}
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function getFriendlyRouteError(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Güzergah bilgileri yüklenemedi";
+
+  if (message.includes("Akgunler API HTTP 403")) {
+    return "Akgünler servisleri local ortamdan şu anda 403 ile engelleniyor. Bu yüzden kalkış ve varış limanları yüklenemedi. Aynı akış production/Vercel ortamında çalışır; local testte upstream erişim açılmadan liman verisi gelmez.";
+  }
+
+  return message;
+}
+
+function HeroFeatureCard({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_50px_rgba(0,0,0,0.16)]">
+      <p className="text-[11px] uppercase tracking-[0.22em] text-white/42">{eyebrow}</p>
+      <p className="mt-3 text-lg font-semibold text-white">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-white/[0.65]">{description}</p>
+    </div>
+  );
+}
+
+function HeroBalanceCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <p className="mt-2 text-sm leading-7 text-white/[0.64]">{description}</p>
+    </div>
+  );
+}
+
+function TrustPill({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      {label}
+    </span>
+  );
+}
+
+function FeatureCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="antso-elevated-card rounded-[30px] p-6">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.8}
+            d="M5 12h14m-7-7 7 7-7 7"
+          />
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function HomeSectionHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="max-w-3xl">
+      <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/70">{eyebrow}</p>
+      <h2 className="mt-3 text-3xl font-semibold text-slate-900 sm:text-4xl">{title}</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">{description}</p>
+    </div>
+  );
+}
+
+function TimelineCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="antso-elevated-card rounded-[30px] p-6">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.8}
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"
+          />
+        </svg>
+      </div>
+      <h3 className="mt-5 text-xl font-semibold text-slate-900">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function CorporateCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="antso-elevated-card rounded-[30px] p-6">
+      <p className="text-lg font-semibold text-slate-900">{title}</p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function FaqCard({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string;
+}) {
+  return (
+    <div className="antso-elevated-card rounded-[30px] p-6">
+      <p className="text-lg font-semibold text-slate-900">{question}</p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{answer}</p>
+    </div>
+  );
+}
+
+function ContactCard({
+  title,
+  description,
+  href,
+  cta,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="antso-elevated-card rounded-[30px] p-6">
+      <p className="text-lg font-semibold text-slate-900">{title}</p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+      <Link
+        href={href}
+        className="mt-6 inline-flex items-center rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(18,38,60,0.16)] transition hover:bg-[#0f2134]"
+      >
+        {cta}
+      </Link>
+    </div>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  description,
+}: {
+  title: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[26px] border border-white/10 bg-white/[0.05] px-5 py-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-white/42">{title}</p>
+      <p className="mt-2 text-base font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xs text-white/58">{description}</p>
+    </div>
+  );
+}
+
+function StepRailItem({
+  index,
+  active,
+  completed,
+  title,
+  description,
+}: {
+  index: number;
+  active: boolean;
+  completed: boolean;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div
+      className={`rounded-[24px] border px-4 py-4 transition ${
+        active
+          ? "border-brand-sky/60 bg-brand-mist text-brand-ink"
+          : completed
+            ? "border-emerald-400/35 bg-emerald-400/10 text-white"
+            : "border-white/[0.08] bg-white/[0.03] text-white/[0.62]"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+            active
+              ? "bg-brand-ink text-white"
+              : completed
+                ? "bg-emerald-400 text-brand-ink"
+                : "bg-white/[0.08] text-white"
+          }`}
+        >
+          {completed ? "✓" : index + 1}
         </div>
-      )}
+        <div>
+          <p className={`text-sm font-semibold ${active ? "text-brand-ink" : "text-inherit"}`}>
+            {title}
+          </p>
+          <p className={`mt-1 text-xs ${active ? "text-brand-ocean/70" : "text-inherit"}`}>
+            {description}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
 
 function SearchSkeleton() {
   return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-4 w-32 rounded-lg bg-slate-200" />
-      <div className="grid grid-cols-3 gap-2">
-        <div className="h-12 rounded-xl bg-slate-100" />
-        <div className="h-12 rounded-xl bg-slate-100" />
-        <div className="h-12 rounded-xl bg-slate-100" />
+    <div className="space-y-5 animate-pulse">
+      <div className="flex gap-3">
+        <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
+        <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="h-12 rounded-xl bg-slate-100" />
-        <div className="h-12 rounded-xl bg-slate-100" />
+      <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr]">
+        <div className="h-28 rounded-[26px] bg-slate-100" />
+        <div className="mx-auto h-14 w-14 rounded-[24px] bg-slate-100" />
+        <div className="h-28 rounded-[26px] bg-slate-100" />
       </div>
-      <div className="h-12 rounded-xl bg-slate-200" />
+      <div className="grid gap-4 xl:grid-cols-3">
+        <div className="h-28 rounded-[26px] bg-slate-100" />
+        <div className="h-28 rounded-[26px] bg-slate-100" />
+        <div className="h-28 rounded-[26px] bg-slate-100" />
+      </div>
+      <div className="h-28 rounded-[30px] bg-slate-100" />
     </div>
   );
 }
