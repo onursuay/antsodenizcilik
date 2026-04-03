@@ -20,18 +20,13 @@ const BOOKING_LINKS = [
 const SOCIAL_LINKS = [
   {
     label: "Facebook",
-    href: "https://www.facebook.com/antsodenizcilik/",
+    href: "https://www.facebook.com/antsodenizcilik",
     icon: <FacebookIcon className="h-4 w-4" />,
   },
   {
-    label: "X",
-    href: "https://twitter.com/antsodeniz",
-    icon: <XIcon className="h-4 w-4" />,
-  },
-  {
-    label: "YouTube",
-    href: "https://www.youtube.com/@antsodenizcilik",
-    icon: <YouTubeIcon className="h-4 w-4" />,
+    label: "Instagram",
+    href: "https://www.instagram.com/antsodenizcilik",
+    icon: <InstagramIcon className="h-4 w-4" />,
   },
 ] as const;
 
@@ -170,18 +165,10 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
-function XIcon({ className }: { className?: string }) {
+function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M18.9 3H21l-4.6 5.2L21.8 21h-4.9l-3.8-5-4.4 5H6.6l4.9-5.6L2.4 3h5l3.4 4.6L14.7 3Zm-1.7 15.2h1.4L6.6 5.7H5.1l12.1 12.5Z" />
-    </svg>
-  );
-}
-
-function YouTubeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M21.6 8.2a2.9 2.9 0 0 0-2-2.1C17.8 5.6 12 5.6 12 5.6s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2.1C2 10 2 12 2 12s0 2 .4 3.8a2.9 2.9 0 0 0 2 2.1c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2.1c.4-1.8.4-3.8.4-3.8s0-2-.4-3.8ZM10 15.1V8.9l5.2 3.1-5.2 3.1Z" />
+      <path d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9A4.5 4.5 0 0 1 16.5 21h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3Zm0 1.8A2.7 2.7 0 0 0 4.8 7.5v9a2.7 2.7 0 0 0 2.7 2.7h9a2.7 2.7 0 0 0 2.7-2.7v-9a2.7 2.7 0 0 0-2.7-2.7h-9Zm9.6 1.35a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8Z" />
     </svg>
   );
 }

@@ -25,7 +25,7 @@ export async function PublicHeader() {
           <div className="rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f3f8fa_100%)] px-2 py-1 shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
             <BrandLogo
               priority
-              className="w-[54px] sm:w-[61px]"
+              className="w-[65px] sm:w-[73px]"
               imageClassName="h-auto w-full object-contain"
             />
           </div>
