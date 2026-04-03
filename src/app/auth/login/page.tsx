@@ -38,7 +38,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="grid w-full max-w-5xl antso-box-gap lg:grid-cols-[1.05fr_0.95fr]">
       <section className="rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,#132a40_0%,#10253d_100%)] p-8 text-white shadow-[0_30px_80px_rgba(18,38,60,0.18)] lg:p-10">
         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam">
           <span className="h-2 w-2 rounded-full bg-brand-sky" />
@@ -55,7 +55,7 @@ function LoginForm() {
           Henüz hesabınız yoksa birkaç adımda yeni hesap oluşturabilirsiniz.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid antso-box-gap sm:grid-cols-3">
           <AuthHighlight
             title="Rezervasyon takibi"
             description="Bilet ve işlem geçmişinizi görüntüleyin."
@@ -159,7 +159,7 @@ function AuthHighlight({
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-transparent px-4 py-10 lg:py-14">
+    <div className="min-h-screen bg-transparent antso-page-space">
       <div className="mx-auto flex max-w-7xl items-center justify-center">
         <Suspense fallback={<div className="text-sm text-gray-400">Yükleniyor...</div>}>
           <LoginForm />

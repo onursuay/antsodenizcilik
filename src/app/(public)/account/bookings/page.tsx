@@ -60,11 +60,11 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <div className="pb-14">
+    <div className="antso-page-bottom">
       <section className="relative overflow-hidden bg-brand-ink text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(60,146,183,0.24),transparent_30%),radial-gradient(circle_at_right,rgba(209,162,77,0.14),transparent_24%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 lg:py-14">
-          <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative antso-section-shell">
+          <div className="grid antso-box-gap xl:grid-cols-[1.05fr_0.95fr]">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Hesabım</p>
               <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -76,7 +76,7 @@ export default function MyBookingsPage() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid antso-box-gap sm:grid-cols-3">
               <StatCard title="Toplam sonuç" value={`${total}`} />
               <StatCard title="Bu sayfa" value={`${bookings.length}`} />
               <StatCard title="Filtre" value={status ? STATUS_TABS.find((tab) => tab.value === status)?.label ?? "Seçili" : "Tümü"} />
@@ -85,9 +85,9 @@ export default function MyBookingsPage() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-8 max-w-7xl px-4">
+      <section className="antso-overlap-shell">
         <div className="rounded-[32px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid antso-box-gap sm:grid-cols-2 xl:grid-cols-4">
             {STATUS_TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -105,9 +105,9 @@ export default function MyBookingsPage() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="antso-section-stack">
           {loading && (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid antso-box-gap lg:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
@@ -145,7 +145,7 @@ export default function MyBookingsPage() {
           )}
 
           {!loading && !error && bookings.length > 0 && (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid antso-box-gap lg:grid-cols-2">
               {bookings.map((booking) => (
                 <button
                   key={booking.booking_id}
@@ -178,7 +178,7 @@ export default function MyBookingsPage() {
                     <StatusBadge status={booking.status} />
                   </div>
 
-                  <div className="mt-6 grid gap-3">
+                  <div className="mt-6 grid antso-box-gap">
                     <InfoLine label="Voyage ID" value={shortId(booking.voyage_id)} />
                     {booking.checked_in_at ? (
                       <InfoLine label="Check-in" value={formatDate(booking.checked_in_at)} success />
@@ -207,7 +207,7 @@ export default function MyBookingsPage() {
           )}
 
           {(hasPrev || hasNext) && (
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="antso-section-stack flex flex-col antso-box-gap sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
                 onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}

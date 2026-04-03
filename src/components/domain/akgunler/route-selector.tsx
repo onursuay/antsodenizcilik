@@ -242,8 +242,8 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex h-full flex-col gap-6">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <form onSubmit={handleSubmit} className="flex h-full flex-col antso-box-gap">
+      <div className="grid antso-box-gap sm:grid-cols-2">
         <ToggleButton
           active={tripType === "tek-gidis"}
           title="Tek yön"
@@ -283,7 +283,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </SearchField>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr]">
+      <div className="grid antso-box-gap lg:grid-cols-[1fr_auto_1fr]">
         <SearchField
           label="Nereden"
           hint="Kalkış limanını seçin"
@@ -341,7 +341,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </SearchField>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid antso-box-gap md:grid-cols-2">
         <SearchField
           label="Gidiş"
           hint="Müsait seferleri görün"
@@ -430,7 +430,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
       </div>
 
       <div className="mt-auto rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,#16314a_0%,#11263d_100%)] p-4 text-white shadow-[0_24px_60px_rgba(18,38,60,0.24)]">
-        <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid antso-box-gap lg:grid-cols-3">
           <SummaryStat
             label="Seçili rota"
             value={

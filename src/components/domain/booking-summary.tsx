@@ -35,7 +35,7 @@ interface BookingSummaryProps {
 
 export function BookingSummary({ passengers, vehicles, cabins }: BookingSummaryProps) {
   return (
-    <div className="space-y-6">
+    <div className="antso-box-stack">
       {passengers.length > 0 && (
         <SummaryGroup
           title={`Yolcular (${passengers.filter((item) => !item.cancelled_at).length})`}
@@ -94,7 +94,7 @@ function SummaryGroup({
   return (
     <div>
       <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{title}</h4>
-      <div className="space-y-3">
+      <div className="antso-box-stack">
         {items.map((item) => (
           <div
             key={item.id}

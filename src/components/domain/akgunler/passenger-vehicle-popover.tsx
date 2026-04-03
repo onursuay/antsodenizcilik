@@ -192,7 +192,7 @@ export function PassengerVehiclePopover({ guzergah, value, onChange }: Props) {
             </button>
           </div>
 
-          <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+          <div className="antso-box-stack max-h-[420px] overflow-y-auto pr-1">
             {yolcuTurleri.length > 0 ? (
               <>
                 <SectionHeader title="Yolcular" description="En az 1 yetişkin yolcu seçilmelidir." />

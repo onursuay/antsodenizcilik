@@ -66,7 +66,7 @@ export default function VoyageDetailPage() {
         {new Date(v.arrival_utc).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
       </p>
 
-      <div className="mt-6 grid grid-cols-3 gap-3">
+      <div className="mt-6 grid grid-cols-3 antso-box-gap">
         <StatCard
           label="Yolcu"
           value={`${paxTotal - paxUsed} musait`}

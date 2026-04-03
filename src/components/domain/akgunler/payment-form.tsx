@@ -147,8 +147,8 @@ export function PaymentForm({
         </form>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="space-y-6">
+      <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="antso-box-stack">
           <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -183,7 +183,7 @@ export function PaymentForm({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="antso-box-stack">
             <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
               <div className="bg-brand-ink px-6 py-6 text-white">
                 <div className="flex items-start justify-between gap-4">
@@ -307,7 +307,7 @@ export function PaymentForm({
               </label>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col antso-box-gap sm:flex-row">
               <button
                 type="button"
                 onClick={onBack}
@@ -326,10 +326,10 @@ export function PaymentForm({
           </form>
         </div>
 
-        <div className="space-y-6">
+        <div className="antso-box-stack">
           <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Sipariş özeti</p>
-            <div className="mt-5 space-y-4">
+            <div className="mt-5 antso-box-stack">
               <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
               <SummaryRow
                 label="Sefer"
@@ -341,7 +341,7 @@ export function PaymentForm({
 
           <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Yolcu kırılımı</p>
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 antso-box-stack">
               {yolcular.map((yolcu, index) => (
                 <div
                   key={yolcu.yolcu_id}
@@ -367,7 +367,7 @@ export function PaymentForm({
 
           <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Güvenli ödeme</p>
-            <div className="mt-4 space-y-3 text-sm text-slate-600">
+            <div className="mt-4 antso-box-stack text-sm text-slate-600">
               <ChecklistItem text="Kart bilgileriniz sunucuda saklanmaz." />
               <ChecklistItem text="Ödeme Akgünler 3D Secure ekranında tamamlanır." />
               <ChecklistItem text="Ödeme sonrası biletleriniz anında oluşturulur." />

@@ -34,9 +34,9 @@ export function PublicFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-white/8 bg-[linear-gradient(180deg,#12263c_0%,#0f2032_100%)] text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:py-14">
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr_0.9fr_0.95fr]">
+    <footer className="antso-footer-shell border-t border-white/8 bg-[linear-gradient(180deg,#12263c_0%,#0f2032_100%)] text-white">
+      <div className="antso-footer-inner">
+        <div className="grid antso-box-gap lg:grid-cols-[1.15fr_0.85fr_0.9fr_0.95fr]">
           <section className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
             <div className="rounded-[18px] bg-[linear-gradient(180deg,#ffffff_0%,#f3f8fa_100%)] px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.12)] inline-flex">
               <BrandLogo className="w-[92px] sm:w-[108px]" imageClassName="h-auto w-full object-contain" />
@@ -47,7 +47,7 @@ export function PublicFooter() {
               tasarlanan kurumsal biletleme deneyimi.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap antso-box-gap">
               {SOCIAL_LINKS.map((item) => (
                 <a
                   key={item.label}
@@ -101,7 +101,7 @@ export function PublicFooter() {
 
           <section className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">İletişim</p>
-            <div className="mt-5 space-y-4">
+            <div className="mt-5 antso-box-stack">
               <ContactItem label="E-posta" value="info@antsodenizcilik.com" href="mailto:info@antsodenizcilik.com" />
               <ContactItem label="Telefon" value="+90 530 257 48 55" href="tel:+905302574855" />
             </div>
@@ -114,7 +114,7 @@ export function PublicFooter() {
           </section>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 border-t border-white/8 pt-6 text-sm text-white/52 md:flex-row md:items-center md:justify-between">
+        <div className="mt-8 flex flex-col antso-box-gap border-t border-white/8 pt-6 text-sm text-white/52 md:flex-row md:items-center md:justify-between">
           <p>Feribot taşımacılığının güvenli adresi.</p>
           <p>Tüm Hakları Saklıdır © {year}, ANTSO Denizcilik</p>
         </div>
@@ -133,7 +133,7 @@ function FooterColumn({
   return (
     <section className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
       <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">{title}</p>
-      <div className="mt-5 flex flex-col gap-3">{children}</div>
+      <div className="mt-5 flex flex-col antso-box-gap">{children}</div>
     </section>
   );
 }

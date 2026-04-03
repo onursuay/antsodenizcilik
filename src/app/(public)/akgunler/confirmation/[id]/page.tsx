@@ -47,7 +47,7 @@ export default async function AkgunlerConfirmationPage({
 
   if (!data || biletler.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-20">
+      <div className="mx-auto max-w-3xl antso-page-space">
         <div className="rounded-[36px] border border-slate-200 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-amber-100 text-amber-600">
             <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,7 +64,7 @@ export default async function AkgunlerConfirmationPage({
             Ödemeniz tamamlanmış olabilir. Lütfen birkaç dakika sonra tekrar kontrol edin veya
             hesabınızdaki rezervasyonlar alanından son durumu görüntüleyin.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col justify-center antso-box-gap sm:flex-row">
             <Link
               href="/account/bookings"
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
@@ -87,11 +87,11 @@ export default async function AkgunlerConfirmationPage({
   const totalAmount = biletler.reduce((sum, bilet) => sum + bilet.price_100, 0);
 
   return (
-    <div className="pb-16">
+    <div className="antso-page-bottom">
       <section className="relative overflow-hidden bg-brand-ink text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(60,146,183,0.24),transparent_30%),radial-gradient(circle_at_right,rgba(209,162,77,0.14),transparent_24%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 lg:py-14">
-          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative antso-section-shell">
+          <div className="grid antso-box-gap xl:grid-cols-[1.1fr_0.9fr]">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -105,7 +105,7 @@ export default async function AkgunlerConfirmationPage({
                 sefer bilgilerinizi görüntüleyebilirsiniz.
               </p>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-8 grid antso-box-gap sm:grid-cols-3">
                 <HeroStat title="Rota" value={`${firstBilet.departure_port} → ${firstBilet.arrival_port}`} />
                 <HeroStat title="Toplam bilet" value={`${biletler.length}`} />
                 <HeroStat title="Toplam tutar" value={`${formatPrice(totalAmount)} TL`} />
@@ -114,7 +114,7 @@ export default async function AkgunlerConfirmationPage({
 
             <div className="rounded-[32px] border border-white/10 bg-white/[0.05] p-6 shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Sefer özeti</p>
-              <div className="mt-5 space-y-4">
+              <div className="mt-5 antso-box-stack">
                 <SummaryRow label="Kalkış" value={firstBilet.departure_port} />
                 <SummaryRow label="Varış" value={firstBilet.arrival_port} />
                 <SummaryRow label="Tarih / saat" value={firstBilet.sefer_tarih} />
@@ -127,9 +127,9 @@ export default async function AkgunlerConfirmationPage({
         </div>
       </section>
 
-      <section className="mx-auto -mt-8 max-w-7xl px-4">
-        <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
-          <div className="space-y-4">
+      <section className="antso-overlap-shell">
+        <div className="grid antso-box-gap xl:grid-cols-[1.12fr_0.88fr]">
+          <div className="antso-box-stack">
             {biletler.map((bilet, index) => (
               <article
                 key={bilet.id}
@@ -159,14 +159,14 @@ export default async function AkgunlerConfirmationPage({
                 </div>
 
                 <div className="p-6">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid antso-box-gap sm:grid-cols-2">
                     <InfoBox label="Kalkış" value={bilet.departure_port} />
                     <InfoBox label="Varış" value={bilet.arrival_port} />
                     <InfoBox label="Tarih / saat" value={bilet.sefer_tarih} />
                     <InfoBox label="Sefer no" value={bilet.trip_number || "-"} />
                   </div>
 
-                  <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
+                  <div className="mt-5 grid antso-box-gap sm:grid-cols-[1fr_auto]">
                     <div className="rounded-[24px] bg-slate-50 px-4 py-4">
                       <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Bilet numarası</p>
                       <p className="mt-2 break-all font-mono text-sm font-semibold tracking-[0.18em] text-slate-900">
@@ -183,10 +183,10 @@ export default async function AkgunlerConfirmationPage({
             ))}
           </div>
 
-          <div className="space-y-6">
+          <div className="antso-box-stack">
             <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
               <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Sonraki adımlar</p>
-              <div className="mt-5 space-y-3 text-sm text-slate-600">
+              <div className="mt-5 antso-box-stack text-sm text-slate-600">
                 <ChecklistItem text="Bilet numaralarınızı ve yolcu isimlerini kontrol edin." />
                 <ChecklistItem text="Seyahat günü için kimlik veya pasaportunuzu yanınıza alın." />
                 <ChecklistItem text="Detaylara daha sonra erişmek için rezervasyonlarım ekranını kullanın." />
@@ -202,7 +202,7 @@ export default async function AkgunlerConfirmationPage({
               </p>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col antso-box-gap">
               <Link
                 href="/account/bookings"
                 className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"

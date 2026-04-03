@@ -139,8 +139,8 @@ export default function BookingDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="grid gap-4 lg:grid-cols-2">
+      <div className="antso-shell antso-page-space">
+        <div className="grid antso-box-gap lg:grid-cols-2">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
@@ -154,7 +154,7 @@ export default function BookingDetailPage() {
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16">
+      <div className="mx-auto max-w-3xl antso-page-space">
         <div className="rounded-[32px] border border-red-200 bg-red-50 px-6 py-5 text-sm text-red-700">
           {error ?? "Rezervasyon bulunamadı."}
         </div>
@@ -166,11 +166,11 @@ export default function BookingDetailPage() {
   const isActive = booking.status !== "CANCELLED";
 
   return (
-    <div className="pb-14">
+    <div className="antso-page-bottom">
       <section className="relative overflow-hidden bg-brand-ink text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(60,146,183,0.24),transparent_30%),radial-gradient(circle_at_right,rgba(209,162,77,0.14),transparent_24%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 lg:py-14">
-          <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="relative antso-section-shell">
+          <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Rezervasyon detayı</p>
               <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -181,7 +181,7 @@ export default function BookingDetailPage() {
                 durumlarda iptal işlemi başlatabilirsiniz.
               </p>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-8 grid antso-box-gap sm:grid-cols-3">
                 <StatCard title="Yolcu" value={`${passengers.length}`} />
                 <StatCard title="Araç" value={`${vehicles.length}`} />
                 <StatCard title="Kabin" value={`${cabins.length}`} />
@@ -197,7 +197,7 @@ export default function BookingDetailPage() {
                 <StatusBadge status={booking.status} />
               </div>
 
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 antso-box-stack">
                 <SummaryRow label="Onaylandı" value={formatDate(booking.confirmed_at)} />
                 {booking.checked_in_at && (
                   <SummaryRow label="Check-in" value={formatDate(booking.checked_in_at)} />
@@ -211,15 +211,15 @@ export default function BookingDetailPage() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-8 max-w-7xl px-4">
+      <section className="antso-overlap-shell">
         {cancelError && (
           <div className="mb-6 rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
             {cancelError}
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <div className="space-y-6">
+        <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
+          <div className="antso-box-stack">
             {payment && (
               <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -236,7 +236,7 @@ export default function BookingDetailPage() {
 
             {passengers.length > 0 && (
               <SectionCard title="Yolcular" description="Rezervasyona bağlı yolcu kayıtları">
-                <div className="space-y-3">
+                <div className="antso-box-stack">
                   {passengers.map((passenger) => (
                     <EntityRow
                       key={passenger.booking_passenger_id}
@@ -269,7 +269,7 @@ export default function BookingDetailPage() {
 
             {vehicles.length > 0 && (
               <SectionCard title="Araçlar" description="Rezervasyona bağlı araç kayıtları">
-                <div className="space-y-3">
+                <div className="antso-box-stack">
                   {vehicles.map((vehicle) => (
                     <EntityRow
                       key={vehicle.booking_vehicle_id}
@@ -313,10 +313,10 @@ export default function BookingDetailPage() {
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="antso-box-stack">
             <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Özet</p>
-              <div className="mt-5 space-y-4">
+              <div className="mt-5 antso-box-stack">
                 <SummaryRow label="Rezervasyon durumu" value={booking.status} />
                 <SummaryRow label="Voyage ID" value={booking.voyage_id} />
                 {payment && <SummaryRow label="Ödeme" value={`${formatPrice(payment.amount_kurus)} TL`} />}
@@ -326,7 +326,7 @@ export default function BookingDetailPage() {
             {cancellations.length > 0 && (
               <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
                 <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">İşlem geçmişi</p>
-                <div className="mt-5 space-y-3">
+                <div className="mt-5 antso-box-stack">
                   {cancellations.map((cancellation) => (
                     <div
                       key={cancellation.cancellation_record_id}

@@ -291,10 +291,10 @@ export function AkgunlerBookingWizard() {
         />
         <section className="relative overflow-hidden bg-brand-ink text-white" id="bilet-al">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.3),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.22),transparent_24%),linear-gradient(180deg,#12263c_0%,#142d45_56%,#112337_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#eef4f7]" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-[#eef4f7] md:h-24" />
 
-          <div className="relative mx-auto max-w-7xl px-4 pb-28 pt-10 md:pt-14 lg:pb-32 lg:pt-20">
-            <div className="space-y-8">
+          <div className="relative antso-hero-shell">
+            <div className="antso-box-stack">
               <div className="grid items-stretch gap-12 lg:grid-cols-[1.02fr_0.98fr]">
                 <div className="antso-dark-panel flex h-full flex-col rounded-[36px] p-6 md:p-8">
                   <div>
@@ -316,7 +316,7 @@ export function AkgunlerBookingWizard() {
                     </p>
                   </div>
 
-                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-8 grid antso-box-gap sm:grid-cols-2">
                     <HeroBalanceCard
                       title="Hızlı ve odaklı akış"
                       description="Bu ekran yalnızca Anamur ↔ Girne hattına odaklanır; bu sayede arama, yolcu bilgileri ve ödeme adımları daha temiz ilerler."
@@ -364,7 +364,7 @@ export function AkgunlerBookingWizard() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <div className="grid antso-box-gap md:grid-cols-2 xl:grid-cols-5">
                 {HERO_FEATURES.map((item) => (
                   <HeroFeatureCard
                     key={item.eyebrow}
@@ -378,8 +378,8 @@ export function AkgunlerBookingWizard() {
           </div>
         </section>
 
-        <section className="mx-auto -mt-14 max-w-7xl px-4 pb-14 md:-mt-16 lg:-mt-20 lg:pb-20">
-          <div className="grid gap-4 lg:grid-cols-3">
+        <section className="antso-overlap-shell">
+          <div className="grid antso-box-gap lg:grid-cols-3">
             <FeatureCard
               title="Seferleri hızlı kıyaslayın"
               description="Saat, gemi ve kişi başı fiyat detayını tek listede görüp doğrudan seçim yapın."
@@ -395,13 +395,13 @@ export function AkgunlerBookingWizard() {
           </div>
         </section>
 
-        <section id="sefer-takvimi" className="mx-auto max-w-7xl px-4 pb-8 pt-2 lg:pb-12">
+        <section id="sefer-takvimi" className="antso-section-shell antso-section-shell-start">
           <HomeSectionHeader
             eyebrow="Sefer Takvimi"
             title="Planınızı güncel sefer akışına göre netleştirin"
             description="Tek güzergah üzerinde çalışan rezervasyon akışı, seçtiğiniz tarihe göre anlık seferleri ve biletlenebilir seçenekleri listeler."
           />
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-3">
             <TimelineCard
               title="Anamur → Girne"
               description="Gidiş yönünde seçtiğiniz tarihe ait müsait feribotlar arama sonucunda canlı olarak listelenir."
@@ -417,8 +417,8 @@ export function AkgunlerBookingWizard() {
           </div>
         </section>
 
-        <section id="kurumsal" className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
-          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <section id="kurumsal" className="antso-section-shell">
+          <div className="grid antso-box-gap lg:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-[34px] bg-brand-ink p-8 text-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Kurumsal</p>
               <h2 className="mt-4 text-3xl font-semibold">
@@ -431,7 +431,7 @@ export function AkgunlerBookingWizard() {
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid antso-box-gap md:grid-cols-2">
               <CorporateCard
                 title="Resmi acente akışı"
                 description="Akgünler API çağrıları tarayıcı yerine sunucu üzerinden yapılır; kritik kimlik bilgileri istemciye açılmaz."
@@ -452,13 +452,13 @@ export function AkgunlerBookingWizard() {
           </div>
         </section>
 
-        <section id="sss" className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
+        <section id="sss" className="antso-section-shell">
           <HomeSectionHeader
             eyebrow="Sıkca Sorulan Sorular"
             title="Biletleme sürecinde en çok sorulan konular"
             description="Rezervasyon akışında karar vermeyi kolaylaştıran temel bilgileri tek yerde topladık."
           />
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-2">
             <FaqCard
               question="Sefer saatlerini nerede görüyorum?"
               answer="Ana sayfadaki arama modülünde tarih ve yolcu bilgilerinizi seçtiğinizde, o güne ait müsait seferler sonuç ekranında canlı olarak listelenir."
@@ -478,13 +478,13 @@ export function AkgunlerBookingWizard() {
           </div>
         </section>
 
-        <section id="iletisim" className="mx-auto max-w-7xl px-4 pb-16 pt-8 lg:pb-20 lg:pt-12">
+        <section id="iletisim" className="antso-section-shell">
           <HomeSectionHeader
             eyebrow="İletişim"
             title="Rezervasyon ve işlem takibi için en hızlı erişim yolları"
             description="Canlı akışta destek almanız gereken durumlarda aşağıdaki alanlar üzerinden işleminizi takip edebilirsiniz."
           />
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-3">
             <ContactCard
               title="Yeni rezervasyon"
               description="Bilet almak için ana arama modülüne dönün ve tarih seçiminizi yaparak seferleri yeniden listeleyin."
@@ -518,7 +518,7 @@ export function AkgunlerBookingWizard() {
       />
       <section className="relative overflow-hidden bg-brand-ink text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.22),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.16),transparent_24%),linear-gradient(180deg,#12263c_0%,#132a40_100%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 py-8 lg:py-10">
+        <div className="relative antso-section-shell">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">
@@ -541,7 +541,7 @@ export function AkgunlerBookingWizard() {
             </button>
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-6 grid antso-box-gap md:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
               title="Rota"
               value={`${cikisSehirAd} → ${varisSehirAd}`}
@@ -569,7 +569,7 @@ export function AkgunlerBookingWizard() {
           </div>
 
           <div className="antso-dark-panel mt-6 rounded-[30px] p-3">
-            <div className="grid gap-2 lg:grid-cols-3">
+            <div className="grid antso-box-gap lg:grid-cols-3">
               {CONTENT_STEPS.map((item, index) => (
                 <StepRailItem
                   key={item.key}
@@ -585,7 +585,7 @@ export function AkgunlerBookingWizard() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-8 lg:py-10">
+      <section className="antso-section-shell">
         {error && !loading && (
           <div className="mb-6 rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
             {error}
@@ -898,17 +898,17 @@ function StepRailItem({
 
 function SearchSkeleton() {
   return (
-    <div className="space-y-5 animate-pulse">
+    <div className="antso-box-stack animate-pulse">
       <div className="flex gap-3">
         <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
         <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr]">
+      <div className="grid antso-box-gap lg:grid-cols-[1fr_auto_1fr]">
         <div className="h-28 rounded-[26px] bg-slate-100" />
         <div className="mx-auto h-14 w-14 rounded-[24px] bg-slate-100" />
         <div className="h-28 rounded-[26px] bg-slate-100" />
       </div>
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid antso-box-gap xl:grid-cols-3">
         <div className="h-28 rounded-[26px] bg-slate-100" />
         <div className="h-28 rounded-[26px] bg-slate-100" />
         <div className="h-28 rounded-[26px] bg-slate-100" />

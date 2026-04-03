@@ -50,8 +50,8 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+    <div className="antso-box-stack">
+      <div className="grid antso-box-gap xl:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -77,7 +77,7 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
 
         <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Rezervasyon avantajı</p>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 antso-box-stack">
             <InsightRow label="Kişi başı fiyat" value={seferler[0]?.formatted_price ?? "Güncel"} />
             <InsightRow label="Biletleme" value="Ödeme sonrası anında" />
             <InsightRow label="Güvenlik" value="3D Secure ödeme" />
@@ -85,7 +85,7 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="antso-box-stack">
         {seferler.map((sefer, index) => (
           <SailingCard
             key={sefer.id}

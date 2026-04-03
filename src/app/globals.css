@@ -12,6 +12,36 @@
   --brand-gold: #d1a24d;
   --brand-panel: #fbfdfe;
   --brand-muted: #617388;
+  --box-gap: 0.875rem;
+  --box-gap-md: 1rem;
+  --box-gap-lg: 1.125rem;
+  --section-space-y: 0.875rem;
+  --section-space-y-md: 1rem;
+  --section-space-y-lg: 1.25rem;
+  --section-stack-space: 1rem;
+  --section-stack-space-md: 1.125rem;
+  --section-stack-space-lg: 1.25rem;
+  --hero-space-top: 0.75rem;
+  --hero-space-top-md: 0.875rem;
+  --hero-space-top-lg: 1.25rem;
+  --hero-space-bottom: 1.25rem;
+  --hero-space-bottom-md: 1.5rem;
+  --hero-space-bottom-lg: 1.75rem;
+  --overlap-offset: var(--box-gap);
+  --overlap-offset-md: var(--box-gap);
+  --overlap-offset-lg: var(--box-gap);
+  --overlap-space-bottom: 0.875rem;
+  --overlap-space-bottom-md: 1rem;
+  --overlap-space-bottom-lg: 1.25rem;
+  --page-bottom-space: 1.25rem;
+  --page-bottom-space-md: 1.5rem;
+  --page-bottom-space-lg: 1.75rem;
+  --footer-gap-space: 1rem;
+  --footer-gap-space-md: 1.125rem;
+  --footer-gap-space-lg: 1.25rem;
+  --footer-space-y: 1.25rem;
+  --footer-space-y-md: 1.5rem;
+  --footer-space-y-lg: 1.75rem;
 }
 
 @theme inline {
@@ -70,6 +100,14 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
+.antso-box-gap {
+  gap: var(--box-gap);
+}
+
+.antso-box-stack > * + * {
+  margin-top: var(--box-gap);
+}
+
 .antso-dark-panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
@@ -78,6 +116,139 @@ body {
   box-shadow:
     0 30px 80px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.antso-shell {
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1rem;
+}
+
+.antso-page-space {
+  padding-block: var(--section-space-y);
+  padding-inline: 1rem;
+}
+
+.antso-section-shell {
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-block: var(--section-space-y);
+  padding-inline: 1rem;
+}
+
+.antso-section-shell-start {
+  padding-top: 0;
+}
+
+.antso-hero-shell {
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-bottom: var(--hero-space-bottom);
+  padding-inline: 1rem;
+  padding-top: var(--hero-space-top);
+}
+
+.antso-overlap-shell {
+  margin-inline: auto;
+  margin-top: var(--overlap-offset);
+  max-width: 80rem;
+  padding-bottom: var(--overlap-space-bottom);
+  padding-inline: 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.antso-section-stack {
+  margin-top: var(--section-stack-space);
+}
+
+.antso-page-bottom {
+  padding-bottom: var(--page-bottom-space);
+}
+
+.antso-footer-shell {
+  margin-top: var(--footer-gap-space);
+}
+
+.antso-footer-inner {
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-block: var(--footer-space-y);
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --box-gap: var(--box-gap-md);
+  }
+
+  .antso-page-space,
+  .antso-section-shell {
+    padding-block: var(--section-space-y-md);
+  }
+
+  .antso-hero-shell {
+    padding-bottom: var(--hero-space-bottom-md);
+    padding-top: var(--hero-space-top-md);
+  }
+
+  .antso-overlap-shell {
+    margin-top: var(--overlap-offset-md);
+    padding-bottom: var(--overlap-space-bottom-md);
+  }
+
+  .antso-section-stack {
+    margin-top: var(--section-stack-space-md);
+  }
+
+  .antso-page-bottom {
+    padding-bottom: var(--page-bottom-space-md);
+  }
+
+  .antso-footer-shell {
+    margin-top: var(--footer-gap-space-md);
+  }
+
+  .antso-footer-inner {
+    padding-block: var(--footer-space-y-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --box-gap: var(--box-gap-lg);
+  }
+
+  .antso-page-space,
+  .antso-section-shell {
+    padding-block: var(--section-space-y-lg);
+  }
+
+  .antso-hero-shell {
+    padding-bottom: var(--hero-space-bottom-lg);
+    padding-top: var(--hero-space-top-lg);
+  }
+
+  .antso-overlap-shell {
+    margin-top: var(--overlap-offset-lg);
+    padding-bottom: var(--overlap-space-bottom-lg);
+  }
+
+  .antso-section-stack {
+    margin-top: var(--section-stack-space-lg);
+  }
+
+  .antso-page-bottom {
+    padding-bottom: var(--page-bottom-space-lg);
+  }
+
+  .antso-footer-shell {
+    margin-top: var(--footer-gap-space-lg);
+  }
+
+  .antso-footer-inner {
+    padding-block: var(--footer-space-y-lg);
+  }
 }
 
 @keyframes booking-progress {

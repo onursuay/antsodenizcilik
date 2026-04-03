@@ -295,8 +295,8 @@ export function PassengerForm({
   const totalFiyat = yolcular.reduce((sum, yolcu) => sum + (yolcu.toplam_fiyat_genel ?? 0), 0);
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="grid antso-box-gap xl:grid-cols-[1.18fr_0.82fr]">
+      <div className="antso-box-stack">
         <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -352,7 +352,7 @@ export function PassengerForm({
           </label>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col antso-box-gap sm:flex-row">
           <button
             type="button"
             onClick={onBack}
@@ -370,10 +370,10 @@ export function PassengerForm({
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="antso-box-stack">
         <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Rezervasyon özeti</p>
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 antso-box-stack">
             <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
             <SummaryRow
               label="Sefer"
@@ -385,7 +385,7 @@ export function PassengerForm({
 
         <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Fiyat özeti</p>
-          <div className="mt-5 space-y-3">
+          <div className="mt-5 antso-box-stack">
             {yolcular.map((yolcu, index) => (
               <div
                 key={yolcu.yolcu_id}
@@ -411,7 +411,7 @@ export function PassengerForm({
 
         <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Hazırlık kontrolü</p>
-          <div className="mt-4 space-y-3 text-sm text-slate-600">
+          <div className="mt-4 antso-box-stack text-sm text-slate-600">
             <ChecklistItem text="Belge üzerindeki ad ve soyadı eksiksiz girin." />
             <ChecklistItem text="Uyruk ve doğum tarihi bilgisini kontrol edin." />
             <ChecklistItem text="İletişim numarasını ilk yolcu için ekleyin." />

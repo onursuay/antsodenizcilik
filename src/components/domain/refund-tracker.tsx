@@ -28,7 +28,7 @@ export function RefundTracker({ refunds }: RefundTrackerProps) {
   if (refunds.length === 0) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="antso-box-stack">
       {refunds.map((refund) => (
         <div
           key={refund.refund_id}
