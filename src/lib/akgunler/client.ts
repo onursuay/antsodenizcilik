@@ -38,7 +38,15 @@ async function makeRequest<T>(
 
   const res = await fetch(`${baseUrl}?action=${action}`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      Referer: "https://www.akgunlerbilet.com/",
+      Origin: "https://www.akgunlerbilet.com",
+      Accept: "application/json, text/plain, */*",
+      "Accept-Language": "tr-TR,tr;q=0.9",
+    },
     body: formData.toString(),
   });
 
