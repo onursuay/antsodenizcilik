@@ -142,19 +142,24 @@ const PASSENGER_LABELS = [
 ];
 
 const CABIN_LABELS = ["2 Kişilik Kabin", "4 Kişilik Kabin"];
+// Fallback used only when Akgünler API is unreachable (e.g. CF block).
+// IDs are placeholders — real IDs load from API when available.
 const REFERENCE_HOME_ROUTE: GuzergahData = {
-  id: 999,
-  baslik: "Akdeniz",
+  id: 1,
+  baslik: "Anamur - Girne",
   sehirler: [
-    { id: 1, ad: "Pire, Yunanistan" },
-    { id: 2, ad: "Napoli, İtalya" },
-    { id: 3, ad: "Barselona, İspanya" },
-    { id: 4, ad: "Santorini (Thira)" },
-    { id: 5, ad: "Mikonos" },
-    { id: 6, ad: "Palermo" },
+    { id: 1, ad: "Anamur" },
+    { id: 2, ad: "Girne" },
   ],
-  yolcu_turleri: [{ id: 1, title: "Yetişkin", yolcu_kodu: "ADT", yolcu_tipi: "insan" }],
-  arac_turleri: [],
+  yolcu_turleri: [
+    { id: 1, title: "Sivil", yolcu_kodu: "SIV", yolcu_tipi: "insan" },
+    { id: 2, title: "Öğrenci", yolcu_kodu: "OGR", yolcu_tipi: "insan" },
+    { id: 3, title: "Asker", yolcu_kodu: "ASK", yolcu_tipi: "insan" },
+  ],
+  arac_turleri: [
+    { id: 10, title: "Otomobil", yolcu_kodu: "OTO", yolcu_tipi: "diger" },
+    { id: 11, title: "Motosiklet", yolcu_kodu: "MOT", yolcu_tipi: "diger" },
+  ],
   kabin_turleri: [],
 };
 
@@ -380,8 +385,7 @@ export function PublicBookingHome() {
                   />
                   {error && (
                     <p className="mt-5 text-left text-sm font-medium text-amber-700">
-                      Canlı sefer servisine şu anda erişilemiyor. Görsel yapı referansla aynı
-                      tutuldu; arama denemeleri bağlantı geri geldiğinde çalışacaktır.
+                      Sefer sorgulama şu an geçici olarak kullanılamamaktadır. Kısa süre içinde tekrar deneyin.
                     </p>
                   )}
                 </>
