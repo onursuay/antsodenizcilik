@@ -1,0 +1,2480 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BrandLogo } from "@/components/ui/brand-logo";
+import { ProcessingOverlay } from "./processing-overlay";
+
+type TripType = "tek-gidis" | "gidis-donus";
+
+interface YolcuTur {
+  id: number;
+  title: string;
+  yolcu_kodu: string;
+  yolcu_tipi: string;
+}
+
+interface GuzergahData {
+  id: number;
+  baslik: string;
+  sehirler: Array<{ id: number; ad: string }>;
+  yolcu_turleri: YolcuTur[];
+  arac_turleri: YolcuTur[];
+  kabin_turleri: YolcuTur[];
+}
+
+interface SeferData {
+  id: number;
+  sefer_tarih: string;
+  full_date?: string;
+  trip_number?: string;
+  gemi: string;
+  ucret: number;
+  formatted_price: string;
+  secili_mi?: boolean;
+}
+
+interface YolcuData {
+  yolcu_id: number;
+  yolcu_tur_id: number;
+  yolcu_tipi: "insan" | "diger" | "kabin";
+  yolcu_tur_ad: string;
+  toplam_fiyat_genel: number;
+  vergi_turleri: Array<{ id: number; aciklama: string }>;
+  insan_ulke_id?: number;
+  insan_ad?: string;
+  insan_soyad?: string;
+  insan_pasaport_no?: string;
+  insan_cinsiyet?: string;
+  insan_dogum_tarihi?: string | null;
+  yolcu_tel_no?: string;
+  vergi_tur_id?: number | null;
+}
+
+interface Ulke {
+  id: number;
+  title: string;
+  ulke_kodu: string;
+}
+
+interface YolcuSayi {
+  id: number;
+  sayi: number;
+}
+
+interface BookingSearchState {
+  guzergahId: number;
+  cikisSehirId: number;
+  varisSehirId: number;
+  gidisTarihi: string;
+  donusTarihi: string;
+  tripType: TripType;
+  yolcuTurleri: YolcuSayi[];
+}
+
+interface BookingSession {
+  id: string;
+  guzergahlar: GuzergahData[];
+  search: BookingSearchState;
+  sailings: {
+    s_id: number;
+    g_seferler: SeferData[];
+    d_seferler: SeferData[];
+  };
+  selected: {
+    gidisSeferId: number | null;
+    donusSeferId: number | null;
+  };
+  passengers?: {
+    yolcular: YolcuData[];
+    toplamFiyat?: number;
+  };
+}
+
+interface CheckoutPayload {
+  formAction: string;
+  formParams: Record<string, string>;
+}
+
+interface ScheduleRouteLink {
+  title: string;
+  href: string;
+  mod: string;
+  slug: string;
+}
+
+interface ScheduleTrip {
+  direction: string;
+  time: string;
+  vessel: string;
+}
+
+interface ScheduleDay {
+  date: string;
+  weekday: string;
+  trips: ScheduleTrip[];
+}
+
+interface SchedulePayload {
+  sourceUrl: string;
+  selectedRoute: ScheduleRouteLink | null;
+  routes: ScheduleRouteLink[];
+  directions: string[];
+  days: ScheduleDay[];
+}
+
+const SESSION_KEY = "antso-public-booking-session:";
+const DEFAULT_DURATION_MINUTES = 150;
+const FIELD_CLASS =
+  "h-[58px] w-full rounded-[18px] border border-slate-200 bg-white pl-12 pr-4 text-[15px] font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-ocean";
+const HERO_FIELD_CLASS =
+  "h-[56px] w-full rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]";
+
+const PASSENGER_LABELS = [
+  "Yetişkin (12+)",
+  "Öğrenci",
+  "Gazi / Diplomat",
+  "Bebek (0-2 Yaş)",
+  "Bebek (3-6 Yaş)",
+  "Çocuk (7-12 Yaş)",
+  "Asker/Subay",
+  "Subay Ailesi",
+];
+
+const CABIN_LABELS = ["2 Kişilik Kabin", "4 Kişilik Kabin"];
+const REFERENCE_HOME_ROUTE: GuzergahData = {
+  id: 999,
+  baslik: "Akdeniz",
+  sehirler: [
+    { id: 1, ad: "Pire, Yunanistan" },
+    { id: 2, ad: "Napoli, İtalya" },
+    { id: 3, ad: "Barselona, İspanya" },
+    { id: 4, ad: "Santorini (Thira)" },
+    { id: 5, ad: "Mikonos" },
+    { id: 6, ad: "Palermo" },
+  ],
+  yolcu_turleri: [{ id: 1, title: "Yetişkin", yolcu_kodu: "ADT", yolcu_tipi: "insan" }],
+  arac_turleri: [],
+  kabin_turleri: [],
+};
+
+function makeSessionId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function readStoredSession(sessionId: string): BookingSession | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = window.sessionStorage.getItem(`${SESSION_KEY}${sessionId}`);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as BookingSession;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredSession(session: BookingSession) {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(`${SESSION_KEY}${session.id}`, JSON.stringify(session));
+}
+
+function formatDateForApi(value: string) {
+  const [year, month, day] = value.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function formatDateLabel(value: string) {
+  if (!value) return "";
+
+  const date = new Date(`${value}T00:00:00`);
+  return date.toLocaleDateString("tr-TR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function parseTimeToMinutes(value: string) {
+  const match = value.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function minutesToTime(value: number) {
+  const normalized = ((value % 1440) + 1440) % 1440;
+  const hour = String(Math.floor(normalized / 60)).padStart(2, "0");
+  const minute = String(normalized % 60).padStart(2, "0");
+  return `${hour}:${minute}`;
+}
+
+function inferArrivalTime(timeLabel: string) {
+  const minutes = parseTimeToMinutes(timeLabel);
+  if (minutes === null) return "--:--";
+  return minutesToTime(minutes + DEFAULT_DURATION_MINUTES);
+}
+
+function buildPassengerSummary(guzergah: GuzergahData | null, value: YolcuSayi[]) {
+  if (!guzergah) return "Yolcu ve araç seçin";
+
+  const all = [
+    ...guzergah.yolcu_turleri,
+    ...guzergah.kabin_turleri,
+    ...guzergah.arac_turleri,
+  ];
+
+  const labels = value
+    .filter((item) => item.sayi > 0)
+    .map((item) => {
+      const found = all.find((entry) => entry.id === item.id);
+      return found ? `${item.sayi} ${found.title}` : null;
+    })
+    .filter(Boolean);
+
+  return labels.length > 0 ? labels.join(", ") : "Yolcu ve araç seçin";
+}
+
+function getSelectedGuzergah(guzergahlar: GuzergahData[], search: BookingSearchState) {
+  return guzergahlar.find((item) => item.id === search.guzergahId) ?? null;
+}
+
+function getPortName(guzergahlar: GuzergahData[], search: BookingSearchState, type: "from" | "to") {
+  const guzergah = getSelectedGuzergah(guzergahlar, search);
+  if (!guzergah) return "";
+
+  const id = type === "from" ? search.cikisSehirId : search.varisSehirId;
+  return guzergah.sehirler.find((item) => item.id === id)?.ad ?? "";
+}
+
+function buildDefaultSearch(guzergahlar: GuzergahData[]): BookingSearchState {
+  const first = guzergahlar[0];
+  const firstPassenger = first?.yolcu_turleri[0];
+
+  return {
+    guzergahId: first?.id ?? 0,
+    cikisSehirId: 0,
+    varisSehirId: 0,
+    gidisTarihi: "",
+    donusTarihi: "",
+    tripType: "tek-gidis",
+    yolcuTurleri: firstPassenger ? [{ id: firstPassenger.id, sayi: 1 }] : [],
+  };
+}
+
+function getCount(items: YolcuSayi[], id: number) {
+  return items.find((item) => item.id === id)?.sayi ?? 0;
+}
+
+function updateCount(items: YolcuSayi[], id: number, next: number) {
+  if (next <= 0) return items.filter((item) => item.id !== id);
+  if (items.some((item) => item.id === id)) {
+    return items.map((item) => (item.id === id ? { ...item, sayi: next } : item));
+  }
+  return [...items, { id, sayi: next }];
+}
+
+function getDisplayPrice(session: BookingSession) {
+  if (typeof session.passengers?.toplamFiyat === "number") {
+    return session.passengers.toplamFiyat;
+  }
+
+  return (session.passengers?.yolcular ?? []).reduce(
+    (sum, item) => sum + (item.toplam_fiyat_genel ?? 0),
+    0
+  );
+}
+
+function getTripSelectionReady(session: BookingSession) {
+  if (!session.selected.gidisSeferId) return false;
+  if (session.search.tripType === "gidis-donus" && !session.selected.donusSeferId) return false;
+  return true;
+}
+
+export function PublicBookingHome() {
+  const router = useRouter();
+  const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<SchedulePayload | null>(null);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/akgunler/routes")
+      .then(async (response) => {
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json.error ?? "Güzergah bilgisi alınamadı.");
+        }
+        setGuzergahlar(json.guzergahlar ?? []);
+      })
+      .catch((requestError) => {
+        setGuzergahlar([REFERENCE_HOME_ROUTE]);
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Güzergah bilgisi alınamadı."
+        );
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/akgunler/schedule")
+      .then(async (response) => {
+        const json = (await response.json()) as SchedulePayload | { error?: string };
+        if (!response.ok) {
+          throw new Error("error" in json ? json.error ?? "Sefer takvimi alınamadı." : "Sefer takvimi alınamadı.");
+        }
+        setSchedule(json as SchedulePayload);
+      })
+      .catch((requestError) => {
+        setScheduleError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Sefer takvimi alınamadı."
+        );
+      })
+      .finally(() => setScheduleLoading(false));
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#f5fafc] text-[#171d1e]">
+      <section className="relative flex h-[600px] flex-col items-center justify-center overflow-hidden px-6">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCMcWsJBl-zumd0rfr2S95kp8hojXNb6zBiUBusC-RSEzr34ERnbQcSJXpQevWyviXgb0ZVg-UsywZ5_c96S22RGvjsWWROvAw2pJ35C5EZrPFPZNXdbZ-ieOSH4NZvSCv6YXIEaIqkfcZTO8R6-jWLK-JBSR2AQwXnlDwB45hcWDp-kmsZDIY_2JKr1zu_tV7ubYbi06aA6_i1qHn0YzAdGTlcmrn23Ff8f3c07AU0GKqtXdnWu_EQ1NNwOSMDoQETDg0hxqeLTAv0')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5fafccc]" />
+
+        <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col items-center justify-center pt-8 text-center">
+          <div className="mb-8">
+            <h1 className="font-headline mx-auto max-w-4xl text-4xl font-extrabold tracking-[-0.06em] text-white md:text-6xl">
+              Ufka Doğru
+              <span className="block">Rotanızı Çizin.</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-6 text-white/90 md:text-lg">
+              Küratörlüğünü yaptığımız feribot geçişlerimizle denizlerin huzurunu ve deniz
+              mühendisliğinin hassasiyetini deneyimleyin.
+            </p>
+          </div>
+
+          <div className="w-full rounded-[2rem] bg-white/20 p-2 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] backdrop-blur-[12px]">
+            <div className="rounded-[1.75rem] bg-white p-8 md:p-10">
+              {loading ? (
+                <SearchSkeleton />
+              ) : (
+                <>
+                  <ReferenceHeroSearchCard
+                    guzergahlar={guzergahlar}
+                    onSearchComplete={(sessionId) => router.push(`/voyages/${sessionId}`)}
+                  />
+                  {error && (
+                    <p className="mt-5 text-left text-sm font-medium text-amber-700">
+                      Canlı sefer servisine şu anda erişilemiyor. Görsel yapı referansla aynı
+                      tutuldu; arama denemeleri bağlantı geri geldiğinde çalışacaktır.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sefer-takvimi" className="mx-auto max-w-screen-2xl px-8 py-24">
+        <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="mb-4 block text-sm font-bold uppercase tracking-[0.22em] text-[#006971]">
+              Sefer Takvimi
+            </span>
+            <h2 className="text-4xl font-extrabold tracking-[-0.04em] md:text-5xl">
+              Yön, tarih ve gemi detaylarını canlı kaynaktan alın
+            </h2>
+          </div>
+          {schedule?.sourceUrl && (
+            <a
+              href={schedule.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-bold text-[#006971]"
+            >
+              Kaynağı Aç →
+            </a>
+          )}
+        </div>
+
+        {schedule?.selectedRoute ? (
+          <div className="mb-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            <div className="rounded-[28px] bg-white p-6 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] ring-1 ring-slate-100">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#006971]">
+                Aktif Hat
+              </p>
+              <h3 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-slate-900">
+                {schedule.selectedRoute.title}
+              </h3>
+              <p className="mt-4 text-sm leading-7 text-slate-600">
+                Ana sayfadaki takvim verisi doğrudan Akgünler sefer takvimi sayfasından çekilir.
+                Yön, tarih ve saat detayları aşağıdaki kartlarda canlı olarak listelenir.
+              </p>
+            </div>
+
+            <div className="rounded-[28px] bg-[#eff4f7] p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Yönler
+              </p>
+              <div className="mt-4 space-y-3">
+                {schedule.directions.slice(0, 2).map((direction) => (
+                  <div
+                    key={direction}
+                    className="rounded-[18px] bg-white px-4 py-3 text-sm font-semibold text-slate-800"
+                  >
+                    {direction}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[28px] bg-[#eff4f7] p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Yaklaşan Bilgi
+              </p>
+              <div className="mt-4 rounded-[18px] bg-white px-4 py-4">
+                <div className="text-sm text-slate-500">İlk görünür tarih</div>
+                <div className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
+                  {schedule.days[0]?.date ?? "-"}
+                </div>
+                <div className="mt-3 text-sm text-slate-500">Görünen toplam gün</div>
+                <div className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
+                  {schedule.days.length}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {schedule?.routes?.length ? (
+          <div className="mb-6 flex flex-wrap gap-3">
+            {schedule.routes.slice(0, 4).map((route) => (
+              <button
+                key={route.mod}
+                type="button"
+                onClick={() => {
+                  setScheduleLoading(true);
+                  setScheduleError(null);
+                  fetch(`/api/akgunler/schedule?route=${route.slug}`)
+                    .then(async (response) => {
+                      const json = (await response.json()) as SchedulePayload | { error?: string };
+                      if (!response.ok) {
+                        throw new Error("error" in json ? json.error ?? "Sefer takvimi alınamadı." : "Sefer takvimi alınamadı.");
+                      }
+                      setSchedule(json as SchedulePayload);
+                    })
+                    .catch((requestError) => {
+                      setScheduleError(
+                        requestError instanceof Error
+                          ? requestError.message
+                          : "Sefer takvimi alınamadı."
+                      );
+                    })
+                    .finally(() => setScheduleLoading(false));
+                }}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  schedule.selectedRoute?.mod === route.mod
+                    ? "bg-[#006971] text-white"
+                    : "bg-[#eff4f7] text-slate-700"
+                }`}
+              >
+                {route.title}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {scheduleLoading ? (
+          <div className="grid gap-5 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-56 animate-pulse rounded-[28px] bg-[#eff4f7]" />
+            ))}
+          </div>
+        ) : schedule?.days?.length ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {schedule.days.map((day) => (
+              <article
+                key={`${day.date}-${day.weekday}`}
+                className="rounded-[28px] bg-white p-6 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] ring-1 ring-slate-100"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#006971]">
+                      {day.weekday}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
+                      {day.date}
+                    </h3>
+                  </div>
+                  <div className="rounded-full bg-[#eff4f7] px-3 py-1 text-xs font-semibold text-slate-600">
+                    {day.trips.length} sefer
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {day.trips.slice(0, 4).map((trip, index) => (
+                    <div
+                      key={`${trip.time}-${trip.direction}-${index}`}
+                      className="rounded-[18px] bg-[#f8fbfc] p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-lg font-bold text-slate-900">{trip.time}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#006971]">
+                          {trip.direction}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{trip.vessel}</p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            {scheduleError ?? "Sefer takvimi verisi şu anda alınamadı."}
+          </div>
+        )}
+      </section>
+
+      <section className="mx-auto max-w-screen-2xl px-8 pb-24">
+        <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="mb-4 block text-sm font-bold uppercase tracking-[0.22em] text-[#006971]">
+              Görsel Sefer Kartları
+            </span>
+            <h2 className="text-4xl font-extrabold tracking-[-0.04em] md:text-5xl">
+              Takvim verisini görsel kartlarla hızlı okuyun
+            </h2>
+          </div>
+        </div>
+
+        {schedule?.days?.length ? (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+            <article className="group relative overflow-hidden rounded-[32px] shadow-[0_24px_48px_-12px_rgba(23,29,30,0.12)] md:col-span-7">
+              <img
+                src="/antso-liman.jpg"
+                alt={schedule.selectedRoute?.title ?? "Sefer kartı"}
+                className="h-full min-h-[520px] w-full object-cover transition duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8 flex items-end justify-between gap-5">
+                <div>
+                  <span className="mb-3 inline-block rounded-full bg-[#006971]/30 px-3 py-1 text-xs font-bold uppercase text-white backdrop-blur-md">
+                    Öne çıkan gün
+                  </span>
+                  <h3 className="text-3xl font-bold text-white">
+                    {schedule.days[0]?.date} {schedule.days[0]?.weekday ? `· ${schedule.days[0].weekday}` : ""}
+                  </h3>
+                  <p className="mt-2 text-sm font-medium text-white/85">
+                    {schedule.selectedRoute?.title}
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    {schedule.days[0]?.trips.slice(0, 3).map((trip, index) => (
+                      <div
+                        key={`${trip.time}-${trip.direction}-${index}`}
+                        className="rounded-full bg-white/14 px-4 py-2 text-sm text-white backdrop-blur-sm"
+                      >
+                        <span className="font-semibold">{trip.time}</span>
+                        <span className="mx-2 text-white/60">•</span>
+                        <span>{trip.direction}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold uppercase text-white/60">Toplam sefer</p>
+                  <p className="text-3xl font-bold text-white">
+                    {schedule.days[0]?.trips.length ?? 0}
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <div className="flex flex-col gap-8 md:col-span-5">
+              {schedule.days.slice(1, 3).map((day) => (
+                <article
+                  key={`${day.date}-${day.weekday}`}
+                  className="group relative overflow-hidden rounded-[32px] shadow-[0_24px_48px_-12px_rgba(23,29,30,0.12)]"
+                >
+                  <img
+                    src="/antso-liman.jpg"
+                    alt={`${day.date} sefer kartı`}
+                    className="h-[246px] w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <h3 className="text-2xl font-bold text-white">
+                      {day.date}
+                    </h3>
+                    <p className="mt-1 text-sm text-white/80">{day.weekday}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {day.trips.slice(0, 2).map((trip, index) => (
+                        <span
+                          key={`${trip.time}-${trip.direction}-${index}`}
+                          className="rounded-full bg-white/14 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
+                        >
+                          {trip.time} · {trip.direction}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+            <div className="min-h-[520px] rounded-[32px] bg-[#eff4f7] md:col-span-7" />
+            <div className="grid gap-8 md:col-span-5">
+              <div className="h-[246px] rounded-[32px] bg-[#eff4f7]" />
+              <div className="h-[246px] rounded-[32px] bg-[#eff4f7]" />
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function ReferenceHeroSearchCard({
+  guzergahlar,
+  onSearchComplete,
+}: {
+  guzergahlar: GuzergahData[];
+  onSearchComplete: (sessionId: string) => void;
+}) {
+  const [search, setSearch] = useState(() => {
+    const initial = buildDefaultSearch(guzergahlar);
+    return {
+      ...initial,
+      tripType: "tek-gidis" as TripType,
+      yolcuTurleri: [{ id: 1, sayi: 1 }],
+    };
+  });
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const first = buildDefaultSearch(guzergahlar);
+    setSearch({
+      ...first,
+      tripType: "tek-gidis",
+      yolcuTurleri: [{ id: 1, sayi: 1 }],
+    });
+  }, [guzergahlar]);
+
+  const guzergah = getSelectedGuzergah(guzergahlar, search);
+  const sehirler = guzergah?.sehirler ?? [];
+  const isValid = search.cikisSehirId && search.varisSehirId && search.gidisTarihi;
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!isValid) return;
+
+    setError(null);
+    setOverlayOpen(true);
+
+    try {
+      const query = new URLSearchParams({
+        sc_id: String(search.cikisSehirId),
+        sv_id: String(search.varisSehirId),
+        tarih: formatDateForApi(search.gidisTarihi),
+        y_mod: "tek-gidis",
+        y_t: JSON.stringify([{ id: 1, sayi: 1 }]),
+      });
+
+      const response = await fetch(`/api/akgunler/sailings?${query}`);
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error ?? "Seferler getirilemedi.");
+      }
+
+      const id = makeSessionId();
+      saveStoredSession({
+        id,
+        guzergahlar,
+        search: {
+          ...search,
+          tripType: "tek-gidis",
+          yolcuTurleri: [{ id: 1, sayi: 1 }],
+        },
+        sailings: {
+          s_id: json.s_id ?? 0,
+          g_seferler: json.g_seferler ?? [],
+          d_seferler: json.d_seferler ?? [],
+        },
+        selected: {
+          gidisSeferId: null,
+          donusSeferId: null,
+        },
+      });
+
+      onSearchComplete(id);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Seferler getirilemedi."
+      );
+    } finally {
+      setOverlayOpen(false);
+    }
+  }
+
+  return (
+    <>
+      <ProcessingOverlay
+        open={overlayOpen}
+        title="İşleminiz Yapılıyor. Lütfen Bekleyiniz."
+        description="Seçtiğiniz rota için en uygun sefer seçenekleri hazırlanıyor."
+      />
+
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 items-end gap-6 md:grid-cols-4"
+      >
+        <ReferenceSelectField
+          label="Kalkış Limanı"
+          icon="departure"
+          value={String(search.cikisSehirId)}
+          onChange={(value) =>
+            setSearch((current) => ({
+              ...current,
+              cikisSehirId: Number(value),
+            }))
+          }
+          options={sehirler.map((item) => ({ value: String(item.id), label: item.ad }))}
+        />
+        <ReferenceSelectField
+          label="Varış Limanı"
+          icon="arrival"
+          value={String(search.varisSehirId)}
+          onChange={(value) =>
+            setSearch((current) => ({
+              ...current,
+              varisSehirId: Number(value),
+            }))
+          }
+          options={sehirler
+            .filter((item) => item.id !== search.cikisSehirId)
+            .map((item) => ({ value: String(item.id), label: item.ad }))}
+        />
+        <ReferenceDateField
+          label="Yolculuk Tarihi"
+          value={search.gidisTarihi}
+          onChange={(value) =>
+            setSearch((current) => ({
+              ...current,
+              gidisTarihi: value,
+            }))
+          }
+        />
+        <button
+          type="submit"
+          disabled={!isValid}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] text-lg font-bold text-white shadow-[0_12px_28px_rgba(23,29,30,0.12)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span className="text-xl">⌕</span>
+          Sefer Ara
+        </button>
+      </form>
+
+      {error && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700">
+          {error}
+        </div>
+      )}
+    </>
+  );
+}
+
+function ReferenceSelectField({
+  label,
+  value,
+  onChange,
+  options,
+  icon,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+  icon: "departure" | "arrival";
+}) {
+  return (
+    <label className="space-y-2">
+      <span className="ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-[#595f61]">
+        {label}
+      </span>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#006971]">
+          <FerryPortIcon className="h-5 w-5" direction={icon} />
+        </span>
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-14 w-full appearance-none rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]"
+        >
+          <option value="">Seçiniz</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+}
+
+function ReferenceDateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const today = new Date().toISOString().split("T")[0];
+
+  return (
+    <label className="space-y-2">
+      <span className="ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-[#595f61]">
+        {label}
+      </span>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#006971]">
+          <CalendarIcon className="h-5 w-5" />
+        </span>
+        <input
+          type="date"
+          min={today}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-14 w-full rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]"
+        />
+      </div>
+    </label>
+  );
+}
+
+export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
+  const [session, setSession] = useState<BookingSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = readStoredSession(sessionId);
+    setSession(stored);
+    setLoading(false);
+  }, [sessionId]);
+
+  const summary = useMemo(() => {
+    if (!session) return null;
+
+    const guzergah = getSelectedGuzergah(session.guzergahlar, session.search);
+    const from = getPortName(session.guzergahlar, session.search, "from");
+    const to = getPortName(session.guzergahlar, session.search, "to");
+    const gidis = session.sailings.g_seferler.find(
+      (item) => item.id === session.selected.gidisSeferId
+    );
+    const donus = session.sailings.d_seferler.find(
+      (item) => item.id === session.selected.donusSeferId
+    );
+
+    return { guzergah, from, to, gidis, donus };
+  }, [session]);
+
+  function persist(nextSession: BookingSession) {
+    saveStoredSession(nextSession);
+    setSession(nextSession);
+  }
+
+  async function handleContinue() {
+    if (!session || !getTripSelectionReady(session)) return;
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const search = new URLSearchParams({
+        s_id: String(session.sailings.s_id),
+        gs_id: String(session.selected.gidisSeferId),
+        y_mod: session.search.tripType,
+      });
+
+      if (session.selected.donusSeferId) {
+        search.set("ds_id", String(session.selected.donusSeferId));
+      }
+
+      const response = await fetch(`/api/akgunler/passengers?${search}`);
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json.error ?? "Yolcu bilgileri hazırlanamadı.");
+      }
+
+      const nextSession: BookingSession = {
+        ...session,
+        passengers: {
+          yolcular: json.yolcular ?? [],
+        },
+      };
+
+      persist(nextSession);
+      router.push(`/voyages/${session.id}/book`);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Yolcu bilgileri hazırlanamadı."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
+  if (!session || !summary) {
+    return <MissingSessionCard />;
+  }
+
+  const totalPrice =
+    (summary.gidis?.ucret ?? 0) + (summary.donus?.ucret ?? 0);
+
+  return (
+    <div className="min-h-screen bg-[#f3f5f8] pb-10">
+      <section className="bg-[#10253d] pb-8 pt-4">
+        <div className="mx-auto max-w-7xl px-4">
+          <BookingSearchCard
+            guzergahlar={session.guzergahlar}
+            initialSearch={session.search}
+            sessionId={session.id}
+            variant="compact"
+            submitLabel="Ara"
+            onSearchComplete={(nextId) => {
+              const stored = readStoredSession(nextId);
+              setSession(stored);
+              router.replace(`/voyages/${nextId}`);
+            }}
+          />
+        </div>
+      </section>
+
+      <section className="-mt-3">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-6">
+            {error && <ErrorPanel message={error} />}
+
+            <TripListSection
+              title="Gidiş Seferleri"
+              subtitle={`${summary.from} → ${summary.to} · ${formatDateLabel(
+                session.search.gidisTarihi
+              )}`}
+              dateLabel={formatDateLabel(session.search.gidisTarihi)}
+              items={session.sailings.g_seferler}
+              from={summary.from}
+              to={summary.to}
+              selectedId={session.selected.gidisSeferId}
+              onSelect={(tripId) =>
+                persist({
+                  ...session,
+                  selected: { ...session.selected, gidisSeferId: tripId },
+                })
+              }
+            />
+
+            {session.search.tripType === "gidis-donus" && (
+              <TripListSection
+                title="Dönüş Seferleri"
+                subtitle={`${summary.to} → ${summary.from} · ${formatDateLabel(
+                  session.search.donusTarihi
+                )}`}
+                dateLabel={formatDateLabel(session.search.donusTarihi)}
+                items={session.sailings.d_seferler}
+                from={summary.to}
+                to={summary.from}
+                selectedId={session.selected.donusSeferId}
+                onSelect={(tripId) =>
+                  persist({
+                    ...session,
+                    selected: { ...session.selected, donusSeferId: tripId },
+                  })
+                }
+              />
+            )}
+          </div>
+
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-[0_18px_46px_rgba(18,38,60,0.08)]">
+              <p className="text-[13px] font-semibold text-[#10253d]">Sefer Özeti</p>
+
+              <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+                <SummaryBox
+                  label="Rota"
+                  value={`${summary.from} → ${summary.to}`}
+                />
+                <SummaryBox
+                  label="Yolcular"
+                  value={buildPassengerSummary(summary.guzergah, session.search.yolcuTurleri)}
+                />
+                <SummaryBox
+                  label="Gidiş"
+                  value={
+                    summary.gidis
+                      ? `${summary.gidis.sefer_tarih} · ${summary.gidis.gemi}`
+                      : "Lütfen gidiş seferini seçiniz."
+                  }
+                />
+                {session.search.tripType === "gidis-donus" && (
+                  <SummaryBox
+                    label="Dönüş"
+                    value={
+                      summary.donus
+                        ? `${summary.donus.sefer_tarih} · ${summary.donus.gemi}`
+                        : "Lütfen dönüş seferini seçiniz."
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="mt-5 rounded-[14px] bg-[#f5f8fb] px-4 py-4">
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Toplam</span>
+                  <span className="text-lg font-semibold text-slate-900">
+                    {totalPrice.toLocaleString("tr-TR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    TL
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={!getTripSelectionReady(session) || busy}
+                className="mt-5 flex h-[48px] w-full items-center justify-center rounded-[12px] bg-[#1f4aa8] text-sm font-semibold text-white transition hover:bg-[#183f90] disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {busy ? "Hazırlanıyor..." : "Devam Et"}
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) {
+  const [session, setSession] = useState<BookingSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ulkeler, setUlkeler] = useState<Ulke[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutPayload, setCheckoutPayload] = useState<CheckoutPayload | null>(null);
+  const autoFormRef = useRef<HTMLFormElement>(null);
+
+  const [contact, setContact] = useState({
+    email: "",
+    phone: "",
+  });
+  const [payment, setPayment] = useState({
+    holder: "",
+    cardNumber: "",
+    expMonth: "",
+    expYear: "",
+    cvv: "",
+    agreed: false,
+  });
+  const [forms, setForms] = useState<Record<number, Record<string, unknown>>>({});
+
+  useEffect(() => {
+    const stored = readStoredSession(sessionId);
+    setSession(stored);
+    setLoading(false);
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!session?.passengers?.yolcular?.length) return;
+
+    const next: Record<number, Record<string, unknown>> = {};
+    session.passengers.yolcular.forEach((yolcu, index) => {
+      next[index] = {
+        id: yolcu.yolcu_id,
+        insan_ad: yolcu.insan_ad ?? "",
+        insan_soyad: yolcu.insan_soyad ?? "",
+        insan_cinsiyet: yolcu.insan_cinsiyet ?? "",
+        insan_pasaport_no: yolcu.insan_pasaport_no ?? "",
+        insan_dogum_tarihi: yolcu.insan_dogum_tarihi ?? "",
+        insan_ulke_id: yolcu.insan_ulke_id ?? 0,
+        vergi_tur_id: yolcu.vergi_tur_id ?? "",
+      };
+    });
+    setForms(next);
+    setContact((current) => ({
+      ...current,
+      phone: session.passengers?.yolcular?.[0]?.yolcu_tel_no ?? current.phone,
+    }));
+  }, [session]);
+
+  useEffect(() => {
+    fetch("/api/akgunler/countries")
+      .then(async (response) => {
+        const json = await response.json();
+        if (!response.ok) return;
+        setUlkeler(json.ulkeler ?? []);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (checkoutPayload && autoFormRef.current) {
+      autoFormRef.current.submit();
+    }
+  }, [checkoutPayload]);
+
+  function updatePassenger(index: number, field: string, value: string | number) {
+    setForms((current) => ({
+      ...current,
+      [index]: {
+        ...current[index],
+        [field]: value,
+      },
+    }));
+  }
+
+  async function handleCheckoutSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!session?.passengers?.yolcular?.length) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const yolcular = session.passengers.yolcular.map((yolcu, index) => ({
+        id: yolcu.yolcu_id,
+        insan_ad: String(forms[index]?.insan_ad ?? "").trim().toUpperCase(),
+        insan_soyad: String(forms[index]?.insan_soyad ?? "").trim().toUpperCase(),
+        insan_cinsiyet: String(forms[index]?.insan_cinsiyet ?? "") as "E" | "K",
+        insan_pasaport_no: String(forms[index]?.insan_pasaport_no ?? "").trim(),
+        insan_dogum_tarihi: String(forms[index]?.insan_dogum_tarihi ?? ""),
+        insan_ulke_id: Number(forms[index]?.insan_ulke_id ?? 0),
+        vergi_tur_id: forms[index]?.vergi_tur_id
+          ? Number(forms[index]?.vergi_tur_id)
+          : undefined,
+        yolcu_tel_no: index === 0 ? contact.phone.trim() : undefined,
+      }));
+
+      const passengerResponse = await fetch("/api/akgunler/passengers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          s_id: session.sailings.s_id,
+          yolcular,
+        }),
+      });
+
+      const passengerJson = await passengerResponse.json();
+      if (!passengerResponse.ok) {
+        throw new Error(passengerJson.error ?? "Yolcu bilgileri kaydedilemedi.");
+      }
+
+      const nextSession: BookingSession = {
+        ...session,
+        passengers: {
+          yolcular: session.passengers?.yolcular ?? [],
+          toplamFiyat: passengerJson.toplam_fiyat ?? getDisplayPrice(session),
+        },
+      };
+      saveStoredSession(nextSession);
+      setSession(nextSession);
+
+      const checkoutResponse = await fetch("/api/akgunler/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sepetId: session.sailings.s_id,
+          ccHolder: payment.holder.trim().toUpperCase(),
+          ccNr: payment.cardNumber.replace(/\s/g, ""),
+          ccCvc2: payment.cvv,
+          ccExpMonth: payment.expMonth,
+          ccExpYear: payment.expYear,
+          email: contact.email.trim(),
+        }),
+      });
+
+      const checkoutJson = await checkoutResponse.json();
+      if (!checkoutResponse.ok) {
+        throw new Error(checkoutJson.error ?? "Ödeme yönlendirmesi oluşturulamadı.");
+      }
+
+      setCheckoutPayload(checkoutJson as CheckoutPayload);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Ödeme işlemi başlatılamadı."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
+  if (!session || !session.passengers?.yolcular?.length) {
+    return <MissingSessionCard />;
+  }
+
+  const from = getPortName(session.guzergahlar, session.search, "from");
+  const to = getPortName(session.guzergahlar, session.search, "to");
+  const gidis = session.sailings.g_seferler.find(
+    (item) => item.id === session.selected.gidisSeferId
+  );
+  const donus = session.sailings.d_seferler.find(
+    (item) => item.id === session.selected.donusSeferId
+  );
+  const totalPrice = getDisplayPrice(session);
+
+  return (
+    <div className="min-h-screen bg-[#f3f5f8] pb-10">
+      {checkoutPayload && (
+        <form
+          ref={autoFormRef}
+          method="POST"
+          action={checkoutPayload.formAction}
+          className="hidden"
+        >
+          {Object.entries(checkoutPayload.formParams).map(([name, value]) => (
+            <input key={name} type="hidden" name={name} value={value} />
+          ))}
+        </form>
+      )}
+
+      <section className="bg-[#10253d] py-5">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex items-center justify-between gap-4 text-white">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#8ec4db]">
+                Yolcu ve Ödeme
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Rezervasyon bilgilerinizi tamamlayın</h1>
+            </div>
+            <BrandLogo className="w-[104px]" imageClassName="h-auto w-full object-contain brightness-0 invert" />
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pt-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <form onSubmit={handleCheckoutSubmit} className="space-y-5">
+          {error && <ErrorPanel message={error} />}
+
+          <SectionCard title="Seyahat ile ilgili Uyarılar" compact>
+            <ul className="space-y-2 text-sm leading-6 text-slate-600">
+              <li>Check-in sırasında kimlik veya pasaport belgenizi yanınızda bulundurunuz.</li>
+              <li>Yolcu bilgileri seyahat belgesindeki haliyle eksiksiz girilmelidir.</li>
+              <li>Ödeme sonrasında biletleme işlemi Akgünler 3D Secure ekranında tamamlanır.</li>
+            </ul>
+          </SectionCard>
+
+          <SectionCard title="İletişim Bilgisi" compact>
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField label="E-posta">
+                <input
+                  type="email"
+                  required
+                  value={contact.email}
+                  onChange={(event) =>
+                    setContact((current) => ({ ...current, email: event.target.value }))
+                  }
+                  className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                  placeholder="ornek@mail.com"
+                />
+              </FormField>
+              <FormField label="Telefon">
+                <input
+                  type="tel"
+                  required
+                  value={contact.phone}
+                  onChange={(event) =>
+                    setContact((current) => ({ ...current, phone: event.target.value }))
+                  }
+                  className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                  placeholder="+90 5xx xxx xx xx"
+                />
+              </FormField>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Yolcular">
+            <div className="space-y-4">
+              {session.passengers.yolcular.map((yolcu, index) => (
+                <div key={yolcu.yolcu_id} className="rounded-[12px] border border-slate-200 bg-white p-4">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {index + 1}. {yolcu.yolcu_tur_ad}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {yolcu.toplam_fiyat_genel.toLocaleString("tr-TR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        TL
+                      </p>
+                    </div>
+                    <div className="flex rounded-full border border-slate-200 bg-[#f8fafc] p-1">
+                      <button
+                        type="button"
+                        onClick={() => updatePassenger(index, "insan_cinsiyet", "E")}
+                        className={`rounded-full px-4 py-2 text-xs font-semibold ${
+                          forms[index]?.insan_cinsiyet === "E"
+                            ? "bg-[#10253d] text-white"
+                            : "text-slate-600"
+                        }`}
+                      >
+                        Bay
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updatePassenger(index, "insan_cinsiyet", "K")}
+                        className={`rounded-full px-4 py-2 text-xs font-semibold ${
+                          forms[index]?.insan_cinsiyet === "K"
+                            ? "bg-[#10253d] text-white"
+                            : "text-slate-600"
+                        }`}
+                      >
+                        Bayan
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_100px_1fr_1fr]">
+                    <FormField label="Ad">
+                      <input
+                        type="text"
+                        required
+                        value={String(forms[index]?.insan_ad ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "insan_ad", event.target.value.toUpperCase())
+                        }
+                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                      />
+                    </FormField>
+                    <FormField label="Soyad">
+                      <input
+                        type="text"
+                        required
+                        value={String(forms[index]?.insan_soyad ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "insan_soyad", event.target.value.toUpperCase())
+                        }
+                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                      />
+                    </FormField>
+                    <FormField label="Cinsiyet">
+                      <input
+                        type="text"
+                        readOnly
+                        value={forms[index]?.insan_cinsiyet === "K" ? "Bayan" : forms[index]?.insan_cinsiyet === "E" ? "Bay" : ""}
+                        className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none"
+                      />
+                    </FormField>
+                    <FormField label="Doğum Tarihi">
+                      <input
+                        type="date"
+                        required
+                        value={String(forms[index]?.insan_dogum_tarihi ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "insan_dogum_tarihi", event.target.value)
+                        }
+                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                      />
+                    </FormField>
+                    <FormField label="Uyruk">
+                      <select
+                        required
+                        value={String(forms[index]?.insan_ulke_id ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "insan_ulke_id", Number(event.target.value))
+                        }
+                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                      >
+                        <option value="">Seçiniz</option>
+                        {ulkeler.map((ulke) => (
+                          <option key={ulke.id} value={ulke.id}>
+                            {ulke.title}
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+                    <FormField label="TC / Pasaport">
+                      <input
+                        type="text"
+                        required
+                        value={String(forms[index]?.insan_pasaport_no ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "insan_pasaport_no", event.target.value)
+                        }
+                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                      />
+                    </FormField>
+                    <FormField label="Yolcu Vergi Türü">
+                      <select
+                        value={String(forms[index]?.vergi_tur_id ?? "")}
+                        onChange={(event) =>
+                          updatePassenger(index, "vergi_tur_id", event.target.value)
+                        }
+                        className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean lg:col-span-2"
+                      >
+                        <option value="">Seçiniz</option>
+                        {yolcu.vergi_turleri.map((vergi) => (
+                          <option key={vergi.id} value={vergi.id}>
+                            {vergi.aciklama}
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Ekstra Hizmetler" compact>
+            <div className="space-y-3">
+              {["KKTC 2GB eSIM İnternet Paketi", "KKTC 3GB eSIM İnternet Paketi", "KKTC 5GB eSIM İnternet Paketi"].map((item, index) => (
+                <label key={item} className="flex items-start gap-3 rounded-[10px] border border-slate-200 px-3 py-3 text-sm text-slate-600">
+                  <input type="checkbox" className="mt-1 h-4 w-4 rounded border-slate-300" />
+                  <span>{item} · {(261.11 + index * 52).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</span>
+                </label>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Hediye İndirim Kodları" compact>
+            <div className="grid gap-3 md:grid-cols-[1fr_120px]">
+              <input
+                type="text"
+                className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                placeholder="İndirim kodunuz"
+              />
+              <button
+                type="button"
+                className="h-[44px] rounded-[8px] border border-slate-200 bg-[#f8fafc] text-sm font-semibold text-slate-700"
+              >
+                Uygula
+              </button>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Kart Bilgileri">
+            <div className="mb-4 flex flex-wrap gap-2">
+              {["VISA", "MASTERCARD", "TROY"].map((brand) => (
+                <span
+                  key={brand}
+                  className="rounded-full border border-slate-200 bg-[#fafbfd] px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-slate-500"
+                >
+                  {brand}
+                </span>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField label="Kart Üzerindeki Ad Soyad">
+                <input
+                  type="text"
+                  required
+                  value={payment.holder}
+                  onChange={(event) =>
+                    setPayment((current) => ({
+                      ...current,
+                      holder: event.target.value.toUpperCase(),
+                    }))
+                  }
+                  className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                />
+              </FormField>
+
+              <FormField label="Kart Numarası">
+                <input
+                  type="text"
+                  required
+                  value={payment.cardNumber}
+                  onChange={(event) =>
+                    setPayment((current) => ({
+                      ...current,
+                      cardNumber: event.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 16)
+                        .replace(/(.{4})/g, "$1 ")
+                        .trim(),
+                    }))
+                  }
+                  className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                  placeholder="0000 0000 0000 0000"
+                />
+              </FormField>
+
+              <FormField label="Ay">
+                <select
+                  required
+                  value={payment.expMonth}
+                  onChange={(event) =>
+                    setPayment((current) => ({ ...current, expMonth: event.target.value }))
+                  }
+                  className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                >
+                  <option value="">Ay</option>
+                  {Array.from({ length: 12 }, (_, index) => {
+                    const month = String(index + 1).padStart(2, "0");
+                    return (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    );
+                  })}
+                </select>
+              </FormField>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Yıl">
+                  <select
+                    required
+                    value={payment.expYear}
+                    onChange={(event) =>
+                      setPayment((current) => ({ ...current, expYear: event.target.value }))
+                    }
+                    className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                  >
+                    <option value="">Yıl</option>
+                    {Array.from({ length: 10 }, (_, index) => {
+                      const year = String(new Date().getFullYear() + index);
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </FormField>
+                <FormField label="CVV">
+                  <input
+                    type="text"
+                    required
+                    value={payment.cvv}
+                    onChange={(event) =>
+                      setPayment((current) => ({
+                        ...current,
+                        cvv: event.target.value.replace(/\D/g, "").slice(0, 4),
+                      }))
+                    }
+                    className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean"
+                    placeholder="123"
+                  />
+                </FormField>
+              </div>
+            </div>
+
+            <label className="mt-4 flex items-start gap-3 rounded-[10px] bg-[#fafbfd] p-3 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                required
+                checked={payment.agreed}
+                onChange={(event) =>
+                  setPayment((current) => ({ ...current, agreed: event.target.checked }))
+                }
+                className="mt-0.5 h-4 w-4 rounded border-slate-300"
+              />
+              <span>Kullanım şartlarını okudum ve kabul ediyorum.</span>
+            </label>
+          </SectionCard>
+
+          <button
+            type="submit"
+            disabled={submitting || !payment.agreed}
+            className="flex h-[50px] w-full items-center justify-center rounded-[8px] bg-[#1f4aa8] text-sm font-semibold text-white transition hover:bg-[#183f90] disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
+            {submitting ? "İşlem hazırlanıyor..." : "Güvenli Ödeme Yap"}
+          </button>
+        </form>
+
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="space-y-5">
+            <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_18px_46px_rgba(18,38,60,0.08)]">
+              <p className="text-[13px] font-semibold text-[#10253d]">Sefer</p>
+              <div className="mt-4 space-y-3">
+                <SummaryBox label="Gidiş" value={gidis ? `${gidis.sefer_tarih} · ${from} → ${to}` : "Seçilmedi"} />
+                {session.search.tripType === "gidis-donus" && (
+                  <SummaryBox
+                    label="Dönüş"
+                    value={donus ? `${donus.sefer_tarih} · ${to} → ${from}` : "Seçilmedi"}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_18px_46px_rgba(18,38,60,0.08)]">
+              <p className="text-[13px] font-semibold text-[#10253d]">Fiyat</p>
+              <div className="mt-4 space-y-3">
+                {session.passengers.yolcular.map((yolcu, index) => (
+                  <div key={yolcu.yolcu_id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">
+                      {index + 1}. {yolcu.yolcu_tur_ad}
+                    </span>
+                    <span className="font-semibold text-slate-900">
+                      {yolcu.toplam_fiyat_genel.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      TL
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-[18px] bg-[#f5f8fb] px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Toplam</span>
+                  <span className="text-lg font-semibold text-slate-900">
+                    {totalPrice.toLocaleString("tr-TR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    TL
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
+}
+
+function BookingSearchCard({
+  guzergahlar,
+  initialSearch,
+  sessionId,
+  variant,
+  submitLabel,
+  onSearchComplete,
+}: {
+  guzergahlar: GuzergahData[];
+  initialSearch?: BookingSearchState;
+  sessionId?: string;
+  variant: "hero" | "compact";
+  submitLabel: string;
+  onSearchComplete: (sessionId: string) => void;
+}) {
+  const [search, setSearch] = useState<BookingSearchState>(
+    initialSearch ?? buildDefaultSearch(guzergahlar)
+  );
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!initialSearch) {
+      setSearch(buildDefaultSearch(guzergahlar));
+    }
+  }, [guzergahlar, initialSearch]);
+
+  useEffect(() => {
+    function handleOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setPopoverOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const guzergah = getSelectedGuzergah(guzergahlar, search);
+  const sehirler = guzergah?.sehirler ?? [];
+  const isValid =
+    search.guzergahId &&
+    search.cikisSehirId &&
+    search.varisSehirId &&
+    search.gidisTarihi &&
+    (search.tripType === "tek-gidis" || search.donusTarihi);
+
+  function updateSearch(partial: Partial<BookingSearchState>) {
+    setSearch((current) => ({ ...current, ...partial }));
+  }
+
+  function swapPorts() {
+    setSearch((current) => ({
+      ...current,
+      cikisSehirId: current.varisSehirId,
+      varisSehirId: current.cikisSehirId,
+    }));
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!isValid || !guzergah) return;
+
+    setError(null);
+    setOverlayOpen(true);
+
+    try {
+      const query = new URLSearchParams({
+        sc_id: String(search.cikisSehirId),
+        sv_id: String(search.varisSehirId),
+        tarih: formatDateForApi(search.gidisTarihi),
+        y_mod: search.tripType,
+        y_t: JSON.stringify(search.yolcuTurleri.filter((item) => item.sayi > 0)),
+      });
+
+      if (search.tripType === "gidis-donus" && search.donusTarihi) {
+        query.set("d_tarih", formatDateForApi(search.donusTarihi));
+      }
+
+      const response = await fetch(`/api/akgunler/sailings?${query}`);
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error ?? "Seferler getirilemedi.");
+      }
+
+      const id = sessionId ?? makeSessionId();
+      const session: BookingSession = {
+        id,
+        guzergahlar,
+        search,
+        sailings: {
+          s_id: json.s_id ?? 0,
+          g_seferler: json.g_seferler ?? [],
+          d_seferler: json.d_seferler ?? [],
+        },
+        selected: {
+          gidisSeferId: null,
+          donusSeferId: null,
+        },
+      };
+
+      saveStoredSession(session);
+      onSearchComplete(id);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Seferler getirilemedi."
+      );
+    } finally {
+      setOverlayOpen(false);
+    }
+  }
+
+  return (
+    <>
+      <ProcessingOverlay
+        open={overlayOpen}
+        title="İşleminiz Yapılıyor. Lütfen Bekleyiniz."
+        description="Seçtiğiniz kriterlere uygun seferler ve fiyat bilgileri hazırlanıyor."
+      />
+
+      <form onSubmit={handleSubmit} className={`space-y-4 ${variant === "compact" ? "rounded-[18px] bg-white p-4 shadow-[0_12px_30px_rgba(0,0,0,0.12)]" : ""}`}>
+        {variant === "hero" ? (
+          <div className="flex flex-wrap gap-4 px-2">
+            <TripTypeButton
+              active={search.tripType === "tek-gidis"}
+              label="Tek Yön"
+              onClick={() =>
+                updateSearch({ tripType: "tek-gidis", donusTarihi: "" })
+              }
+            />
+            <TripTypeButton
+              active={search.tripType === "gidis-donus"}
+              label="Gidiş - Dönüş"
+              onClick={() => updateSearch({ tripType: "gidis-donus" })}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2 text-white">
+            <TripTypeButton
+              active={search.tripType === "tek-gidis"}
+              label="Tek Yön"
+              dark
+              onClick={() =>
+                updateSearch({ tripType: "tek-gidis", donusTarihi: "" })
+              }
+            />
+            <TripTypeButton
+              active={search.tripType === "gidis-donus"}
+              label="Gidiş - Dönüş"
+              dark
+              onClick={() => updateSearch({ tripType: "gidis-donus" })}
+            />
+          </div>
+        )}
+
+        {error && <ErrorPanel message={error} />}
+
+        <div
+          className={`grid gap-3 ${
+            variant === "hero"
+              ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.08fr)_112px]"
+              : "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,0.85fr)_minmax(0,0.85fr)_minmax(0,1fr)_120px]"
+          }`}
+        >
+          <RouteField
+            label="Nereden"
+            value={String(search.cikisSehirId)}
+            onChange={(value) => updateSearch({ cikisSehirId: Number(value) })}
+            options={sehirler.map((item) => ({ value: String(item.id), label: item.ad }))}
+            variant={variant}
+          />
+
+          <button
+            type="button"
+            onClick={swapPorts}
+            className={`hidden self-end xl:flex xl:items-center xl:justify-center ${
+              variant === "hero"
+                ? "h-[56px] rounded-xl bg-[#eff4f7] text-[#006971]"
+                : "h-[58px] rounded-[18px] border border-slate-200 bg-white text-slate-500 transition hover:text-brand-ocean"
+            }`}
+            aria-label="Limanları değiştir"
+          >
+            <SwapIcon className="h-5 w-5" />
+          </button>
+
+          <RouteField
+            label="Nereye"
+            value={String(search.varisSehirId)}
+            onChange={(value) => updateSearch({ varisSehirId: Number(value) })}
+            options={sehirler
+              .filter((item) => item.id !== search.cikisSehirId)
+              .map((item) => ({ value: String(item.id), label: item.ad }))}
+            variant={variant}
+          />
+
+          <DateField
+            label="Gidiş Tarihi"
+            value={search.gidisTarihi}
+            onChange={(value) =>
+              updateSearch({
+                gidisTarihi: value,
+                donusTarihi:
+                  search.donusTarihi && value > search.donusTarihi
+                    ? ""
+                    : search.donusTarihi,
+              })
+            }
+            variant={variant}
+          />
+
+          <DateField
+            label="Dönüş Tarihi"
+            value={search.donusTarihi}
+            disabled={search.tripType === "tek-gidis"}
+            onChange={(value) => updateSearch({ donusTarihi: value })}
+            variant={variant}
+          />
+
+          <div ref={popoverRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setPopoverOpen((current) => !current)}
+            className={`w-full text-left shadow-sm ${
+              variant === "hero"
+                ? "rounded-xl border-none bg-[#eff4f7] px-4 py-[10px]"
+                : "rounded-[18px] border border-slate-200 bg-white px-4 py-[9px]"
+            }`}
+            >
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Yolcu ve Araç
+              </span>
+              <span className="mt-1 block truncate text-sm font-medium text-slate-900">
+                {buildPassengerSummary(guzergah, search.yolcuTurleri)}
+              </span>
+            </button>
+
+            {popoverOpen && (
+              <PassengerVehiclePanel
+                guzergah={guzergah}
+                value={search.yolcuTurleri}
+                onChange={(items) => updateSearch({ yolcuTurleri: items })}
+                onClose={() => setPopoverOpen(false)}
+              />
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!isValid}
+            className={`text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:bg-slate-300 ${
+              variant === "hero"
+                ? "h-[56px] rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] shadow-[0_18px_36px_rgba(0,105,113,0.24)] hover:scale-[1.02]"
+                : "h-[58px] rounded-[18px] bg-[#f08a00] hover:bg-[#dd7d00]"
+            }`}
+          >
+            {submitLabel}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}
+
+function TripListSection({
+  title,
+  subtitle,
+  dateLabel,
+  items,
+  from,
+  to,
+  selectedId,
+  onSelect,
+}: {
+  title: string;
+  subtitle: string;
+  dateLabel: string;
+  items: SeferData[];
+  from: string;
+  to: string;
+  selectedId: number | null;
+  onSelect: (tripId: number) => void;
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-[124px_minmax(0,1fr)]">
+        <div className="flex items-center justify-between rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[#10253d]">
+          <span className="text-lg leading-none">←</span>
+          <span className="text-center text-sm font-medium">{dateLabel}</span>
+        </div>
+        <div className="flex items-center justify-center rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600">
+          {subtitle}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {items.length === 0 ? (
+          <div className="rounded-[18px] border border-dashed border-slate-200 bg-[#fafbfd] px-4 py-6 text-sm text-slate-500">
+            Bu tarih için uygun sefer bulunamadı.
+          </div>
+        ) : (
+          items.map((item) => (
+            <TripCard
+              key={item.id}
+              item={item}
+              from={from}
+              to={to}
+              selected={selectedId === item.id}
+              onSelect={() => onSelect(item.id)}
+            />
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function TripCard({
+  item,
+  from,
+  to,
+  selected,
+  onSelect,
+}: {
+  item: SeferData;
+  from: string;
+  to: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <article
+      className={`rounded-[16px] border bg-white p-5 transition ${
+        selected
+          ? "border-[#1f4aa8] bg-white shadow-[0_14px_38px_rgba(31,74,168,0.12)]"
+          : "border-slate-200 bg-white"
+      }`}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-[#1f4aa8]">
+              <FerryIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Akgünler Denizcilik</p>
+              <p className="text-xs text-slate-500">{item.trip_number ? `Sefer No ${item.trip_number}` : item.gemi}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-[110px_1fr_110px_120px] md:items-center">
+            <div>
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">
+                {item.sefer_tarih}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{from}</p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm font-medium text-slate-700">{item.gemi}</p>
+              <div className="mt-2 border-t border-slate-200 pt-2 text-xs text-slate-500">
+                Yaklaşık 2 sa 30 dk
+              </div>
+            </div>
+
+            <div className="text-left md:text-right">
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">
+                {inferArrivalTime(item.sefer_tarih)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{to}</p>
+            </div>
+
+            <div className="text-left md:text-right">
+              <p className="text-[34px] font-semibold tracking-[-0.03em] text-slate-900">
+                {item.formatted_price.replace(" TL", "")}
+              </p>
+              <p className="text-xs text-slate-500">TL</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-w-[118px] flex-col items-start gap-3 lg:items-end">
+          <button
+            type="button"
+            onClick={onSelect}
+            className={`h-[48px] min-w-[118px] rounded-[10px] px-5 text-sm font-semibold transition ${
+              selected
+                ? "bg-[#1f4aa8] text-white"
+                : "bg-[#1f4aa8] text-white hover:bg-[#183f90]"
+            }`}
+          >
+            {selected ? "Seçimi Değiştir" : "Seç"}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function PassengerVehiclePanel({
+  guzergah,
+  value,
+  onChange,
+  onClose,
+}: {
+  guzergah: GuzergahData | null;
+  value: YolcuSayi[];
+  onChange: (items: YolcuSayi[]) => void;
+  onClose: () => void;
+}) {
+  if (!guzergah) return null;
+
+  return (
+    <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[380px] max-w-[92vw] rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.16)] before:absolute before:bottom-full before:right-10 before:border-[10px] before:border-transparent before:border-b-white before:content-['']">
+      <div className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Yolcular
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {[
+              ...guzergah.yolcu_turleri.filter((item) =>
+                PASSENGER_LABELS.includes(item.title)
+              ),
+              ...guzergah.kabin_turleri.filter((item) =>
+                CABIN_LABELS.includes(item.title)
+              ),
+            ].map((item) => (
+              <CountRow
+                key={item.id}
+                label={item.title}
+                count={getCount(value, item.id)}
+                onDecrease={() =>
+                  onChange(updateCount(value, item.id, getCount(value, item.id) - 1))
+                }
+                onIncrease={() =>
+                  onChange(updateCount(value, item.id, getCount(value, item.id) + 1))
+                }
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Kabin ve Araç
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {guzergah.arac_turleri.map((item) => (
+              <CountRow
+                key={item.id}
+                label={item.title}
+                count={getCount(value, item.id)}
+                onDecrease={() =>
+                  onChange(updateCount(value, item.id, getCount(value, item.id) - 1))
+                }
+                onIncrease={() =>
+                  onChange(updateCount(value, item.id, getCount(value, item.id) + 1))
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-4 h-[44px] w-full rounded-[14px] bg-[#10253d] text-sm font-semibold text-white"
+      >
+        Tamam
+      </button>
+    </div>
+  );
+}
+
+function CountRow({
+  label,
+  count,
+  onIncrease,
+  onDecrease,
+}: {
+  label: string;
+  count: number;
+  onIncrease: () => void;
+  onDecrease: () => void;
+}) {
+  return (
+    <div className="rounded-[12px] border border-slate-200 bg-white px-3 py-2">
+      <div className="mb-2 text-[13px] font-medium text-slate-700">{label}</div>
+      <div className="flex items-center justify-between rounded-[8px] border border-slate-200 px-3 py-2">
+        <button
+          type="button"
+          onClick={onDecrease}
+          className="text-base font-semibold text-slate-500"
+        >
+          -
+        </button>
+        <span className="text-sm font-semibold text-slate-900">{count}</span>
+        <button
+          type="button"
+          onClick={onIncrease}
+          className="text-base font-semibold text-slate-500"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RouteField({
+  label,
+  value,
+  onChange,
+  options,
+  variant,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+  variant?: "hero" | "compact";
+}) {
+  return (
+    <label className="block">
+      <span className={`mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] ${variant === "hero" ? "ml-1 text-[#595f61]" : "text-slate-400"}`}>
+        {label}
+      </span>
+      <div className="relative">
+        <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${variant === "hero" ? "text-[#006971]" : "text-[#10253d]"}`}>
+          <FerryIcon className="h-5 w-5" />
+        </span>
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${variant === "hero" ? HERO_FIELD_CLASS : FIELD_CLASS} appearance-none`}
+        >
+          <option value="">Seçiniz</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+}
+
+function DateField({
+  label,
+  value,
+  onChange,
+  disabled,
+  variant,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  variant?: "hero" | "compact";
+}) {
+  const today = new Date().toISOString().split("T")[0];
+
+  return (
+    <label className="block">
+      <span className={`mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] ${variant === "hero" ? "ml-1 text-[#595f61]" : "text-slate-400"}`}>
+        {label}
+      </span>
+      <div className="relative">
+        <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${variant === "hero" ? "text-[#006971]" : "text-[#10253d]"}`}>
+          <CalendarIcon className="h-5 w-5" />
+        </span>
+        <input
+          type="date"
+          value={value}
+          min={today}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${variant === "hero" ? HERO_FIELD_CLASS : FIELD_CLASS} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
+        />
+      </div>
+    </label>
+  );
+}
+
+function TripTypeButton({
+  active,
+  label,
+  dark,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  dark?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+        dark
+          ? active
+            ? "bg-white text-[#1f4aa8]"
+            : "border border-white/20 bg-transparent text-white"
+          : active
+            ? "text-[#171d1e]"
+            : "text-slate-500"
+      }`}
+    >
+      <span className="inline-flex items-center gap-2">
+        <span className={`h-4 w-4 rounded-full border ${active ? "border-[#006971]" : "border-slate-300"}`}>
+          <span className={`m-[3px] block h-2 w-2 rounded-full ${active ? "bg-[#006971]" : "bg-transparent"}`} />
+        </span>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function SummaryBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[10px] bg-[#f5f8fb] px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function SectionCard({
+  title,
+  children,
+  compact,
+}: {
+  title: string;
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <section className={`overflow-hidden rounded-[12px] border border-slate-200 bg-white shadow-[0_18px_46px_rgba(18,38,60,0.08)] ${compact ? "" : ""}`}>
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <p className="text-[13px] font-semibold text-[#10253d]">{title}</p>
+        <span className="text-slate-400">{compact ? "⌄" : ""}</span>
+      </div>
+      <div className="p-4">
+      {children}
+      </div>
+    </section>
+  );
+}
+
+function FormField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function SearchSkeleton() {
+  return (
+    <div className="grid gap-3 xl:grid-cols-[1fr_52px_1fr_1fr_1fr_1fr_150px]">
+      {Array.from({ length: 7 }).map((_, index) => (
+        <div
+          key={index}
+          className={`animate-pulse rounded-[18px] bg-slate-100 ${
+            index === 1 ? "hidden xl:block" : "h-[58px]"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function PageSkeleton() {
+  return (
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="h-24 animate-pulse rounded-[24px] bg-slate-100" />
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-4">
+          <div className="h-64 animate-pulse rounded-[24px] bg-slate-100" />
+          <div className="h-64 animate-pulse rounded-[24px] bg-slate-100" />
+        </div>
+        <div className="h-80 animate-pulse rounded-[24px] bg-slate-100" />
+      </div>
+    </div>
+  );
+}
+
+function MissingSessionCard() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <div className="rounded-[24px] border border-slate-200 bg-white p-8 text-center shadow-[0_18px_46px_rgba(18,38,60,0.08)]">
+        <p className="text-lg font-semibold text-slate-900">
+          Rezervasyon oturumu bulunamadı
+        </p>
+        <p className="mt-2 text-sm text-slate-500">
+          Lütfen aramayı yeniden başlatın.
+        </p>
+        <a
+          href="/"
+          className="mt-5 inline-flex h-[48px] items-center justify-center rounded-[14px] bg-[#10253d] px-5 text-sm font-semibold text-white"
+        >
+          Ana sayfaya dön
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function ErrorPanel({ message }: { message: string }) {
+  return (
+    <div className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {message}
+    </div>
+  );
+}
+
+function FerryIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.7}
+        d="M3 10h18M4 10l1.5 6h13L20 10M7 10V7.5h10V10M8 19c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1"
+      />
+    </svg>
+  );
+}
+
+function FerryPortIcon({
+  className,
+  direction,
+}: {
+  className?: string;
+  direction: "departure" | "arrival";
+}) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M4 16c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M6 13h12l-1.2-5H7.2L6 13Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d={direction === "departure" ? "M12 5h6m0 0-2-2m2 2-2 2" : "M12 5H6m0 0 2-2M6 5l2 2"}
+      />
+    </svg>
+  );
+}
+
+function SwapIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M7 7h11m0 0-3-3m3 3-3 3M17 17H6m0 0 3 3m-3-3 3-3"
+      />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+      />
+    </svg>
+  );
+}

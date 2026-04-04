@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SeferData {
   id: number;
@@ -41,6 +41,33 @@ function formatCardNumber(value: string) {
     .trim();
 }
 
+function formatPrice(amount: number) {
+  return amount.toLocaleString("tr-TR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="mt-2 text-xs text-slate-500">{hint}</p>}
+    </div>
+  );
+}
+
 export function PaymentForm({
   sepetId,
   toplamFiyat,
@@ -73,7 +100,7 @@ export function PaymentForm({
     setLoading(true);
 
     try {
-      const res = await fetch("/api/akgunler/checkout", {
+      const response = await fetch("/api/akgunler/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,19 +113,27 @@ export function PaymentForm({
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Ödeme başlatılamadı");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? "Ödeme başlatılamadı");
+      }
+
       setThreeDParams(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ödeme işlemi başarısız");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Ödeme işlemi başarısız"
+      );
     } finally {
       setLoading(false);
     }
   }
 
+  const cardPreviewNumber = cardNumber || "0000 0000 0000 0000";
+  const cardPreviewName = cardHolder || "AD SOYAD";
+  const cardPreviewExpiry = expMonth && expYear ? `${expMonth}/${expYear.slice(-2)}` : "AA/YY";
+
   return (
     <div>
-      {/* Hidden 3D Secure auto-submit form */}
       {threeDParams && (
         <form
           ref={autoFormRef}
@@ -112,119 +147,133 @@ export function PaymentForm({
         </form>
       )}
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Main payment form */}
-        <div className="space-y-5 lg:col-span-2">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Ödeme Bilgileri</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Kart bilgileriniz şifreli iletilir ve saklanmaz.
-            </p>
+      <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="antso-box-stack">
+          <div className="antso-elevated-card rounded-[32px] p-6 sm:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Ödeme</p>
+                <h2 className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">
+                  Güvenli ödeme ile rezervasyonu tamamlayın
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  Kart bilgileriniz şifreli iletilir ve ödeme Akgünler&apos;in 3D Secure ekranında
+                  tamamlanır.
+                </p>
+              </div>
+
+              <div className="rounded-[24px] bg-brand-mist px-5 py-4 text-brand-ink">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/70">
+                  Toplam tutar
+                </p>
+                <p className="mt-2 text-3xl font-semibold">{formatPrice(toplamFiyat)} TL</p>
+              </div>
+            </div>
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
               {error}
             </div>
           )}
 
           {loading && (
-            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-              3D Secure sayfasına yönlendiriliyorsunuz…
+            <div className="rounded-[24px] border border-brand-sky/20 bg-brand-mist px-5 py-4 text-sm text-brand-ink">
+              3D Secure doğrulama ekranına yönlendiriliyorsunuz.
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Card form */}
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-              {/* Card visual strip */}
-              <div className="flex items-center justify-between rounded-t-2xl bg-slate-900 px-6 py-4">
-                <p className="text-sm font-semibold text-white">Kart Bilgileri</p>
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-11 rounded bg-white/20 flex items-center justify-center">
-                    <div className="h-4 w-4 rounded-full bg-yellow-400 opacity-80" />
-                    <div className="-ml-2 h-4 w-4 rounded-full bg-red-400 opacity-80" />
+          <form onSubmit={handleSubmit} className="antso-box-stack">
+            <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] ring-1 ring-white">
+              <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-6 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/72">
+                      Kart önizleme
+                    </p>
+                    <p className="mt-3 font-heading text-2xl font-extrabold tracking-[0.08em]">{cardPreviewNumber}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-full bg-[#f7b64b]/90" />
+                    <div className="-ml-4 h-10 w-10 rounded-full bg-[#ef5d5d]/90" />
+                  </div>
+                </div>
+                <div className="mt-10 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">Kart sahibi</p>
+                    <p className="mt-2 text-sm font-semibold text-white">{cardPreviewName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">Son kullanma</p>
+                    <p className="mt-2 text-sm font-semibold text-white">{cardPreviewExpiry}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 p-6">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Kart Numarası
-                  </label>
+              <div className="space-y-5 p-6">
+                <Field label="Kart numarası" hint="16 haneli kart numaranızı aralarda boşluk bırakarak girin.">
                   <input
                     type="text"
                     required
                     value={cardNumber}
                     onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    placeholder="0000  0000  0000  0000"
+                    placeholder="0000 0000 0000 0000"
                     maxLength={19}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm tracking-widest text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 font-mono text-sm tracking-[0.25em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Kart Üzerindeki İsim
-                  </label>
+                <Field label="Kart üzerindeki isim">
                   <input
                     type="text"
                     required
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
                     placeholder="AD SOYAD"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm uppercase tracking-wide text-slate-900 placeholder-slate-300 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium uppercase tracking-[0.12em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
-                </div>
+                </Field>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      Ay
-                    </label>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field label="Ay">
                     <select
                       required
                       value={expMonth}
                       onChange={(e) => setExpMonth(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     >
                       <option value="">MM</option>
-                      {Array.from({ length: 12 }, (_, i) => {
-                        const m = String(i + 1).padStart(2, "0");
+                      {Array.from({ length: 12 }, (_, index) => {
+                        const month = String(index + 1).padStart(2, "0");
                         return (
-                          <option key={m} value={m}>
-                            {m}
+                          <option key={month} value={month}>
+                            {month}
                           </option>
                         );
                       })}
                     </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      Yıl
-                    </label>
+                  </Field>
+
+                  <Field label="Yıl">
                     <select
                       required
                       value={expYear}
                       onChange={(e) => setExpYear(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     >
                       <option value="">YYYY</option>
-                      {Array.from({ length: 10 }, (_, i) => {
-                        const y = String(new Date().getFullYear() + i);
+                      {Array.from({ length: 10 }, (_, index) => {
+                        const year = String(new Date().getFullYear() + index);
                         return (
-                          <option key={y} value={y}>
-                            {y}
+                          <option key={year} value={year}>
+                            {year}
                           </option>
                         );
                       })}
                     </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      CVV
-                    </label>
+                  </Field>
+
+                  <Field label="CVV">
                     <input
                       type="text"
                       required
@@ -232,133 +281,125 @@ export function PaymentForm({
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       placeholder="•••"
                       maxLength={4}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-center font-mono text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-center font-mono text-sm tracking-[0.2em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     />
-                  </div>
+                  </Field>
                 </div>
               </div>
             </div>
 
-            {/* Agreement */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <label className="flex cursor-pointer items-start gap-3">
+            <div className="antso-elevated-card rounded-[32px] p-6">
+              <label className="flex cursor-pointer items-start gap-4">
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  className="mt-1 h-5 w-5 rounded border-slate-300 text-brand-sky focus:ring-brand-sky"
                   required
                 />
-                <p className="text-sm leading-relaxed text-slate-600">
-                  <span className="font-semibold text-slate-900">Satış Sözleşmesi</span>'ni okudum
-                  ve kabul ediyorum. Ödemenin{" "}
-                  <span className="font-semibold text-slate-900">3D Secure</span> ile
-                  güvenle işleneceğini onaylıyorum.
-                </p>
+                <div>
+                  <p className="text-base font-semibold text-slate-900">Satış ve ödeme onayı</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    Satış sözleşmesini kabul ediyor, ödemenin 3D Secure doğrulama adımı ile güvenli
+                    şekilde tamamlanacağını onaylıyorsunuz.
+                  </p>
+                </div>
               </label>
             </div>
 
-            {/* Pay CTA */}
-            <button
-              type="submit"
-              disabled={loading || !agreed}
-              className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-blue-600 py-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {loading
-                ? "İşleniyor…"
-                : `Güvenli Öde — ${toplamFiyat.toFixed(2)} TL`}
-            </button>
-
-            {/* Security badge */}
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-              <svg className="h-3.5 w-3.5 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              256-bit SSL şifrelemesi · 3D Secure ile güvende
+            <div className="flex flex-col antso-box-gap sm:flex-row">
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                Yolcu bilgilerine dön
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !agreed}
+                className="antso-gradient-cta inline-flex flex-1 items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {loading ? "Yönlendiriliyor..." : `Güvenli öde · ${formatPrice(toplamFiyat)} TL`}
+              </button>
             </div>
           </form>
-
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-900"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Yolcu bilgilerine geri dön
-          </button>
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-32 space-y-4">
-            {/* Trip summary */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Sefer Özeti
-              </p>
-              <div className="flex items-center gap-2 text-base font-bold text-slate-900">
-                <span>{cikisSehirAd}</span>
-                <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <span>{varisSehirAd}</span>
-              </div>
-              {sefer && (
-                <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Tarih / Saat</span>
-                    <span className="font-medium text-slate-900">{sefer.sefer_tarih}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Gemi</span>
-                    <span className="font-medium text-slate-900">{sefer.gemi}</span>
-                  </div>
-                </div>
-              )}
+        <div className="antso-box-stack">
+          <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.08)] ring-1 ring-white">
+            <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-5 text-white">
+              <p className="text-xs uppercase tracking-[0.24em] text-white/72">Sipariş özeti</p>
+              <p className="mt-3 font-heading text-2xl font-extrabold tracking-[-0.03em]">Yolculuk özeti</p>
             </div>
+            <div className="p-6 antso-box-stack">
+              <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
+              <SummaryRow
+                label="Sefer"
+                value={sefer ? `${sefer.sefer_tarih} · ${sefer.gemi}` : "Sefer bilgisi bekleniyor"}
+              />
+              {sefer?.trip_number && <SummaryRow label="Sefer no" value={sefer.trip_number} />}
+            </div>
+          </div>
 
-            {/* Price breakdown */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Fiyat Özeti
-              </p>
-              <div className="space-y-2">
-                {yolcular.map((y, i) => (
-                  <div key={y.yolcu_id} className="flex justify-between text-sm">
-                    <span className="text-slate-600">
-                      {i + 1}. {y.yolcu_tur_ad}
-                    </span>
-                    <span className="font-medium text-slate-900">
-                      {y.toplam_fiyat_genel > 0
-                        ? `${y.toplam_fiyat_genel.toFixed(2)} TL`
-                        : "—"}
-                    </span>
+          <div className="antso-elevated-card rounded-[32px] p-6">
+            <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Yolcu kırılımı</p>
+            <div className="mt-5 antso-box-stack">
+              {yolcular.map((yolcu, index) => (
+                <div
+                  key={yolcu.yolcu_id}
+                  className="flex items-center justify-between rounded-2xl bg-[#f2f8fa] px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {index + 1}. {yolcu.yolcu_tur_ad}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">Akgünler biletleme tutarı</p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-4 flex items-center justify-between rounded-xl bg-blue-50 px-4 py-3">
-                <span className="text-sm font-bold text-blue-900">Toplam</span>
-                <span className="text-xl font-bold text-blue-700">
-                  {toplamFiyat.toFixed(2)} TL
-                </span>
-              </div>
+                  <span className="text-sm font-semibold text-slate-900">
+                    {formatPrice(yolcu.toplam_fiyat_genel)} TL
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center justify-between rounded-[24px] bg-brand-mist px-4 py-4">
+              <span className="text-sm font-semibold text-brand-ink">Toplam</span>
+              <span className="text-2xl font-semibold text-brand-ink">{formatPrice(toplamFiyat)} TL</span>
+            </div>
+          </div>
+
+          <div className="antso-elevated-card rounded-[32px] p-6">
+            <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Güvenli ödeme</p>
+            <div className="mt-4 antso-box-stack text-sm text-slate-600">
+              <ChecklistItem text="Kart bilgileriniz sunucuda saklanmaz." />
+              <ChecklistItem text="Ödeme Akgünler 3D Secure ekranında tamamlanır." />
+              <ChecklistItem text="Ödeme sonrası biletleriniz anında oluşturulur." />
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[24px] bg-[#f2f8fa] px-4 py-3">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/55">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function ChecklistItem({ text }: { text: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+      <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="m5 13 4 4L19 7" />
+        </svg>
+      </span>
+      <span>{text}</span>
     </div>
   );
 }

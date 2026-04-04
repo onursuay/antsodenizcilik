@@ -35,79 +35,83 @@ interface BookingSummaryProps {
 
 export function BookingSummary({ passengers, vehicles, cabins }: BookingSummaryProps) {
   return (
-    <div className="space-y-5">
+    <div className="antso-box-stack">
       {passengers.length > 0 && (
-        <div>
-          <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-            Yolcular ({passengers.filter((p) => !p.cancelled_at).length})
-          </h4>
-          <div className="space-y-2">
-            {passengers.map((p) => (
-              <div
-                key={p.booking_passenger_id}
-                className={`flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 ${
-                  p.cancelled_at ? "opacity-50 line-through" : ""
-                }`}
-              >
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{p.full_name}</p>
-                  <p className="text-xs text-slate-400">
-                    {p.document_type} · {p.document_number}
-                  </p>
-                </div>
-                <span className="text-xs text-slate-400">{p.nationality}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SummaryGroup
+          title={`Yolcular (${passengers.filter((item) => !item.cancelled_at).length})`}
+          items={passengers.map((passenger) => ({
+            id: passenger.booking_passenger_id,
+            title: passenger.full_name,
+            description: `${passenger.document_type} · ${passenger.document_number}`,
+            meta: passenger.nationality,
+            muted: Boolean(passenger.cancelled_at),
+          }))}
+        />
       )}
 
       {vehicles.length > 0 && (
-        <div>
-          <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-            Araçlar ({vehicles.filter((v) => !v.cancelled_at).length})
-          </h4>
-          <div className="space-y-2">
-            {vehicles.map((v) => (
-              <div
-                key={v.booking_vehicle_id}
-                className={`flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 ${
-                  v.cancelled_at ? "opacity-50 line-through" : ""
-                }`}
-              >
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{v.plate_number}</p>
-                  <p className="text-xs text-slate-400">{v.vehicle_type}</p>
-                </div>
-                <span className="text-xs text-slate-400">
-                  {v.lane_meters_allocated}m · {v.m2_allocated}m²
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SummaryGroup
+          title={`Araçlar (${vehicles.filter((item) => !item.cancelled_at).length})`}
+          items={vehicles.map((vehicle) => ({
+            id: vehicle.booking_vehicle_id,
+            title: vehicle.plate_number,
+            description: vehicle.vehicle_type,
+            meta: `${vehicle.lane_meters_allocated} m · ${vehicle.m2_allocated} m²`,
+            muted: Boolean(vehicle.cancelled_at),
+          }))}
+        />
       )}
 
       {cabins.length > 0 && (
-        <div>
-          <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-            Kabinler ({cabins.filter((c) => !c.cancelled_at).length})
-          </h4>
-          <div className="space-y-2">
-            {cabins.map((c) => (
-              <div
-                key={c.booking_cabin_id}
-                className={`flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 ${
-                  c.cancelled_at ? "opacity-50 line-through" : ""
-                }`}
-              >
-                <p className="font-mono text-xs text-slate-600">{c.cabin_type_id.slice(0, 8)}</p>
-                <span className="text-sm text-slate-700">× {c.count_allocated}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SummaryGroup
+          title={`Kabinler (${cabins.filter((item) => !item.cancelled_at).length})`}
+          items={cabins.map((cabin) => ({
+            id: cabin.booking_cabin_id,
+            title: `Kabin ${cabin.cabin_type_id.slice(0, 8)}`,
+            description: "Tahsis edilen kabin tipi",
+            meta: `x ${cabin.count_allocated}`,
+            muted: Boolean(cabin.cancelled_at),
+          }))}
+        />
       )}
+    </div>
+  );
+}
+
+function SummaryGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{
+    id: string;
+    title: string;
+    description: string;
+    meta: string;
+    muted: boolean;
+  }>;
+}) {
+  return (
+    <div>
+      <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{title}</h4>
+      <div className="antso-box-stack">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className={`flex items-center justify-between gap-4 rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4 ${
+              item.muted ? "opacity-55" : ""
+            }`}
+          >
+            <div className="min-w-0">
+              <p className={`text-sm font-semibold ${item.muted ? "line-through text-slate-500" : "text-slate-900"}`}>
+                {item.title}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+            </div>
+            <span className="shrink-0 text-sm font-medium text-slate-600">{item.meta}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

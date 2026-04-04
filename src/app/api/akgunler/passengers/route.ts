@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const sId = searchParams.get("s_id");
     const gsId = searchParams.get("gs_id");
+    const dsId = searchParams.get("ds_id");
     const yMod = searchParams.get("y_mod") ?? "tek-gidis";
 
     if (!sId || !gsId) {
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
     const result = await getYolcular({
       sepetId: parseInt(sId),
       gidisSeferId: parseInt(gsId),
+      donusSeferId: dsId ? parseInt(dsId) : undefined,
       yolculukModu: yMod as "tek-gidis" | "gidis-donus" | "donus-acik",
     });
 

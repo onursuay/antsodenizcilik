@@ -45,7 +45,7 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center antso-page-space">
         <div className="w-full max-w-sm space-y-4 rounded-lg border p-6 text-center">
           <h1 className="text-xl font-semibold">E-posta Onayı</h1>
           <p className="text-sm text-gray-600">
@@ -64,7 +64,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center antso-page-space">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-lg border p-6"

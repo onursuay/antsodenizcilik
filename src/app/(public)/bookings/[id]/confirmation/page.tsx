@@ -54,7 +54,7 @@ export default function ConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="antso-page-space flex items-center justify-center">
         <svg className="h-5 w-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -65,7 +65,7 @@ export default function ConfirmationPage() {
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+      <div className="mx-auto max-w-lg antso-page-space text-center">
         <p className="text-sm text-red-600">{error ?? "Rezervasyon bulunamadı."}</p>
       </div>
     );
@@ -74,7 +74,7 @@ export default function ConfirmationPage() {
   const { booking, passengers, vehicles, cabins, payment } = data;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12">
+    <div className="min-h-screen bg-slate-50 antso-page-space">
       <div className="mx-auto max-w-xl">
         {/* Success */}
         <div className="mb-8 text-center">
@@ -139,7 +139,7 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col antso-box-gap sm:flex-row">
           <Link
             href={`/bookings/${bookingId}`}
             className="flex-1 rounded-xl border border-slate-200 bg-white py-3 text-center text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
