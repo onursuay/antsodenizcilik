@@ -686,7 +686,16 @@ function ReferenceHeroSearchCard({
 
   const guzergah = getSelectedGuzergah(guzergahlar, search);
   const sehirler = guzergah?.sehirler ?? [];
-  const isValid = search.cikisSehirId && search.varisSehirId && search.gidisTarihi;
+  const isGidisDonus = search.tripType === "gidis-donus";
+  const isValid =
+    search.cikisSehirId &&
+    search.varisSehirId &&
+    search.gidisTarihi &&
+    (!isGidisDonus || !!search.donusTarihi);
+
+  function setTripType(type: TripType) {
+    setSearch((cur) => ({ ...cur, tripType: type, donusTarihi: type === "tek-gidis" ? "" : cur.donusTarihi }));
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -700,9 +709,12 @@ function ReferenceHeroSearchCard({
         sc_id: String(search.cikisSehirId),
         sv_id: String(search.varisSehirId),
         tarih: formatDateForApi(search.gidisTarihi),
-        y_mod: "tek-gidis",
-        y_t: JSON.stringify([{ id: 1, sayi: 1 }]),
+        y_mod: search.tripType,
+        y_t: JSON.stringify(search.yolcuTurleri),
       });
+      if (isGidisDonus && search.donusTarihi) {
+        query.set("d_tarih", formatDateForApi(search.donusTarihi));
+      }
 
       const response = await fetch(`/api/akgunler/sailings?${query}`);
       const json = await response.json();
@@ -714,20 +726,13 @@ function ReferenceHeroSearchCard({
       saveStoredSession({
         id,
         guzergahlar,
-        search: {
-          ...search,
-          tripType: "tek-gidis",
-          yolcuTurleri: [{ id: 1, sayi: 1 }],
-        },
+        search: { ...search },
         sailings: {
           s_id: json.s_id ?? 0,
           g_seferler: json.g_seferler ?? [],
           d_seferler: json.d_seferler ?? [],
         },
-        selected: {
-          gidisSeferId: null,
-          donusSeferId: null,
-        },
+        selected: { gidisSeferId: null, donusSeferId: null },
       });
 
       onSearchComplete(id);
@@ -748,55 +753,77 @@ function ReferenceHeroSearchCard({
         description="Seçtiğiniz rota için en uygun sefer seçenekleri hazırlanıyor."
       />
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 items-end gap-6 md:grid-cols-4"
-      >
-        <ReferenceSelectField
-          label="Kalkış Limanı"
-          icon="departure"
-          value={String(search.cikisSehirId)}
-          onChange={(value) =>
-            setSearch((current) => ({
-              ...current,
-              cikisSehirId: Number(value),
-            }))
-          }
-          options={sehirler.map((item) => ({ value: String(item.id), label: item.ad }))}
-        />
-        <ReferenceSelectField
-          label="Varış Limanı"
-          icon="arrival"
-          value={String(search.varisSehirId)}
-          onChange={(value) =>
-            setSearch((current) => ({
-              ...current,
-              varisSehirId: Number(value),
-            }))
-          }
-          options={sehirler
-            .filter((item) => item.id !== search.cikisSehirId)
-            .map((item) => ({ value: String(item.id), label: item.ad }))}
-        />
-        <ReferenceDateField
-          label="Yolculuk Tarihi"
-          value={search.gidisTarihi}
-          onChange={(value) =>
-            setSearch((current) => ({
-              ...current,
-              gidisTarihi: value,
-            }))
-          }
-        />
-        <button
-          type="submit"
-          disabled={!isValid}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] text-lg font-bold text-white shadow-[0_12px_28px_rgba(23,29,30,0.12)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+      <div className="space-y-4">
+        {/* Trip type toggle */}
+        <div className="flex gap-2">
+          {(["tek-gidis", "gidis-donus"] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setTripType(type)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                search.tripType === type
+                  ? "bg-[#006971] text-white"
+                  : "bg-[#eff4f7] text-[#595f61] hover:bg-[#e2ecef]"
+              }`}
+            >
+              <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${search.tripType === type ? "border-white" : "border-[#595f61]"}`}>
+                {search.tripType === type && <span className="block h-1.5 w-1.5 rounded-full bg-white" />}
+              </span>
+              {type === "tek-gidis" ? "Tek Yön" : "Gidiş – Dönüş"}
+            </button>
+          ))}
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className={`grid grid-cols-1 items-end gap-4 ${isGidisDonus ? "md:grid-cols-5" : "md:grid-cols-4"}`}
         >
-          <span className="text-xl">⌕</span>
-          Sefer Ara
-        </button>
-      </form>
+          <ReferenceSelectField
+            label="Kalkış Limanı"
+            icon="departure"
+            value={String(search.cikisSehirId)}
+            onChange={(value) => setSearch((cur) => ({ ...cur, cikisSehirId: Number(value) }))}
+            options={sehirler.map((item) => ({ value: String(item.id), label: item.ad }))}
+          />
+          <ReferenceSelectField
+            label="Varış Limanı"
+            icon="arrival"
+            value={String(search.varisSehirId)}
+            onChange={(value) => setSearch((cur) => ({ ...cur, varisSehirId: Number(value) }))}
+            options={sehirler
+              .filter((item) => item.id !== search.cikisSehirId)
+              .map((item) => ({ value: String(item.id), label: item.ad }))}
+          />
+          <ReferenceDateField
+            label="Gidiş Tarihi"
+            value={search.gidisTarihi}
+            onChange={(value) =>
+              setSearch((cur) => ({
+                ...cur,
+                gidisTarihi: value,
+                donusTarihi: cur.donusTarihi && value > cur.donusTarihi ? "" : cur.donusTarihi,
+              }))
+            }
+          />
+          {isGidisDonus && (
+            <ReferenceDateField
+              label="Dönüş Tarihi"
+              value={search.donusTarihi}
+              min={search.gidisTarihi}
+              onChange={(value) => setSearch((cur) => ({ ...cur, donusTarihi: value }))}
+            />
+          )}
+          <button
+            type="submit"
+            disabled={!isValid}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] text-lg font-bold text-white shadow-[0_12px_28px_rgba(23,29,30,0.12)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="text-xl">⌕</span>
+            Sefer Ara
+          </button>
+        </form>
+      </div>
 
       {error && (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700">
@@ -849,10 +876,12 @@ function ReferenceSelectField({
 function ReferenceDateField({
   label,
   value,
+  min,
   onChange,
 }: {
   label: string;
   value: string;
+  min?: string;
   onChange: (value: string) => void;
 }) {
   const today = new Date().toISOString().split("T")[0];
@@ -868,7 +897,7 @@ function ReferenceDateField({
         </span>
         <input
           type="date"
-          min={today}
+          min={min ?? today}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className="h-14 w-full rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]"
