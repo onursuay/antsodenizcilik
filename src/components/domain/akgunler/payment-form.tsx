@@ -149,11 +149,11 @@ export function PaymentForm({
 
       <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
         <div className="antso-box-stack">
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
+          <div className="antso-elevated-card rounded-[32px] p-6 sm:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Ödeme</p>
-                <h2 className="mt-3 text-3xl font-semibold text-slate-900">
+                <h2 className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">
                   Güvenli ödeme ile rezervasyonu tamamlayın
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-slate-600">
@@ -184,14 +184,14 @@ export function PaymentForm({
           )}
 
           <form onSubmit={handleSubmit} className="antso-box-stack">
-            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
-              <div className="bg-brand-ink px-6 py-6 text-white">
+            <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] ring-1 ring-white">
+              <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-6 text-white">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/72">
                       Kart önizleme
                     </p>
-                    <p className="mt-3 text-2xl font-semibold">{cardPreviewNumber}</p>
+                    <p className="mt-3 font-heading text-2xl font-extrabold tracking-[0.08em]">{cardPreviewNumber}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-10 w-10 rounded-full bg-[#f7b64b]/90" />
@@ -219,7 +219,7 @@ export function PaymentForm({
                     onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                     placeholder="0000 0000 0000 0000"
                     maxLength={19}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm tracking-[0.25em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 font-mono text-sm tracking-[0.25em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
                 </Field>
 
@@ -230,7 +230,7 @@ export function PaymentForm({
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
                     placeholder="AD SOYAD"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium uppercase tracking-[0.12em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium uppercase tracking-[0.12em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
                 </Field>
 
@@ -240,7 +240,7 @@ export function PaymentForm({
                       required
                       value={expMonth}
                       onChange={(e) => setExpMonth(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                      className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     >
                       <option value="">MM</option>
                       {Array.from({ length: 12 }, (_, index) => {
@@ -259,7 +259,7 @@ export function PaymentForm({
                       required
                       value={expYear}
                       onChange={(e) => setExpYear(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                      className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     >
                       <option value="">YYYY</option>
                       {Array.from({ length: 10 }, (_, index) => {
@@ -281,14 +281,14 @@ export function PaymentForm({
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       placeholder="•••"
                       maxLength={4}
-                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center font-mono text-sm tracking-[0.2em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                      className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-center font-mono text-sm tracking-[0.2em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     />
                   </Field>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+            <div className="antso-elevated-card rounded-[32px] p-6">
               <label className="flex cursor-pointer items-start gap-4">
                 <input
                   type="checkbox"
@@ -318,7 +318,7 @@ export function PaymentForm({
               <button
                 type="submit"
                 disabled={loading || !agreed}
-                className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-ink px-6 py-3 text-sm font-semibold text-white shadow-[0_24px_50px_rgba(16,37,61,0.22)] transition hover:bg-[#0c1f34] disabled:cursor-not-allowed disabled:opacity-45"
+                className="antso-gradient-cta inline-flex flex-1 items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {loading ? "Yönlendiriliyor..." : `Güvenli öde · ${formatPrice(toplamFiyat)} TL`}
               </button>
@@ -327,9 +327,12 @@ export function PaymentForm({
         </div>
 
         <div className="antso-box-stack">
-          <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
-            <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Sipariş özeti</p>
-            <div className="mt-5 antso-box-stack">
+          <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.08)] ring-1 ring-white">
+            <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-5 text-white">
+              <p className="text-xs uppercase tracking-[0.24em] text-white/72">Sipariş özeti</p>
+              <p className="mt-3 font-heading text-2xl font-extrabold tracking-[-0.03em]">Yolculuk özeti</p>
+            </div>
+            <div className="p-6 antso-box-stack">
               <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
               <SummaryRow
                 label="Sefer"
@@ -339,13 +342,13 @@ export function PaymentForm({
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+          <div className="antso-elevated-card rounded-[32px] p-6">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Yolcu kırılımı</p>
             <div className="mt-5 antso-box-stack">
               {yolcular.map((yolcu, index) => (
                 <div
                   key={yolcu.yolcu_id}
-                  className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                  className="flex items-center justify-between rounded-2xl bg-[#f2f8fa] px-4 py-3"
                 >
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
@@ -365,7 +368,7 @@ export function PaymentForm({
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+          <div className="antso-elevated-card rounded-[32px] p-6">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Güvenli ödeme</p>
             <div className="mt-4 antso-box-stack text-sm text-slate-600">
               <ChecklistItem text="Kart bilgileriniz sunucuda saklanmaz." />
@@ -381,9 +384,9 @@ export function PaymentForm({
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.05] px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+    <div className="rounded-[24px] bg-[#f2f8fa] px-4 py-3">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/55">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

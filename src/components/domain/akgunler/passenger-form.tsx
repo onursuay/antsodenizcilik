@@ -95,7 +95,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+      className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
     />
   );
 }
@@ -107,7 +107,7 @@ function Select({
   return (
     <select
       {...props}
-      className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       {children}
     </select>
@@ -130,15 +130,15 @@ function PassengerCard({
   isFirst: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
-      <div className="border-b border-slate-100 bg-slate-50 px-6 py-5">
+    <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] ring-1 ring-white">
+      <div className="border-b border-slate-100 bg-[#f1f7f9] px-6 py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-ink text-sm font-semibold text-white">
+            <div className="antso-gradient-cta flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-semibold text-white">
               {index + 1}
             </div>
             <div>
-              <p className="text-lg font-semibold text-slate-900">{index + 1}. yolcu bilgileri</p>
+              <p className="font-heading text-xl font-bold tracking-[-0.03em] text-slate-900">{index + 1}. yolcu bilgileri</p>
               <p className="mt-1 text-sm text-slate-500">{yolcu.yolcu_tur_ad}</p>
             </div>
           </div>
@@ -297,13 +297,13 @@ export function PassengerForm({
   return (
     <form onSubmit={handleSubmit} className="grid antso-box-gap xl:grid-cols-[1.18fr_0.82fr]">
       <div className="antso-box-stack">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
+        <div className="antso-elevated-card rounded-[32px] p-6 sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">
                 Yolcu bilgileri
               </p>
-              <h2 className="mt-3 text-3xl font-semibold text-slate-900">
+              <h2 className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">
                 Biletleme için gerekli bilgileri tamamlayın
               </h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
@@ -333,7 +333,7 @@ export function PassengerForm({
           />
         ))}
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="antso-elevated-card rounded-[32px] p-6">
           <label className="flex cursor-pointer items-start gap-4">
             <input
               type="checkbox"
@@ -363,7 +363,7 @@ export function PassengerForm({
           <button
             type="submit"
             disabled={!agreed}
-            className="inline-flex flex-1 items-center justify-center rounded-full bg-brand-ink px-6 py-3 text-sm font-semibold text-white shadow-[0_24px_50px_rgba(16,37,61,0.22)] transition hover:bg-[#0c1f34] disabled:cursor-not-allowed disabled:opacity-45"
+            className="antso-gradient-cta inline-flex flex-1 items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
           >
             Ödeme adımına geç
           </button>
@@ -371,9 +371,12 @@ export function PassengerForm({
       </div>
 
       <div className="antso-box-stack">
-        <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Rezervasyon özeti</p>
-          <div className="mt-5 antso-box-stack">
+        <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.08)] ring-1 ring-white">
+          <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-5 text-white">
+            <p className="text-xs uppercase tracking-[0.24em] text-white/72">Rezervasyon özeti</p>
+            <p className="mt-3 font-heading text-2xl font-extrabold tracking-[-0.03em]">Seçili yolculuk</p>
+          </div>
+          <div className="p-6 antso-box-stack">
             <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
             <SummaryRow
               label="Sefer"
@@ -383,13 +386,13 @@ export function PassengerForm({
           </div>
         </div>
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="antso-elevated-card rounded-[32px] p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Fiyat özeti</p>
           <div className="mt-5 antso-box-stack">
             {yolcular.map((yolcu, index) => (
               <div
                 key={yolcu.yolcu_id}
-                className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                className="flex items-center justify-between rounded-2xl bg-[#f2f8fa] px-4 py-3"
               >
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
@@ -409,7 +412,7 @@ export function PassengerForm({
           </div>
         </div>
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+        <div className="antso-elevated-card rounded-[32px] p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Hazırlık kontrolü</p>
           <div className="mt-4 antso-box-stack text-sm text-slate-600">
             <ChecklistItem text="Belge üzerindeki ad ve soyadı eksiksiz girin." />
@@ -424,9 +427,9 @@ export function PassengerForm({
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.05] px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+    <div className="rounded-[24px] bg-[#f2f8fa] px-4 py-3">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/55">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

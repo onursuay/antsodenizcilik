@@ -20,7 +20,7 @@ interface SailingListProps {
 export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
   if (seferler.length === 0) {
     return (
-      <div className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-10">
+      <div className="antso-elevated-card rounded-[34px] p-8 sm:p-10">
         <div className="mx-auto max-w-lg text-center">
           <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-brand-mist text-brand-ocean">
             <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +32,7 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-2xl font-semibold text-slate-900">Uygun sefer bulunamadı</h2>
+          <h2 className="mt-6 font-heading text-3xl font-extrabold tracking-[-0.04em] text-slate-900">Uygun sefer bulunamadı</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
             Seçtiğiniz tarih için aktif feribot bulunmuyor olabilir. Tarihi değiştirip yeniden
             sorgulayarak güncel seferleri görebilirsiniz.
@@ -52,13 +52,13 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
   return (
     <div className="antso-box-stack">
       <div className="grid antso-box-gap xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
+        <div className="antso-elevated-card rounded-[32px] p-6 sm:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">
                 Sefer seçimi
               </p>
-              <h2 className="mt-3 text-3xl font-semibold text-slate-900">Güncel feribot seferleri</h2>
+              <h2 className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">Güncel feribot seferleri</h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
                 {seferler.length} farklı seçenek bulundu. Fiyat, saat ve gemi bilgisine göre size en
                 uygun seferi seçebilirsiniz.
@@ -68,15 +68,15 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-[0_10px_24px_rgba(18,38,60,0.04)] transition hover:border-slate-300 hover:text-brand-ocean"
             >
               Aramayı değiştir
             </button>
           </div>
         </div>
 
-        <div className="rounded-[32px] bg-brand-ink p-6 text-white shadow-[0_30px_90px_rgba(16,37,61,0.24)]">
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Rezervasyon avantajı</p>
+        <div className="rounded-[32px] bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] p-6 text-white shadow-[0_24px_64px_rgba(27,122,133,0.22)]">
+          <p className="text-xs uppercase tracking-[0.24em] text-white/70">Rezervasyon avantajı</p>
           <div className="mt-4 antso-box-stack">
             <InsightRow label="Kişi başı fiyat" value={seferler[0]?.formatted_price ?? "Güncel"} />
             <InsightRow label="Biletleme" value="Ödeme sonrası anında" />
@@ -101,8 +101,8 @@ export function SailingList({ seferler, onSelect, onBack }: SailingListProps) {
 
 function InsightRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-white/45">{label}</p>
+    <div className="rounded-[22px] bg-white/12 px-4 py-3 backdrop-blur-sm">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-white/72">{label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </div>
   );
@@ -119,8 +119,8 @@ function SailingCard({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-[32px] border bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_80px_rgba(15,23,42,0.12)] ${
-        highlighted ? "border-brand-sky/40" : "border-slate-200"
+      className={`overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_64px_rgba(18,38,60,0.1)] ${
+        highlighted ? "ring-2 ring-brand-sky/25" : "ring-1 ring-white"
       }`}
     >
       <div className="flex flex-col gap-6 p-6 sm:p-7 lg:flex-row lg:items-center">
@@ -144,7 +144,7 @@ function SailingCard({
           <div className="mt-5 grid gap-5 md:grid-cols-[auto_1fr] md:items-center">
             <div className="min-w-[148px]">
               <p className="text-[12px] uppercase tracking-[0.24em] text-slate-400">Kalkış</p>
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">
+              <p className="mt-2 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">
                 {sefer.sefer_tarih}
               </p>
               {sefer.full_date && (
@@ -152,9 +152,9 @@ function SailingCard({
               )}
             </div>
 
-            <div className="rounded-[26px] bg-slate-50 px-5 py-4">
+            <div className="rounded-[28px] bg-[#f1f7f9] px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.05)]">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
@@ -165,7 +165,7 @@ function SailingCard({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{sefer.gemi}</p>
+                  <p className="font-heading text-lg font-bold tracking-[-0.03em] text-slate-900">{sefer.gemi}</p>
                   <p className="mt-1 text-sm text-slate-500">
                     Rahat geçiş, güncel operatör seferi ve anlık biletleme akışı
                   </p>
@@ -173,10 +173,10 @@ function SailingCard({
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500">
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1">
+                <span className="inline-flex items-center rounded-full bg-white px-3 py-1 shadow-[0_8px_18px_rgba(18,38,60,0.04)] ring-1 ring-slate-200/70">
                   Resmi acente
                 </span>
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1">
+                <span className="inline-flex items-center rounded-full bg-white px-3 py-1 shadow-[0_8px_18px_rgba(18,38,60,0.04)] ring-1 ring-slate-200/70">
                   3D Secure ödeme
                 </span>
               </div>
@@ -184,18 +184,18 @@ function SailingCard({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-[28px] bg-brand-ink p-5 text-white lg:min-w-[250px]">
+        <div className="flex flex-col gap-4 lg:min-w-[230px] lg:border-l lg:border-slate-100 lg:pl-6">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-brand-seafoam">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-brand-ocean/55">
               Kişi başı başlangıç
             </p>
-            <p className="mt-3 text-3xl font-semibold">{sefer.formatted_price}</p>
+            <p className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-brand-ocean">{sefer.formatted_price}</p>
           </div>
 
           <button
             type="button"
             onClick={() => onSelect(sefer.id)}
-            className="inline-flex items-center justify-center rounded-full bg-brand-sky px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(60,146,183,0.3)] transition hover:bg-[#3482a3]"
+            className="antso-gradient-cta inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:brightness-105"
           >
             Bu seferi seç
           </button>

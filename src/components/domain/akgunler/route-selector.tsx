@@ -84,9 +84,9 @@ function SearchField({
   className?: string;
 }) {
   return (
-    <div className={`h-full rounded-[26px] border border-[#d4e2e8] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,251,253,0.98))] p-3 shadow-[0_18px_40px_rgba(18,38,60,0.06),inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:border-brand-sky/40 ${className ?? ""}`}>
+    <div className={`h-full rounded-[28px] bg-[#f1f7f9]/92 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_24px_rgba(18,38,60,0.04)] ring-1 ring-white/90 transition hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_14px_28px_rgba(18,38,60,0.06)] ${className ?? ""}`}>
       <div className="mb-2 flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-brand-sky/10 bg-brand-mist/80 text-brand-ocean">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.05)] ring-1 ring-slate-200/70">
           {icon}
         </div>
         <div>
@@ -118,8 +118,8 @@ function ToggleButton({
       onClick={onClick}
       className={`flex min-h-[74px] w-full items-center gap-3 rounded-[24px] border px-4 py-3 text-left transition ${
         active
-          ? "border-brand-sky/60 bg-[linear-gradient(180deg,rgba(94,188,213,0.14),rgba(255,255,255,0.92))] text-brand-ink shadow-[0_16px_36px_rgba(94,188,213,0.14)]"
-          : "border-[#d8e4e9] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,251,253,0.98))] text-slate-600 shadow-[0_14px_30px_rgba(18,38,60,0.04)] hover:border-brand-sky/30"
+          ? "border-brand-sky/35 bg-[linear-gradient(180deg,rgba(94,188,213,0.12),rgba(255,255,255,0.92))] text-brand-ink shadow-[0_12px_28px_rgba(94,188,213,0.12)]"
+          : "border-white/90 bg-white/86 text-slate-600 shadow-[0_10px_24px_rgba(18,38,60,0.03)] hover:border-brand-sky/25"
       }`}
     >
       <span
@@ -154,12 +154,12 @@ function SummaryStat({
     <div
       className={`rounded-[24px] border px-4 py-3 ${
         subdued
-          ? "border-white/10 bg-white/[0.025]"
-          : "border-brand-sky/18 bg-white/[0.055] shadow-[0_20px_40px_rgba(0,0,0,0.16)]"
+          ? "border-slate-200/80 bg-white/72"
+          : "border-brand-sky/18 bg-white shadow-[0_12px_28px_rgba(18,38,60,0.05)]"
       }`}
     >
-      <p className="text-[11px] uppercase tracking-[0.24em] text-white/45">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+      <p className="text-[11px] uppercase tracking-[0.24em] text-brand-ocean/55">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
     </div>
   );
 }
@@ -211,12 +211,6 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     Boolean(varisSehirId) &&
     Boolean(tarih) &&
     (tripType === "tek-gidis" || Boolean(donusTarih));
-
-  function handleSwap() {
-    const currentDeparture = cikisSehirId;
-    setCikisSehirId(varisSehirId);
-    setVarisSehirId(currentDeparture);
-  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -270,7 +264,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           <select
             value={guzergahId}
             onChange={(e) => setGuzergahId(Number(e.target.value))}
-            className="w-full appearance-none rounded-2xl border border-[#dbe6eb] bg-[#f5f9fb] px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+            className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
             required
           >
             <option value={0}>Güzergah seçin</option>
@@ -283,7 +277,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </SearchField>
       )}
 
-      <div className="grid antso-box-gap lg:grid-cols-[1fr_auto_1fr]">
+      <div className="grid antso-box-gap md:grid-cols-2">
         <SearchField
           label="Nereden"
           hint="Kalkış limanını seçin"
@@ -293,7 +287,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
             value={cikisSehirId}
             onChange={(e) => setCikisSehirId(Number(e.target.value))}
             disabled={sehirler.length === 0}
-            className="w-full appearance-none rounded-2xl border border-[#dbe6eb] bg-[#f5f9fb] px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
             required
           >
             <option value={0}>Kalkış limanı</option>
@@ -305,18 +299,6 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           </select>
         </SearchField>
 
-        <div className="flex items-end justify-center">
-          <button
-            type="button"
-            onClick={handleSwap}
-            disabled={!cikisSehirId || !varisSehirId}
-            className="flex h-14 w-14 items-center justify-center rounded-[24px] border border-[#d4e2e8] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,251,253,0.98))] text-slate-400 shadow-[0_18px_40px_rgba(18,38,60,0.06)] transition hover:border-brand-sky hover:text-brand-sky disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label="Limanları değiştir"
-          >
-            <SwapIcon className="h-5 w-5" />
-          </button>
-        </div>
-
         <SearchField
           label="Nereye"
           hint="Varış limanını seçin"
@@ -326,7 +308,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
             value={varisSehirId}
             onChange={(e) => setVarisSehirId(Number(e.target.value))}
             disabled={sehirler.length === 0}
-            className="w-full appearance-none rounded-2xl border border-[#dbe6eb] bg-[#f5f9fb] px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white disabled:cursor-not-allowed disabled:opacity-70"
             required
           >
             <option value={0}>Varış limanı</option>
@@ -358,7 +340,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
                 }
               }}
               min={today}
-              className="w-full rounded-2xl border border-[#dbe6eb] bg-[#f5f9fb] px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+              className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
               required
             />
             {tarih && (
@@ -381,7 +363,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
                 value={donusTarih}
                 onChange={(e) => setDonusTarih(e.target.value)}
                 min={tarih || today}
-                className="w-full rounded-2xl border border-[#dbe6eb] bg-[#f5f9fb] px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                 required
               />
               {donusTarih && (
@@ -411,7 +393,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         <button
           type="submit"
           disabled={!isValid}
-          className="flex min-h-[92px] w-full flex-col justify-center rounded-[28px] bg-[linear-gradient(180deg,#15314b_0%,#10253d_100%)] px-6 py-4 text-left text-white shadow-[0_24px_60px_rgba(18,38,60,0.24)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45 md:flex-row md:items-center md:justify-between md:text-left"
+          className="antso-gradient-cta flex min-h-[92px] w-full flex-col justify-center rounded-[30px] px-6 py-4 text-left text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45 md:flex-row md:items-center md:justify-between md:text-left"
         >
           <div>
             <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.26em] text-brand-seafoam">
@@ -429,7 +411,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </button>
       </div>
 
-      <div className="mt-auto rounded-[32px] border border-white/[0.08] bg-[linear-gradient(180deg,#16314a_0%,#11263d_100%)] p-4 text-white shadow-[0_24px_60px_rgba(18,38,60,0.24)]">
+      <div className="mt-auto rounded-[32px] bg-[#edf5f8] p-4 text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] ring-1 ring-white/90">
         <div className="grid antso-box-gap lg:grid-cols-3">
           <SummaryStat
             label="Seçili rota"
@@ -529,19 +511,6 @@ function RouteIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         strokeWidth={1.7}
         d="M14 5h5v5m0-5-7 7m-2 7H5v-5m0 5 7-7"
-      />
-    </svg>
-  );
-}
-
-function SwapIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.7}
-        d="M7 7h12m0 0-4-4m4 4-4 4M17 17H5m0 0 4-4m-4 4 4 4"
       />
     </svg>
   );

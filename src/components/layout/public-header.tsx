@@ -19,13 +19,13 @@ export async function PublicHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/8 bg-[linear-gradient(180deg,rgba(16,31,49,0.94),rgba(18,38,60,0.92))] shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl">
-      <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2.5 px-4 py-1.5">
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/82 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl">
+      <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center">
-          <div className="rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f3f8fa_100%)] px-2 py-1 shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
+          <div className="rounded-[18px] bg-white px-3 py-2 shadow-[0_10px_24px_rgba(18,38,60,0.08)] ring-1 ring-slate-200/70">
             <BrandLogo
               priority
-              className="w-[65px] sm:w-[73px]"
+              className="w-[74px] sm:w-[84px]"
               imageClassName="h-auto w-full object-contain"
             />
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PassengerForm } from "./passenger-form";
 import { PaymentForm } from "./payment-form";
 import { ProcessingOverlay } from "./processing-overlay";
@@ -289,30 +289,31 @@ export function AkgunlerBookingWizard() {
           title={overlayState?.title ?? ""}
           description={overlayState?.description ?? ""}
         />
-        <section className="relative overflow-hidden bg-brand-ink text-white" id="bilet-al">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.3),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.22),transparent_24%),linear-gradient(180deg,#12263c_0%,#142d45_56%,#112337_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-[#eef4f7] md:h-24" />
+        <section className="relative overflow-hidden" id="bilet-al">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.24),transparent_26%),radial-gradient(circle_at_84%_14%,rgba(27,122,133,0.14),transparent_22%),linear-gradient(180deg,#edf9fc_0%,#f5fafc_52%,#eff5f8_100%)]" />
+          <div className="absolute inset-x-0 top-0 h-[320px] bg-[linear-gradient(180deg,rgba(94,188,213,0.22)_0%,rgba(94,188,213,0)_100%)]" />
 
           <div className="relative antso-hero-shell">
             <div className="antso-box-stack">
-              <div className="grid items-stretch gap-12 lg:grid-cols-[1.02fr_0.98fr]">
-                <div className="antso-dark-panel flex h-full flex-col rounded-[36px] p-6 md:p-8">
+              <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="pb-4 pt-8 lg:pr-4">
                   <div>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/78 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-brand-ocean shadow-[0_12px_30px_rgba(18,38,60,0.05)] ring-1 ring-white/90">
                       <span className="h-2 w-2 rounded-full bg-brand-sky" />
                       Akgünler resmi satış noktası
                     </span>
 
-                    <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                    <h1 className="mt-6 max-w-3xl font-heading text-[clamp(3.4rem,7vw,6.2rem)] font-extrabold leading-[0.92] tracking-[-0.06em] text-slate-900">
                       Anamur ile Girne arasında
-                      <span className="mt-2 block text-brand-seafoam">
-                        hızlı, güvenli ve modern feribot rezervasyonu
+                      <span className="mt-2 block text-brand-ocean">
+                        yolculuğunuzu netleştirin
                       </span>
                     </h1>
 
-                    <p className="mt-5 max-w-2xl text-base leading-7 text-white/[0.72] sm:text-lg">
-                      Feribot seferlerini gerçek zamanlı sorgulayın, yolcu bilgilerini tek akışta
-                      tamamlayın ve 3D Secure ile ödemenizi güvenle bitirip biletinizi anında alın.
+                    <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+                      Anamur ve Girne hattı için tasarlanan bu ekran, sefer arama, yolcu bilgileri
+                      ve güvenli ödeme akışını daha sakin, daha net ve daha hızlı bir satın alma
+                      deneyimine dönüştürür.
                     </p>
                   </div>
 
@@ -327,8 +328,8 @@ export function AkgunlerBookingWizard() {
                     />
                   </div>
 
-                  <div className="mt-auto pt-6">
-                    <div className="flex flex-wrap gap-3 text-sm text-white/[0.72]">
+                  <div className="mt-8">
+                    <div className="flex flex-wrap antso-box-gap text-sm text-slate-600">
                       <TrustPill label="3D Secure ödeme" />
                       <TrustPill label="Anlık bilet üretimi" />
                       <TrustPill label="Yolcu ve araç desteği" />
@@ -337,20 +338,19 @@ export function AkgunlerBookingWizard() {
                 </div>
 
                 <div className="relative h-full">
-                  <div className="absolute -left-6 -top-6 h-28 w-28 rounded-full bg-brand-sky/18 blur-3xl" />
-                  <div className="absolute -bottom-8 -right-6 h-36 w-36 rounded-full bg-brand-ocean/16 blur-3xl" />
-                  <div className="antso-soft-panel relative flex h-full flex-col overflow-hidden rounded-[36px] p-5 md:p-7">
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-sky/45 to-transparent" />
+                  <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-brand-sky/20 blur-3xl" />
+                  <div className="absolute -bottom-10 right-0 h-36 w-36 rounded-full bg-brand-ocean/15 blur-3xl" />
+                  <div className="antso-glass-panel relative flex h-full flex-col overflow-hidden rounded-[38px] p-5 md:p-6">
                     <div className="mb-6 flex items-start justify-between gap-4">
                       <div>
                         <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">
                           Feribot araması
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                        <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.04em] text-slate-900">
                           Güncel seferleri şimdi sorgulayın
                         </h2>
                       </div>
-                      <div className="rounded-full border border-brand-sky/12 bg-brand-mist/75 px-3 py-1 text-xs font-semibold text-brand-ocean">
+                      <div className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-brand-ocean ring-1 ring-brand-sky/12">
                         Tek ekranda arama
                       </div>
                     </div>
@@ -516,18 +516,18 @@ export function AkgunlerBookingWizard() {
         title={overlayState?.title ?? ""}
         description={overlayState?.description ?? ""}
       />
-      <section className="relative overflow-hidden bg-brand-ink text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.22),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(36,95,116,0.16),transparent_24%),linear-gradient(180deg,#12263c_0%,#132a40_100%)]" />
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.18),transparent_26%),radial-gradient(circle_at_84%_12%,rgba(27,122,133,0.1),transparent_20%),linear-gradient(180deg,#eef9fc_0%,#f5fafc_58%,#edf5f8_100%)]" />
         <div className="relative antso-section-shell">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">
+              <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/65">
                 Rezervasyon akışı
               </p>
-              <h1 className="mt-3 text-3xl font-semibold text-white">
-                {cikisSehirAd} <span className="text-white/42">→</span> {varisSehirAd}
+              <h1 className="mt-3 font-heading text-4xl font-extrabold tracking-[-0.04em] text-slate-900">
+                {cikisSehirAd} <span className="text-slate-300">→</span> {varisSehirAd}
               </h1>
-              <p className="mt-2 text-sm text-white/[0.68]">
+              <p className="mt-2 text-sm text-slate-600">
                 Sefer seçimi, yolcu bilgileri ve ödeme adımlarını tek akışta tamamlayın.
               </p>
             </div>
@@ -535,7 +535,7 @@ export function AkgunlerBookingWizard() {
             <button
               type="button"
               onClick={() => setStep("route")}
-              className="inline-flex items-center rounded-full border border-white/[0.12] bg-white/[0.06] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/[0.1]"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-[0_10px_24px_rgba(18,38,60,0.04)] transition hover:border-slate-300 hover:text-brand-ocean"
             >
               Aramayı değiştir
             </button>
@@ -568,7 +568,7 @@ export function AkgunlerBookingWizard() {
             />
           </div>
 
-          <div className="antso-dark-panel mt-6 rounded-[30px] p-3">
+          <div className="antso-soft-panel mt-6 rounded-[30px] p-3">
             <div className="grid antso-box-gap lg:grid-cols-3">
               {CONTENT_STEPS.map((item, index) => (
                 <StepRailItem
@@ -676,10 +676,10 @@ function HeroFeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_50px_rgba(0,0,0,0.16)]">
-      <p className="text-[11px] uppercase tracking-[0.22em] text-white/42">{eyebrow}</p>
-      <p className="mt-3 text-lg font-semibold text-white">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-white/[0.65]">{description}</p>
+    <div className="antso-elevated-card rounded-[30px] p-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-ocean/58">{eyebrow}</p>
+      <p className="mt-3 font-heading text-xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</p>
+      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
     </div>
   );
 }
@@ -692,16 +692,16 @@ function HeroBalanceCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-2 text-sm leading-7 text-white/[0.64]">{description}</p>
+    <div className="rounded-[30px] bg-white/72 p-5 shadow-[0_16px_36px_rgba(18,38,60,0.05)] ring-1 ring-white/80 backdrop-blur-md">
+      <p className="font-heading text-lg font-bold text-slate-900">{title}</p>
+      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
     </div>
   );
 }
 
 function TrustPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+    <span className="inline-flex items-center rounded-full bg-white/78 px-4 py-2 text-sm text-slate-700 shadow-[0_12px_28px_rgba(18,38,60,0.04)] ring-1 ring-white/90">
       {label}
     </span>
   );
@@ -716,7 +716,7 @@ function FeatureCard({
 }) {
   return (
     <div className="antso-elevated-card rounded-[30px] p-6">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
+      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
@@ -726,8 +726,70 @@ function FeatureCard({
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+      <h3 className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function FitLine({
+  as: Component = "p",
+  text,
+  className,
+  minSize,
+  maxSize,
+}: {
+  as?: "h1" | "h2" | "p";
+  text: string;
+  className?: string;
+  minSize: number;
+  maxSize: number;
+}) {
+  const [fontSize, setFontSize] = useState(maxSize);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLHeadingElement | HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    function updateSize() {
+      const container = wrapperRef.current;
+      const content = contentRef.current;
+
+      if (!container || !content) return;
+
+      let nextSize = maxSize;
+      content.style.fontSize = `${nextSize}px`;
+      content.style.whiteSpace = "nowrap";
+      content.style.display = "block";
+
+      while (nextSize > minSize && content.scrollWidth > container.clientWidth) {
+        nextSize -= 1;
+        content.style.fontSize = `${nextSize}px`;
+      }
+
+      setFontSize(nextSize);
+    }
+
+    updateSize();
+
+    const observer = new ResizeObserver(() => updateSize());
+    if (wrapperRef.current) observer.observe(wrapperRef.current);
+
+    window.addEventListener("resize", updateSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateSize);
+    };
+  }, [text, minSize, maxSize]);
+
+  return (
+    <div ref={wrapperRef} className="w-full overflow-hidden">
+      <Component
+        ref={contentRef}
+        className={className}
+        style={{ fontSize, whiteSpace: "nowrap" }}
+      >
+        {text}
+      </Component>
     </div>
   );
 }
@@ -742,10 +804,22 @@ function HomeSectionHeader({
   description: string;
 }) {
   return (
-    <div className="max-w-3xl">
+    <div className="w-full">
       <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/70">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold text-slate-900 sm:text-4xl">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">{description}</p>
+      <FitLine
+        as="h2"
+        text={title}
+        minSize={28}
+        maxSize={48}
+        className="mt-3 font-heading font-extrabold leading-tight tracking-[-0.05em] text-slate-900"
+      />
+      <FitLine
+        as="p"
+        text={description}
+        minSize={15}
+        maxSize={18}
+        className="mt-3 leading-7 text-slate-600"
+      />
     </div>
   );
 }
@@ -769,7 +843,7 @@ function TimelineCard({
           />
         </svg>
       </div>
-      <h3 className="mt-5 text-xl font-semibold text-slate-900">{title}</h3>
+      <h3 className="mt-5 font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
     </div>
   );
@@ -784,7 +858,7 @@ function CorporateCard({
 }) {
   return (
     <div className="antso-elevated-card rounded-[30px] p-6">
-      <p className="text-lg font-semibold text-slate-900">{title}</p>
+      <p className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</p>
       <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
     </div>
   );
@@ -799,7 +873,7 @@ function FaqCard({
 }) {
   return (
     <div className="antso-elevated-card rounded-[30px] p-6">
-      <p className="text-lg font-semibold text-slate-900">{question}</p>
+      <p className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{question}</p>
       <p className="mt-3 text-sm leading-7 text-slate-600">{answer}</p>
     </div>
   );
@@ -818,11 +892,11 @@ function ContactCard({
 }) {
   return (
     <div className="antso-elevated-card rounded-[30px] p-6">
-      <p className="text-lg font-semibold text-slate-900">{title}</p>
+      <p className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</p>
       <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
       <Link
         href={href}
-        className="mt-6 inline-flex items-center rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(18,38,60,0.16)] transition hover:bg-[#0f2134]"
+        className="antso-gradient-cta mt-6 inline-flex items-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:brightness-105"
       >
         {cta}
       </Link>
@@ -840,10 +914,10 @@ function SummaryCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/[0.05] px-5 py-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-white/42">{title}</p>
-      <p className="mt-2 text-base font-semibold text-white">{value}</p>
-      <p className="mt-1 text-xs text-white/58">{description}</p>
+    <div className="rounded-[26px] bg-white/82 px-5 py-4 shadow-[0_14px_32px_rgba(18,38,60,0.05)] ring-1 ring-white/90 backdrop-blur-sm">
+      <p className="text-xs uppercase tracking-[0.2em] text-brand-ocean/55">{title}</p>
+      <p className="mt-2 text-base font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{description}</p>
     </div>
   );
 }
@@ -865,10 +939,10 @@ function StepRailItem({
     <div
       className={`rounded-[24px] border px-4 py-4 transition ${
         active
-          ? "border-brand-sky/60 bg-brand-mist text-brand-ink"
+          ? "border-brand-sky/40 bg-brand-mist text-brand-ink"
           : completed
-            ? "border-emerald-400/35 bg-emerald-400/10 text-white"
-            : "border-white/[0.08] bg-white/[0.03] text-white/[0.62]"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+            : "border-slate-200 bg-white/70 text-slate-500"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -877,14 +951,14 @@ function StepRailItem({
             active
               ? "bg-brand-ink text-white"
               : completed
-                ? "bg-emerald-400 text-brand-ink"
-                : "bg-white/[0.08] text-white"
+                ? "bg-emerald-500 text-white"
+                : "bg-slate-100 text-slate-500"
           }`}
         >
           {completed ? "✓" : index + 1}
         </div>
         <div>
-          <p className={`text-sm font-semibold ${active ? "text-brand-ink" : "text-inherit"}`}>
+          <p className={`font-heading text-sm font-bold ${active ? "text-brand-ink" : "text-inherit"}`}>
             {title}
           </p>
           <p className={`mt-1 text-xs ${active ? "text-brand-ocean/70" : "text-inherit"}`}>
@@ -903,13 +977,11 @@ function SearchSkeleton() {
         <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
         <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
       </div>
-      <div className="grid antso-box-gap lg:grid-cols-[1fr_auto_1fr]">
+      <div className="grid antso-box-gap lg:grid-cols-2">
         <div className="h-28 rounded-[26px] bg-slate-100" />
-        <div className="mx-auto h-14 w-14 rounded-[24px] bg-slate-100" />
         <div className="h-28 rounded-[26px] bg-slate-100" />
       </div>
-      <div className="grid antso-box-gap xl:grid-cols-3">
-        <div className="h-28 rounded-[26px] bg-slate-100" />
+      <div className="grid antso-box-gap xl:grid-cols-2">
         <div className="h-28 rounded-[26px] bg-slate-100" />
         <div className="h-28 rounded-[26px] bg-slate-100" />
       </div>
