@@ -84,16 +84,16 @@ function SearchField({
   className?: string;
 }) {
   return (
-    <div className={`h-full rounded-[28px] bg-[#f1f7f9]/92 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_24px_rgba(18,38,60,0.04)] ring-1 ring-white/90 transition hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_14px_28px_rgba(18,38,60,0.06)] ${className ?? ""}`}>
-      <div className="mb-2 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.05)] ring-1 ring-slate-200/70">
+    <div className={`h-full rounded-[24px] bg-[#f2f6f8] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_12px_28px_rgba(18,38,60,0.04)] ring-1 ring-[#e4eef2] transition hover:bg-white ${className ?? ""}`}>
+      <div className="mb-2 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.04)] ring-1 ring-slate-200/70">
           {icon}
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
             {label}
           </p>
-          <p className="text-xs text-slate-500">{hint}</p>
+          <p className="text-[12px] text-slate-500">{hint}</p>
         </div>
       </div>
       {children}
@@ -116,10 +116,10 @@ function ToggleButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[74px] w-full items-center gap-3 rounded-[24px] border px-4 py-3 text-left transition ${
+      className={`flex min-h-[64px] w-full items-center gap-3 rounded-[22px] border px-4 py-3 text-left transition ${
         active
-          ? "border-brand-sky/35 bg-[linear-gradient(180deg,rgba(94,188,213,0.12),rgba(255,255,255,0.92))] text-brand-ink shadow-[0_12px_28px_rgba(94,188,213,0.12)]"
-          : "border-white/90 bg-white/86 text-slate-600 shadow-[0_10px_24px_rgba(18,38,60,0.03)] hover:border-brand-sky/25"
+          ? "border-brand-sky/35 bg-[linear-gradient(180deg,rgba(94,188,213,0.12),rgba(255,255,255,0.96))] text-brand-ink shadow-[0_12px_28px_rgba(94,188,213,0.1)]"
+          : "border-[#e4eef2] bg-[#f7fbfc] text-slate-600 shadow-[0_10px_24px_rgba(18,38,60,0.02)] hover:border-brand-sky/25"
       }`}
     >
       <span
@@ -135,7 +135,7 @@ function ToggleButton({
       </span>
       <span>
         <span className="block text-sm font-semibold">{title}</span>
-        <span className="block text-xs text-slate-500">{description}</span>
+        <span className="block text-[12px] text-slate-500">{description}</span>
       </span>
     </button>
   );
@@ -236,8 +236,8 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex h-full flex-col antso-box-gap">
-      <div className="grid antso-box-gap sm:grid-cols-2">
+    <form onSubmit={handleSubmit} className="flex h-full flex-col gap-[5px]">
+      <div className="grid gap-[5px] sm:grid-cols-2 lg:grid-cols-[0.78fr_0.78fr_1.12fr]">
         <ToggleButton
           active={tripType === "tek-gidis"}
           title="Tek yön"
@@ -253,6 +253,17 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           description="Dönüşü şimdi sabitle"
           onClick={() => setTripType("gidis-donus")}
         />
+        <SearchField
+          label="Yolcu ve araç"
+          hint="Yolcu, araç ve kabin seçin"
+          icon={<PassengerIcon className="h-4 w-4" />}
+        >
+          <PassengerVehiclePopover
+            guzergah={selectedGuzergah}
+            value={yolcuTurleri}
+            onChange={setYolcuTurleri}
+          />
+        </SearchField>
       </div>
 
       {guzergahlar.length > 1 && (
@@ -277,9 +288,9 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </SearchField>
       )}
 
-      <div className="grid antso-box-gap md:grid-cols-2">
+      <div className="grid gap-[5px] lg:grid-cols-[1.1fr_1.1fr_0.9fr_210px]">
         <SearchField
-          label="Nereden"
+          label="Kalkış limanı"
           hint="Kalkış limanını seçin"
           icon={<PinIcon className="h-4 w-4" />}
         >
@@ -300,7 +311,7 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </SearchField>
 
         <SearchField
-          label="Nereye"
+          label="Varış limanı"
           hint="Varış limanını seçin"
           icon={<FlagIcon className="h-4 w-4" />}
         >
@@ -321,11 +332,9 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
               ))}
           </select>
         </SearchField>
-      </div>
 
-      <div className="grid antso-box-gap md:grid-cols-2">
         <SearchField
-          label="Gidiş"
+          label="Yolculuk tarihi"
           hint="Müsait seferleri görün"
           icon={<CalendarIcon className="h-4 w-4" />}
         >
@@ -351,9 +360,24 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           </div>
         </SearchField>
 
-        {tripType === "gidis-donus" && (
+        <button
+          type="submit"
+          disabled={!isValid}
+          className="antso-gradient-cta flex min-h-[82px] w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          <SearchIcon className="h-5 w-5" />
+          Sefer Ara
+        </button>
+      </div>
+
+      <div
+        className={`grid gap-[5px] ${
+          tripType === "gidis-donus" ? "lg:grid-cols-[0.95fr_1.05fr]" : "lg:grid-cols-[0.95fr_1.05fr]"
+        }`}
+      >
+        {tripType === "gidis-donus" ? (
           <SearchField
-            label="Dönüş"
+            label="Dönüş tarihi"
             hint="Dönüşü şimdi garantiye alın"
             icon={<CalendarIcon className="h-4 w-4" />}
           >
@@ -373,70 +397,36 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
               )}
             </div>
           </SearchField>
+        ) : (
+          <SearchField
+            label="Rota özeti"
+            hint="Tek yön seçimi aktif"
+            icon={<RouteIcon className="h-4 w-4" />}
+          >
+            <div className="rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900">
+              {cikisSehir && varisSehir ? `${cikisSehir} → ${varisSehir}` : "Anamur ve Girne limanlarını seçin"}
+            </div>
+          </SearchField>
         )}
 
-        <SearchField
-          label="Yolcu ve araç"
-          hint="Yolcu, araç ve kabin seçin"
-          icon={<PassengerIcon className="h-4 w-4" />}
-          className={tripType === "gidis-donus" ? "md:col-span-2" : undefined}
-        >
-          <PassengerVehiclePopover
-            guzergah={selectedGuzergah}
-            value={yolcuTurleri}
-            onChange={setYolcuTurleri}
-          />
-        </SearchField>
-      </div>
-
-      <div className="flex">
-        <button
-          type="submit"
-          disabled={!isValid}
-          className="antso-gradient-cta flex min-h-[92px] w-full flex-col justify-center rounded-[30px] px-6 py-4 text-left text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45 md:flex-row md:items-center md:justify-between md:text-left"
-        >
-          <div>
-            <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.26em] text-brand-seafoam">
-              Güncel seferler
-            </span>
-            <span className="mt-2 block text-lg font-semibold">Seferleri Gör</span>
-            <span className="mt-1 block text-sm text-white/[0.65]">
-              Anlık müsaitlik ve fiyat bilgisi
-            </span>
+        <div className="rounded-[24px] bg-[#f2f6f8] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_12px_28px_rgba(18,38,60,0.03)] ring-1 ring-[#e4eef2]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Seçili özet
+          </p>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/55">Rota</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {cikisSehir && varisSehir ? `${cikisSehir} → ${varisSehir}` : "Liman seçimi bekleniyor"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-brand-ocean/55">Yolcu</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {totalPassengers > 0 ? `${totalPassengers} yolcu` : "Yolcu bilgisi ekleyin"}
+              </p>
+            </div>
           </div>
-          <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold md:mt-0">
-            Devam et
-            <ArrowIcon className="h-5 w-5" />
-          </span>
-        </button>
-      </div>
-
-      <div className="mt-auto rounded-[32px] bg-[#edf5f8] p-4 text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] ring-1 ring-white/90">
-        <div className="grid antso-box-gap lg:grid-cols-3">
-          <SummaryStat
-            label="Seçili rota"
-            value={
-              cikisSehir && varisSehir
-                ? `${cikisSehir} → ${varisSehir}`
-                : "Anamur ve Girne limanlarını seçin"
-            }
-          />
-          <SummaryStat
-            label="Seyahat tarihi"
-            value={
-              tarih
-                ? tripType === "gidis-donus" && donusTarih
-                  ? `${formatDateTR(tarih)} / ${formatDateTR(donusTarih)}`
-                  : formatDateTR(tarih)
-                : "Tarihinizi seçin"
-            }
-            subdued
-          />
-          <SummaryStat
-            label="Yolcu özeti"
-            value={totalPassengers > 0 ? `${totalPassengers} yolcu ile seyahat` : "Yolcu bilgisi ekleyin"}
-            subdued
-          />
         </div>
       </div>
     </form>
@@ -511,6 +501,19 @@ function RouteIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         strokeWidth={1.7}
         d="M14 5h5v5m0-5-7 7m-2 7H5v-5m0 5 7-7"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z"
       />
     </svg>
   );

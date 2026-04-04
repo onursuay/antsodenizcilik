@@ -289,72 +289,38 @@ export function AkgunlerBookingWizard() {
           title={overlayState?.title ?? ""}
           description={overlayState?.description ?? ""}
         />
-        <section className="relative overflow-hidden" id="bilet-al">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(94,188,213,0.24),transparent_26%),radial-gradient(circle_at_84%_14%,rgba(27,122,133,0.14),transparent_22%),linear-gradient(180deg,#edf9fc_0%,#f5fafc_52%,#eff5f8_100%)]" />
-          <div className="absolute inset-x-0 top-0 h-[320px] bg-[linear-gradient(180deg,rgba(94,188,213,0.22)_0%,rgba(94,188,213,0)_100%)]" />
+        <div className="antso-home-stack">
+          <section className="relative overflow-hidden" id="bilet-al">
+            <div className="absolute inset-0">
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-[0.42]"
+                style={{ backgroundImage: "url('/antso-liman.jpg')" }}
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,48,67,0.18)_0%,rgba(13,48,67,0.28)_18%,rgba(13,48,67,0.46)_46%,rgba(245,250,252,0.88)_84%,#f5fafc_100%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(94,188,213,0.38),transparent_24%),radial-gradient(circle_at_16%_18%,rgba(216,240,245,0.24),transparent_18%)]" />
+            </div>
 
-          <div className="relative antso-hero-shell">
-            <div className="antso-box-stack">
-              <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-                <div className="pb-4 pt-8 lg:pr-4">
-                  <div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/78 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-brand-ocean shadow-[0_12px_30px_rgba(18,38,60,0.05)] ring-1 ring-white/90">
-                      <span className="h-2 w-2 rounded-full bg-brand-sky" />
-                      Akgünler resmi satış noktası
-                    </span>
+            <div className="relative mx-auto flex min-h-[720px] max-w-[86rem] flex-col items-center justify-center px-4 pb-16 pt-16 text-center sm:px-6 lg:min-h-[780px] lg:px-8">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/74 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-ocean shadow-[0_12px_30px_rgba(18,38,60,0.08)] ring-1 ring-white/85 backdrop-blur">
+                <span className="h-2 w-2 rounded-full bg-brand-sky" />
+                Akgünler resmi satış noktası
+              </span>
 
-                    <h1 className="mt-6 max-w-3xl font-heading text-[clamp(3.4rem,7vw,6.2rem)] font-extrabold leading-[0.92] tracking-[-0.06em] text-slate-900">
-                      Anamur ile Girne arasında
-                      <span className="mt-2 block text-brand-ocean">
-                        yolculuğunuzu netleştirin
-                      </span>
-                    </h1>
+              <div className="mt-7 max-w-4xl">
+                <h1 className="font-heading text-[clamp(3.1rem,7vw,6rem)] font-extrabold leading-[0.9] tracking-[-0.07em] text-white drop-shadow-[0_20px_40px_rgba(13,48,67,0.25)]">
+                  Ufka doğru
+                  <br />
+                  rotanızı çizin.
+                </h1>
+                <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-white/92 sm:text-lg">
+                  Anamur ile Girne arasındaki yolculuğunuzu güncel sefer, yolcu ve ödeme akışını
+                  tek ekranda tamamlayarak planlayın.
+                </p>
+              </div>
 
-                    <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-                      Anamur ve Girne hattı için tasarlanan bu ekran, sefer arama, yolcu bilgileri
-                      ve güvenli ödeme akışını daha sakin, daha net ve daha hızlı bir satın alma
-                      deneyimine dönüştürür.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 grid antso-box-gap sm:grid-cols-2">
-                    <HeroBalanceCard
-                      title="Hızlı ve odaklı akış"
-                      description="Bu ekran yalnızca Anamur ↔ Girne hattına odaklanır; bu sayede arama, yolcu bilgileri ve ödeme adımları daha temiz ilerler."
-                    />
-                    <HeroBalanceCard
-                      title="Kurumsal güvence"
-                      description="Sefer arama, yolcu bilgileri ve 3D Secure ödeme süreci tek akışta daha kontrollü ve anlaşılır şekilde ilerler."
-                    />
-                  </div>
-
-                  <div className="mt-8">
-                    <div className="flex flex-wrap antso-box-gap text-sm text-slate-600">
-                      <TrustPill label="3D Secure ödeme" />
-                      <TrustPill label="Anlık bilet üretimi" />
-                      <TrustPill label="Yolcu ve araç desteği" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative h-full">
-                  <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-brand-sky/20 blur-3xl" />
-                  <div className="absolute -bottom-10 right-0 h-36 w-36 rounded-full bg-brand-ocean/15 blur-3xl" />
-                  <div className="antso-glass-panel relative flex h-full flex-col overflow-hidden rounded-[38px] p-5 md:p-6">
-                    <div className="mb-6 flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">
-                          Feribot araması
-                        </p>
-                        <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-[-0.04em] text-slate-900">
-                          Güncel seferleri şimdi sorgulayın
-                        </h2>
-                      </div>
-                      <div className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-brand-ocean ring-1 ring-brand-sky/12">
-                        Tek ekranda arama
-                      </div>
-                    </div>
-
+              <div className="mt-10 w-full max-w-6xl">
+                <div className="antso-glass-panel rounded-[34px] p-[5px]">
+                  <div className="rounded-[30px] bg-white/96 p-4 md:p-5">
                     {initialLoading ? (
                       <SearchSkeleton />
                     ) : (
@@ -363,148 +329,184 @@ export function AkgunlerBookingWizard() {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
 
-              <div className="grid antso-box-gap md:grid-cols-2 xl:grid-cols-5">
-                {HERO_FEATURES.map((item) => (
-                  <HeroFeatureCard
+          <section id="sefer-takvimi" className="mx-auto w-full max-w-[86rem] px-4 sm:px-6 lg:px-8">
+            <div className="rounded-[34px] bg-white/68 p-5 shadow-[0_24px_60px_rgba(18,38,60,0.05)] ring-1 ring-white/75 backdrop-blur-sm">
+              <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+                <div className="max-w-2xl text-left">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-ocean/70">
+                    Sefer Takvimi
+                  </p>
+                  <h2 className="mt-3 font-heading text-[clamp(2.3rem,4vw,4rem)] font-extrabold tracking-[-0.06em] text-slate-900">
+                    İkonik yolculuğunuzu tek akışta netleştirin
+                  </h2>
+                </div>
+                <Link
+                  href="/#bilet-al"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-brand-ocean transition hover:text-brand-ink"
+                >
+                  Tüm seferleri sorgula
+                  <ArrowRightMini />
+                </Link>
+              </div>
+
+              <div className="mt-[5px] grid gap-[5px] lg:grid-cols-[1.18fr_0.82fr]">
+                <FeaturedRouteCard
+                  badge="Öne çıkan rota"
+                  title="Anamur ↔ Girne"
+                  description="Tek rotaya odaklanan biletleme akışı sayesinde karar süresi kısalır, arama ekranı daha net çalışır ve yolculuk planı tek panelde tamamlanır."
+                />
+                <div className="grid gap-[5px]">
+                  <MiniRouteCard
+                    title="Gidiş seferleri"
+                    description="Seçtiğiniz tarihteki müsait deniz otobüsü ve hızlı feribot seçenekleri canlı fiyatla görünür."
+                  />
+                  <MiniRouteCard
+                    title="Dönüş planı"
+                    description="Gidiş - dönüş seçiminde dönüş tarihi aynı akışta eklenir; yolcu ve ödeme adımları yeniden başlamaz."
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-[#edf4f7]">
+            <div className="mx-auto w-full max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8">
+              <div className="max-w-2xl text-left">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-ocean/70">
+                  Ayrıcalıklı akışlar
+                </p>
+                <h2 className="mt-3 font-heading text-[clamp(2rem,3.5vw,3.5rem)] font-extrabold tracking-[-0.05em] text-slate-900">
+                  Rezervasyon deneyimini hızlandıran avantajlar
+                </h2>
+              </div>
+
+              <div className="mt-[5px] flex gap-[5px] overflow-x-auto pb-1">
+                {HERO_FEATURES.slice(0, 3).map((item) => (
+                  <OfferCard
                     key={item.eyebrow}
                     eyebrow={item.eyebrow}
                     title={item.title}
                     description={item.description}
+                    featured={item.eyebrow === "Seyahat süresi"}
                   />
                 ))}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="antso-overlap-shell">
-          <div className="grid antso-box-gap lg:grid-cols-3">
-            <FeatureCard
-              title="Seferleri hızlı kıyaslayın"
-              description="Saat, gemi ve kişi başı fiyat detayını tek listede görüp doğrudan seçim yapın."
-            />
-            <FeatureCard
-              title="Bilgileri hatasız tamamlayın"
-              description="Yolcu, belge ve iletişim bilgilerini adım adım girin; özet paneli süreci canlı takip etsin."
-            />
-            <FeatureCard
-              title="Ödeme sonrası hemen devam edin"
-              description="Ödemeniz tamamlandığında bilet numaraları ve rezervasyon detayları aynı akışta görünür."
-            />
-          </div>
-        </section>
+          <section id="kurumsal" className="mx-auto w-full max-w-[86rem] px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-[5px] lg:grid-cols-[0.88fr_1.12fr]">
+              <div className="relative min-h-[540px] overflow-hidden rounded-[36px] bg-brand-ink shadow-[0_24px_70px_rgba(18,38,60,0.18)]">
+                <div
+                  className="absolute inset-0 bg-cover bg-center opacity-[0.72]"
+                  style={{ backgroundImage: "url('/antso-liman.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,42,60,0.08)_0%,rgba(12,42,60,0.38)_46%,rgba(12,42,60,0.92)_100%)]" />
+                <div className="absolute bottom-5 left-5 right-5 rounded-[28px] bg-white/88 p-5 shadow-[0_18px_40px_rgba(18,38,60,0.12)] backdrop-blur">
+                  <p className="text-5xl font-heading font-extrabold tracking-[-0.06em] text-brand-ocean">
+                    01.
+                  </p>
+                  <p className="mt-3 font-heading text-xl font-bold text-slate-900">
+                    Güvenli ve net biletleme
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    Arama, yolcu bilgileri ve ödeme akışını tek panelde birleştiren sade bir deneyim.
+                  </p>
+                </div>
+              </div>
 
-        <section id="sefer-takvimi" className="antso-section-shell antso-section-shell-start">
-          <HomeSectionHeader
-            eyebrow="Sefer Takvimi"
-            title="Planınızı güncel sefer akışına göre netleştirin"
-            description="Tek güzergah üzerinde çalışan rezervasyon akışı, seçtiğiniz tarihe göre anlık seferleri ve biletlenebilir seçenekleri listeler."
-          />
-          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-3">
-            <TimelineCard
-              title="Anamur → Girne"
-              description="Gidiş yönünde seçtiğiniz tarihe ait müsait feribotlar arama sonucunda canlı olarak listelenir."
-            />
-            <TimelineCard
-              title="Girne → Anamur"
-              description="Dönüş planlı seyahatlerde karşı yön seferi aynı akış içinde seçilerek rezervasyon tek seferde tamamlanır."
-            />
-            <TimelineCard
-              title="Biletleme akışı"
-              description="Tarih, sefer, yolcu bilgileri ve ödeme adımları ardışık ilerler; biletler ödeme sonrası anında oluşur."
-            />
-          </div>
-        </section>
+              <div className="antso-soft-panel rounded-[36px] p-7 md:p-9">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-ocean/70">
+                  Kurumsal
+                </p>
+                <h2 className="mt-4 font-heading text-[clamp(2.2rem,3.5vw,3.9rem)] font-extrabold tracking-[-0.06em] text-slate-900">
+                  Deniz yolculuğunu daha anlaşılır ve daha premium hale getiriyoruz
+                </h2>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
+                  Antso Denizcilik, Anamur ve Girne hattında odaklı online satış deneyimi sunar.
+                  Server-side entegrasyon, güvenli ödeme yönlendirmesi ve sade kullanıcı akışı
+                  sayesinde biletleme süreci gereksiz karmaşadan arınır.
+                </p>
 
-        <section id="kurumsal" className="antso-section-shell">
-          <div className="grid antso-box-gap lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[34px] bg-brand-ink p-8 text-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
-              <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">Kurumsal</p>
-              <h2 className="mt-4 text-3xl font-semibold">
-                Antso Denizcilik, Anamur ve Girne hattında odaklı bir online satış deneyimi sunar
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-white/[0.7]">
-                Site, Akgünler Denizcilik biletleme altyapısını server-side entegrasyon ile kullanır.
-                Yolcu akışı tek güzergaha odaklanır; bu sayede sefer arama, yolcu bilgisi ve ödeme
-                deneyimi daha hızlı ve daha anlaşılır ilerler.
-              </p>
+                <div className="mt-8 grid gap-x-6 gap-y-6 md:grid-cols-2">
+                  <EditorialFeature
+                    title="Resmi acente akışı"
+                    description="Akgünler API çağrıları sunucu üzerinden yapılır; kritik bilgiler istemciye açılmaz."
+                  />
+                  <EditorialFeature
+                    title="Seçkin konfor"
+                    description="Yolculuk süresi, fiyat ve rota özeti tek bir booking panelinde birlikte görünür."
+                  />
+                  <EditorialFeature
+                    title="Güvenli ödeme"
+                    description="3D Secure doğrulaması ile ödeme operatörün güvenli yönlendirmesinde tamamlanır."
+                  />
+                  <EditorialFeature
+                    title="Rezervasyon takibi"
+                    description="Ödeme sonrası confirmation ekranı ve rezervasyon detayları üzerinden süreç izlenebilir."
+                  />
+                </div>
+              </div>
             </div>
+          </section>
 
-            <div className="grid antso-box-gap md:grid-cols-2">
-              <CorporateCard
-                title="Resmi acente akışı"
-                description="Akgünler API çağrıları tarayıcı yerine sunucu üzerinden yapılır; kritik kimlik bilgileri istemciye açılmaz."
+          <section id="iletisim" className="mx-auto w-full max-w-[86rem] px-4 sm:px-6 lg:px-8">
+            <HomeSectionHeader
+              eyebrow="İletişim"
+              title="Rezervasyon ve işlem takibi için en hızlı erişim yolları"
+              description="Canlı akışta destek almanız gereken durumlarda aşağıdaki alanlar üzerinden işleminizi takip edebilirsiniz."
+            />
+            <div className="mt-[5px] grid gap-[5px] lg:grid-cols-3">
+              <ContactCard
+                title="Yeni rezervasyon"
+                description="Bilet almak için ana arama modülüne dönün ve tarih seçiminizi yaparak seferleri yeniden listeleyin."
+                href="/#bilet-al"
+                cta="Bilet al akışına git"
               />
-              <CorporateCard
-                title="Odaklı rezervasyon"
-                description="Sadece Anamur ↔ Girne hattı için tasarlanan akış, karar süresini kısaltan sade bir arayüz sunar."
-              />
-              <CorporateCard
-                title="Güvenli ödeme"
-                description="Kart bilgileri 3D Secure akışıyla işlenir; ödeme doğrulaması operatörün güvenli yönlendirmesi ile tamamlanır."
-              />
-              <CorporateCard
+              <ContactCard
                 title="Rezervasyon takibi"
-                description="Ödeme sonrası confirmation ekranı ve rezervasyon detayları üzerinden bilet ve işlem durumu izlenebilir."
+                description="Var olan rezervasyonlarınızın durumunu, ödeme kaydını ve bilet detaylarını hesap alanınızdan görüntüleyin."
+                href="/account/bookings"
+                cta="Rezervasyonlarımı aç"
+              />
+              <ContactCard
+                title="Hesap erişimi"
+                description="Rezervasyon geçmişinize erişmek veya işlemlerinizi tek yerde toplamak için hesabınıza giriş yapın."
+                href="/auth/login"
+                cta="Giriş yap"
               />
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section id="sss" className="antso-section-shell">
-          <HomeSectionHeader
-            eyebrow="Sıkca Sorulan Sorular"
-            title="Biletleme sürecinde en çok sorulan konular"
-            description="Rezervasyon akışında karar vermeyi kolaylaştıran temel bilgileri tek yerde topladık."
-          />
-          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-2">
-            <FaqCard
-              question="Sefer saatlerini nerede görüyorum?"
-              answer="Ana sayfadaki arama modülünde tarih ve yolcu bilgilerinizi seçtiğinizde, o güne ait müsait seferler sonuç ekranında canlı olarak listelenir."
+          <section id="sss" className="mx-auto w-full max-w-[86rem] px-4 pb-5 sm:px-6 lg:px-8">
+            <HomeSectionHeader
+              eyebrow="Sıkca Sorulan Sorular"
+              title="Biletleme sürecinde en çok sorulan konular"
+              description="Rezervasyon akışında karar vermeyi kolaylaştıran temel bilgileri sayfanın sonunda akordiyon olarak topladık."
             />
-            <FaqCard
-              question="Ödeme sonrası biletler ne zaman oluşur?"
-              answer="Ödeme 3D Secure doğrulaması tamamlandıktan sonra biletler anında oluşturulur ve confirmation ekranında bilet numaraları gösterilir."
-            />
-            <FaqCard
-              question="Yolcu bilgilerini neden eksiksiz girmeliyim?"
-              answer="Biletleme işlemi operatör sistemine gerçek yolcu verileriyle işlendiği için ad, soyad, belge numarası ve doğum tarihi alanları eksiksiz olmalıdır."
-            />
-            <FaqCard
-              question="Rezervasyonumu daha sonra nereden takip ederim?"
-              answer="Hesabınıza giriş yaptıktan sonra Rezervasyonlarım ekranından rezervasyon detaylarını, ödeme ve iade durumlarını görüntüleyebilirsiniz."
-            />
-          </div>
-        </section>
-
-        <section id="iletisim" className="antso-section-shell">
-          <HomeSectionHeader
-            eyebrow="İletişim"
-            title="Rezervasyon ve işlem takibi için en hızlı erişim yolları"
-            description="Canlı akışta destek almanız gereken durumlarda aşağıdaki alanlar üzerinden işleminizi takip edebilirsiniz."
-          />
-          <div className="antso-section-stack grid antso-box-gap lg:grid-cols-3">
-            <ContactCard
-              title="Yeni rezervasyon"
-              description="Bilet almak için ana arama modülüne dönün ve tarih seçiminizi yaparak seferleri yeniden listeleyin."
-              href="/#bilet-al"
-              cta="Bilet al akışına git"
-            />
-            <ContactCard
-              title="Rezervasyon takibi"
-              description="Var olan rezervasyonlarınızın durumunu, ödeme kaydını ve bilet detaylarını hesap alanınızdan görüntüleyin."
-              href="/account/bookings"
-              cta="Rezervasyonlarımı aç"
-            />
-            <ContactCard
-              title="Hesap erişimi"
-              description="Rezervasyon geçmişinize erişmek veya işlemlerinizi tek yerde toplamak için hesabınıza giriş yapın."
-              href="/auth/login"
-              cta="Giriş yap"
-            />
-          </div>
-        </section>
+            <div className="mt-[5px] grid gap-[5px] lg:grid-cols-2">
+              <FaqAccordionItem
+                question="Sefer saatlerini nerede görüyorum?"
+                answer="Ana sayfadaki arama modülünde tarih ve yolcu bilgilerinizi seçtiğinizde, o güne ait müsait seferler sonuç ekranında canlı olarak listelenir."
+              />
+              <FaqAccordionItem
+                question="Ödeme sonrası biletler ne zaman oluşur?"
+                answer="Ödeme 3D Secure doğrulaması tamamlandıktan sonra biletler anında oluşturulur ve confirmation ekranında bilet numaraları gösterilir."
+              />
+              <FaqAccordionItem
+                question="Yolcu bilgilerini neden eksiksiz girmeliyim?"
+                answer="Biletleme işlemi operatör sistemine gerçek yolcu verileriyle işlendiği için ad, soyad, belge numarası ve doğum tarihi alanları eksiksiz olmalıdır."
+              />
+              <FaqAccordionItem
+                question="Rezervasyonumu daha sonra nereden takip ederim?"
+                answer="Hesabınıza giriş yaptıktan sonra Rezervasyonlarım ekranından rezervasyon detaylarını, ödeme ve iade durumlarını görüntüleyebilirsiniz."
+              />
+            </div>
+          </section>
+        </div>
       </div>
     );
   }
@@ -666,72 +668,6 @@ function getFriendlyRouteError(error: unknown) {
   return message;
 }
 
-function HeroFeatureCard({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="antso-elevated-card rounded-[30px] p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-ocean/58">{eyebrow}</p>
-      <p className="mt-3 font-heading text-xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</p>
-      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
-    </div>
-  );
-}
-
-function HeroBalanceCard({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-[30px] bg-white/72 p-5 shadow-[0_16px_36px_rgba(18,38,60,0.05)] ring-1 ring-white/80 backdrop-blur-md">
-      <p className="font-heading text-lg font-bold text-slate-900">{title}</p>
-      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
-    </div>
-  );
-}
-
-function TrustPill({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-white/78 px-4 py-2 text-sm text-slate-700 shadow-[0_12px_28px_rgba(18,38,60,0.04)] ring-1 ring-white/90">
-      {label}
-    </span>
-  );
-}
-
-function FeatureCard({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="antso-elevated-card rounded-[30px] p-6">
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.8}
-            d="M5 12h14m-7-7 7 7-7 7"
-          />
-        </svg>
-      </div>
-      <h3 className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{title}</h3>
-      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
-    </div>
-  );
-}
-
 function FitLine({
   as: Component = "p",
   text,
@@ -849,6 +785,116 @@ function TimelineCard({
   );
 }
 
+function FeaturedRouteCard({
+  badge,
+  title,
+  description,
+}: {
+  badge: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="group relative min-h-[460px] overflow-hidden rounded-[34px] shadow-[0_24px_72px_rgba(18,38,60,0.16)]">
+      <div
+        className="absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-[1.03]"
+        style={{ backgroundImage: "url('/antso-liman.jpg')" }}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,42,60,0.12)_0%,rgba(12,42,60,0.35)_46%,rgba(12,42,60,0.9)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 p-7 text-white">
+        <span className="inline-flex rounded-full bg-white/18 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur">
+          {badge}
+        </span>
+        <h3 className="mt-4 font-heading text-4xl font-extrabold tracking-[-0.05em]">{title}</h3>
+        <p className="mt-3 max-w-xl text-sm leading-7 text-white/82">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function MiniRouteCard({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="antso-elevated-card flex min-h-[227px] flex-col justify-end rounded-[30px] p-6">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-ocean/55">
+        Hızlı özet
+      </p>
+      <h3 className="mt-3 font-heading text-[1.8rem] font-extrabold tracking-[-0.04em] text-slate-900">
+        {title}
+      </h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
+function OfferCard({
+  eyebrow,
+  title,
+  description,
+  featured,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  featured?: boolean;
+}) {
+  return (
+    <div
+      className={`min-w-[290px] rounded-[30px] p-6 shadow-[0_18px_42px_rgba(18,38,60,0.06)] md:min-w-[360px] ${
+        featured
+          ? "antso-gradient-cta text-white"
+          : "antso-elevated-card text-slate-900"
+      }`}
+    >
+      <p
+        className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${
+          featured ? "text-white/70" : "text-brand-ocean/58"
+        }`}
+      >
+        {eyebrow}
+      </p>
+      <h3 className="mt-3 font-heading text-[1.9rem] font-extrabold tracking-[-0.04em]">
+        {title}
+      </h3>
+      <p className={`mt-3 text-sm leading-7 ${featured ? "text-white/82" : "text-slate-600"}`}>
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function EditorialFeature({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-3 text-brand-ocean">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-mist">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.8}
+              d="m5 12 5 5L20 7"
+            />
+          </svg>
+        </span>
+        <p className="font-heading text-xl font-bold tracking-[-0.03em] text-slate-900">{title}</p>
+      </div>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    </div>
+  );
+}
+
 function CorporateCard({
   title,
   description,
@@ -876,6 +922,28 @@ function FaqCard({
       <p className="font-heading text-2xl font-extrabold tracking-[-0.03em] text-slate-900">{question}</p>
       <p className="mt-3 text-sm leading-7 text-slate-600">{answer}</p>
     </div>
+  );
+}
+
+function FaqAccordionItem({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string;
+}) {
+  return (
+    <details className="antso-faq antso-elevated-card rounded-[28px] p-6">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+        <span className="font-heading text-[1.55rem] font-extrabold tracking-[-0.04em] text-slate-900">
+          {question}
+        </span>
+        <span className="antso-faq-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-mist text-brand-ocean transition">
+          +
+        </span>
+      </summary>
+      <p className="mt-4 pr-8 text-sm leading-7 text-slate-600">{answer}</p>
+    </details>
   );
 }
 
@@ -973,19 +1041,25 @@ function StepRailItem({
 function SearchSkeleton() {
   return (
     <div className="antso-box-stack animate-pulse">
-      <div className="flex gap-3">
-        <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
-        <div className="h-14 flex-1 rounded-[24px] bg-slate-100" />
+      <div className="grid gap-[5px] lg:grid-cols-[1.15fr_1.15fr_0.95fr_210px]">
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
+        <div className="h-[82px] rounded-[999px] bg-slate-100" />
       </div>
-      <div className="grid antso-box-gap lg:grid-cols-2">
-        <div className="h-28 rounded-[26px] bg-slate-100" />
-        <div className="h-28 rounded-[26px] bg-slate-100" />
+      <div className="grid gap-[5px] lg:grid-cols-[0.9fr_1.1fr_0.9fr]">
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
+        <div className="h-[82px] rounded-[24px] bg-slate-100" />
       </div>
-      <div className="grid antso-box-gap xl:grid-cols-2">
-        <div className="h-28 rounded-[26px] bg-slate-100" />
-        <div className="h-28 rounded-[26px] bg-slate-100" />
-      </div>
-      <div className="h-28 rounded-[30px] bg-slate-100" />
     </div>
+  );
+}
+
+function ArrowRightMini() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 12h14m-6-6 6 6-6 6" />
+    </svg>
   );
 }

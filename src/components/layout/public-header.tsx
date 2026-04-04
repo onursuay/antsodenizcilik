@@ -19,10 +19,10 @@ export async function PublicHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/82 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#10253d]/96 shadow-[0_10px_30px_rgba(4,12,25,0.24)] backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center">
-          <div className="rounded-[18px] bg-white px-3 py-2 shadow-[0_10px_24px_rgba(18,38,60,0.08)] ring-1 ring-slate-200/70">
+          <div className="rounded-[18px] bg-white px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.18)] ring-1 ring-white/70">
             <BrandLogo
               priority
               className="w-[74px] sm:w-[84px]"

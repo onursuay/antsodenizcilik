@@ -1,5 +1,5 @@
-import { AkgunlerBookingWizard } from "@/components/domain/akgunler/booking-wizard";
+import { PublicBookingHome } from "@/components/domain/akgunler/public-booking-flow";
 
 export default function HomePage() {
-  return <AkgunlerBookingWizard />;
+  return <PublicBookingHome />;
 }

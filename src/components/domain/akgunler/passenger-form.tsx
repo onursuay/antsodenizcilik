@@ -71,6 +71,16 @@ function formatPrice(amount: number) {
   });
 }
 
+function getPortCode(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]/g, "").slice(0, 1))
+    .join("")
+    .toUpperCase();
+}
+
 function Field({
   label,
   hint,
@@ -371,53 +381,122 @@ export function PassengerForm({
       </div>
 
       <div className="antso-box-stack">
-        <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.08)] ring-1 ring-white">
-          <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-5 text-white">
-            <p className="text-xs uppercase tracking-[0.24em] text-white/72">Rezervasyon özeti</p>
-            <p className="mt-3 font-heading text-2xl font-extrabold tracking-[-0.03em]">Seçili yolculuk</p>
-          </div>
-          <div className="p-6 antso-box-stack">
-            <SummaryRow label="Rota" value={`${cikisSehirAd} → ${varisSehirAd}`} />
-            <SummaryRow
-              label="Sefer"
-              value={sefer ? `${sefer.sefer_tarih} · ${sefer.gemi}` : "Sefer bilgisi bekleniyor"}
+        <div className="overflow-hidden rounded-[34px] bg-white shadow-[0_22px_56px_rgba(18,38,60,0.1)] ring-1 ring-white">
+          <div className="relative h-40 overflow-hidden">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url('/antso-liman.jpg')" }}
             />
-            {sefer?.trip_number && <SummaryRow label="Sefer no" value={sefer.trip_number} />}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,30,45,0.18)_0%,rgba(10,24,36,0.74)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+              <span className="inline-flex rounded-full bg-brand-ocean/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white">
+                Seçili yolculuk
+              </span>
+              <p className="mt-3 font-heading text-2xl font-extrabold tracking-[-0.04em]">
+                {cikisSehirAd} → {varisSehirAd}
+              </p>
+              <p className="mt-1 text-sm text-white/80">
+                {sefer ? `${sefer.gemi}${sefer.trip_number ? ` · Sefer No ${sefer.trip_number}` : ""}` : "Sefer bilgisi bekleniyor"}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="antso-elevated-card rounded-[32px] p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Fiyat özeti</p>
-          <div className="mt-5 antso-box-stack">
-            {yolcular.map((yolcu, index) => (
-              <div
-                key={yolcu.yolcu_id}
-                className="flex items-center justify-between rounded-2xl bg-[#f2f8fa] px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {index + 1}. {yolcu.yolcu_tur_ad}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">Akgünler biletleme tutarı</p>
+          <div className="p-6">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+              <div>
+                <p className="font-heading text-3xl font-extrabold tracking-[-0.05em] text-slate-900">
+                  {getPortCode(cikisSehirAd)}
+                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  {cikisSehirAd}
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-700">
+                  {sefer?.sefer_tarih ?? "--:--"}
+                </p>
+              </div>
+
+              <div className="flex min-w-[120px] flex-col items-center">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-ocean/70">
+                  Direkt rota
+                </span>
+                <div className="my-2 flex w-full items-center gap-2">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-brand-ocean">⛴</span>
+                  <div className="h-px flex-1 bg-slate-200" />
                 </div>
-                <span className="text-sm font-semibold text-slate-900">
-                  {formatPrice(yolcu.toplam_fiyat_genel)} TL
+                <span className="text-xs text-slate-500">
+                  {sefer?.full_date ?? "Akgünler akışı"}
                 </span>
               </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center justify-between rounded-[24px] bg-brand-mist px-4 py-4">
-            <span className="text-sm font-semibold text-brand-ink">Toplam</span>
-            <span className="text-2xl font-semibold text-brand-ink">{formatPrice(totalFiyat)} TL</span>
+
+              <div className="text-right">
+                <p className="font-heading text-3xl font-extrabold tracking-[-0.05em] text-slate-900">
+                  {getPortCode(varisSehirAd)}
+                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  {varisSehirAd}
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-700">Varış limanı</p>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-ocean/60">
+                Yolcu listesi
+              </p>
+              <div className="mt-4 space-y-4">
+                {yolcular.map((yolcu, index) => (
+                  <div key={yolcu.yolcu_id} className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {index + 1}. {yolcu.yolcu_tur_ad}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">Akgünler biletleme tutarı</p>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {formatPrice(yolcu.toplam_fiyat_genel)} TL
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <span>Yolcu toplamı</span>
+                <span className="font-medium text-slate-900">{formatPrice(totalFiyat)} TL</span>
+              </div>
+              <div className="mt-4 flex items-center justify-between rounded-[24px] bg-brand-mist px-4 py-4">
+                <span className="text-sm font-semibold text-brand-ink">Toplam tutar</span>
+                <span className="font-heading text-3xl font-extrabold tracking-[-0.04em] text-brand-ocean">
+                  {formatPrice(totalFiyat)} TL
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="antso-elevated-card rounded-[32px] p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Hazırlık kontrolü</p>
-          <div className="mt-4 antso-box-stack text-sm text-slate-600">
-            <ChecklistItem text="Belge üzerindeki ad ve soyadı eksiksiz girin." />
-            <ChecklistItem text="Uyruk ve doğum tarihi bilgisini kontrol edin." />
-            <ChecklistItem text="İletişim numarasını ilk yolcu için ekleyin." />
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-mist text-brand-ocean">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.8}
+                  d="M18 10c0 3.866-3.582 7-8 7a8.84 8.84 0 0 1-4-.93L3 17l1.22-2.44A6.72 6.72 0 0 1 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7Z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-heading text-xl font-bold tracking-[-0.03em] text-slate-900">
+                Yardıma mı ihtiyacınız var?
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                Yolcu ad, soyad ve belge bilgilerini seyahat belgesindeki haliyle girin. Bir sorun
+                yaşarsanız destek ekibimiz rezervasyon sürecinde size yardımcı olur.
+              </p>
+            </div>
           </div>
         </div>
       </div>
