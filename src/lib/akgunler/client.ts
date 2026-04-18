@@ -17,17 +17,19 @@ function getConfig() {
     "https://www.akgunlerbilet.com/akgunler_web_service/api.php";
   const aId = process.env.AKGUNLER_A_ID ?? "2145";
   const akId = process.env.AKGUNLER_AK_ID ?? "777";
+  const proxySecret = process.env.AKGUNLER_PROXY_SECRET ?? "";
 
-  return { baseUrl, aId, akId };
+  return { baseUrl, aId, akId, proxySecret };
 }
 
 async function makeRequest<T>(
   action: string,
   params: Record<string, string> = {}
 ): Promise<T> {
-  const { baseUrl, aId, akId } = getConfig();
+  const { baseUrl, aId, akId, proxySecret } = getConfig();
 
   const formData = new URLSearchParams();
+  formData.set("action", action);
   formData.set("a_id", aId);
   formData.set("ak_id", akId);
   formData.set("dil", params.dil ?? "tr");
@@ -36,28 +38,61 @@ async function makeRequest<T>(
     if (key !== "dil") formData.set(key, value);
   }
 
-  const res = await fetch(`${baseUrl}?action=${action}`, {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    Referer: "https://www.akgunlerbilet.com/",
+    Origin: "https://www.akgunlerbilet.com",
+    Accept: "application/json, text/plain, */*",
+    "Accept-Language": "tr-TR,tr;q=0.9",
+    "Cache-Control": "no-cache",
+  };
+
+  if (proxySecret) {
+    headers["X-Proxy-Secret"] = proxySecret;
+  }
+
+  const res = await fetch(baseUrl, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      Referer: "https://www.akgunlerbilet.com/",
-      Origin: "https://www.akgunlerbilet.com",
-      Accept: "application/json, text/plain, */*",
-      "Accept-Language": "tr-TR,tr;q=0.9",
-    },
+    headers,
     body: formData.toString(),
   });
 
   if (!res.ok) {
+    // Cloudflare bot protection check
+    const contentType = res.headers.get("content-type") ?? "";
+    if (contentType.includes("text/html") || res.status === 403 || res.status === 503) {
+      throw new AkgunlerApiError(
+        "http_error",
+        "API erişimi engellendi (Cloudflare koruması). Lütfen daha sonra tekrar deneyin."
+      );
+    }
     throw new AkgunlerApiError(
       "http_error",
       `Akgunler API HTTP ${res.status}`
     );
   }
 
-  const data = (await res.json()) as AkgunlerResponse<T>;
+  const responseText = await res.text();
+
+  // Cloudflare challenge page — returns 200 but with HTML
+  if (responseText.includes("Just a moment") || responseText.includes("cf-browser-verification") || responseText.includes("cf_clearance")) {
+    throw new AkgunlerApiError(
+      "http_error",
+      "API erişimi engellendi (Cloudflare koruması). Lütfen daha sonra tekrar deneyin."
+    );
+  }
+
+  let data: AkgunlerResponse<T>;
+  try {
+    data = JSON.parse(responseText) as AkgunlerResponse<T>;
+  } catch {
+    throw new AkgunlerApiError(
+      "http_error",
+      "API geçersiz yanıt döndürdü. Lütfen daha sonra tekrar deneyin."
+    );
+  }
 
   if (data.durum !== "basarili") {
     throw new AkgunlerApiError(data.hata, data.hata_aciklama);
