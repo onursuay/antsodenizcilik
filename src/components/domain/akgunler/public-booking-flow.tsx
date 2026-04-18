@@ -194,6 +194,15 @@ function formatDateForApi(value: string) {
   return `${day}/${month}/${year}`;
 }
 
+// HTML <input type="date"> YYYY-MM-DD döner; Akgünler d/m/Y bekler.
+function formatBirthDateForApi(value: string) {
+  if (!value) return "";
+  if (value.includes("/")) return value;
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${day}/${month}/${year}`;
+}
+
 function formatDateLabel(value: string) {
   if (!value) return "";
 
@@ -1223,7 +1232,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         insan_soyad: String(forms[index]?.insan_soyad ?? "").trim().toUpperCase(),
         insan_cinsiyet: String(forms[index]?.insan_cinsiyet ?? "") as "E" | "K",
         insan_pasaport_no: String(forms[index]?.insan_pasaport_no ?? "").trim(),
-        insan_dogum_tarihi: String(forms[index]?.insan_dogum_tarihi ?? ""),
+        insan_dogum_tarihi: formatBirthDateForApi(String(forms[index]?.insan_dogum_tarihi ?? "")),
         insan_ulke_id: Number(forms[index]?.insan_ulke_id ?? 0),
         vergi_tur_id: forms[index]?.vergi_tur_id
           ? Number(forms[index]?.vergi_tur_id)
