@@ -29,7 +29,6 @@ async function makeRequest<T>(
   const { baseUrl, aId, akId, proxySecret } = getConfig();
 
   const formData = new URLSearchParams();
-  formData.set("action", action);
   formData.set("a_id", aId);
   formData.set("ak_id", akId);
   formData.set("dil", params.dil ?? "tr");
@@ -53,7 +52,8 @@ async function makeRequest<T>(
     headers["X-Proxy-Secret"] = proxySecret;
   }
 
-  const res = await fetch(baseUrl, {
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  const res = await fetch(`${baseUrl}${separator}action=${action}`, {
     method: "POST",
     headers,
     body: formData.toString(),
