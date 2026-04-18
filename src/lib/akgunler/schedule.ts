@@ -1,4 +1,6 @@
 const AKGUNLER_SCHEDULE_URL = "https://www.akgunlerbilet.com/sefer-takvimi.php";
+const SCHEDULE_PROXY_URL = process.env.AKGUNLER_SCHEDULE_PROXY_URL ?? "";
+const SCHEDULE_PROXY_SECRET = process.env.AKGUNLER_PROXY_SECRET ?? "";
 
 export interface ScheduleRouteLink {
   title: string;
@@ -153,14 +155,22 @@ function parseScheduleDays(html: string, directions: string[]): ScheduleDay[] {
 }
 
 async function fetchHtml(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
-      Referer: AKGUNLER_SCHEDULE_URL,
-    },
+  // Cloudflare bloğunu aşmak için Turhost proxy üzerinden çek
+  const useProxy = SCHEDULE_PROXY_URL && SCHEDULE_PROXY_SECRET;
+  const targetUrl = useProxy
+    ? `${SCHEDULE_PROXY_URL}?url=${encodeURIComponent(url)}`
+    : url;
+
+  const response = await fetch(targetUrl, {
+    headers: useProxy
+      ? { "X-Proxy-Secret": SCHEDULE_PROXY_SECRET }
+      : {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+          Referer: AKGUNLER_SCHEDULE_URL,
+        },
     cache: "no-store",
   });
 
