@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { getGuzergahlar, getGuzergahBilgileri } from "@/lib/akgunler/client";
 
+// Antso sadece Anamur-Girne güzergahını satar (Akgünler id: 61)
+const ANTSO_GUZERGAH_ID = 61;
+
 export async function GET() {
   try {
     const guzergahlar = await getGuzergahlar();
+    const filtered = guzergahlar.filter((g) => g.id === ANTSO_GUZERGAH_ID);
 
     // Her güzergah için şehirleri de al
     const enriched = await Promise.all(
-      guzergahlar.map(async (g) => {
+      filtered.map(async (g) => {
         try {
           const bilgi = await getGuzergahBilgileri(g.id);
           return {

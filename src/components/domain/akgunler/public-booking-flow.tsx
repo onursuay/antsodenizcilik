@@ -261,10 +261,14 @@ function buildDefaultSearch(guzergahlar: GuzergahData[]): BookingSearchState {
   const first = guzergahlar[0];
   const firstPassenger = first?.yolcu_turleri[0];
 
+  // Antso: Anamur kalkış, Girne varış varsayılan
+  const anamur = first?.sehirler.find((s) => s.ad.toLowerCase().includes("anamur"));
+  const girne = first?.sehirler.find((s) => s.ad.toLowerCase().includes("girne"));
+
   return {
     guzergahId: first?.id ?? 0,
-    cikisSehirId: 0,
-    varisSehirId: 0,
+    cikisSehirId: anamur?.id ?? first?.sehirler[0]?.id ?? 0,
+    varisSehirId: girne?.id ?? first?.sehirler[1]?.id ?? 0,
     gidisTarihi: "",
     donusTarihi: "",
     tripType: "tek-gidis",
