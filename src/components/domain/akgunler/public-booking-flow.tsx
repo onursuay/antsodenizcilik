@@ -299,6 +299,11 @@ function getDisplayPrice(session: BookingSession) {
   );
 }
 
+// Akgünler API fiyatları kuruş (×100) olarak döner. TL'ye çevir.
+function toLira(kurus: number) {
+  return (kurus ?? 0) / 100;
+}
+
 function getTripSelectionReady(session: BookingSession) {
   if (!session.selected.gidisSeferId) return false;
   if (session.search.tripType === "gidis-donus" && !session.selected.donusSeferId) return false;
@@ -997,8 +1002,9 @@ export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
     return <MissingSessionCard />;
   }
 
-  const totalPrice =
-    (summary.gidis?.ucret ?? 0) + (summary.donus?.ucret ?? 0);
+  const totalPrice = toLira(
+    (summary.gidis?.ucret ?? 0) + (summary.donus?.ucret ?? 0)
+  );
 
   return (
     <div className="min-h-screen bg-[#f3f5f8] pb-10">
@@ -1296,7 +1302,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
   const donus = session.sailings.d_seferler.find(
     (item) => item.id === session.selected.donusSeferId
   );
-  const totalPrice = getDisplayPrice(session);
+  const totalPrice = toLira(getDisplayPrice(session));
 
   return (
     <div className="min-h-screen bg-[#f3f5f8] pb-10">
@@ -1378,7 +1384,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
                         {index + 1}. {yolcu.yolcu_tur_ad}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {yolcu.toplam_fiyat_genel.toLocaleString("tr-TR", {
+                        {toLira(yolcu.toplam_fiyat_genel).toLocaleString("tr-TR", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}{" "}
@@ -1685,7 +1691,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
                       {index + 1}. {yolcu.yolcu_tur_ad}
                     </span>
                     <span className="font-semibold text-slate-900">
-                      {yolcu.toplam_fiyat_genel.toLocaleString("tr-TR", {
+                      {toLira(yolcu.toplam_fiyat_genel).toLocaleString("tr-TR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}{" "}

@@ -42,7 +42,8 @@ function formatCardNumber(value: string) {
 }
 
 function formatPrice(amount: number) {
-  return amount.toLocaleString("tr-TR", {
+  // Akgünler API fiyatları kuruş (×100). TL'ye çevir.
+  return (amount / 100).toLocaleString("tr-TR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
