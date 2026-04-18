@@ -381,13 +381,13 @@ export function PublicBookingHome() {
 
         <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col items-center justify-center pt-8 text-center">
           <div className="mb-8">
-            <h1 className="font-headline mx-auto max-w-4xl text-4xl font-extrabold tracking-[-0.06em] text-white md:text-6xl">
-              Ufka Doğru
-              <span className="block">Rotanızı Çizin.</span>
+            <h1 className="font-headline mx-auto max-w-4xl animate-hero-title text-4xl font-extrabold tracking-[-0.06em] text-white opacity-0 md:text-6xl">
+              HIZLI VE KONFORLU
+              <span className="block">ULAŞIMIN AYRICALIĞINI YAŞAYIN</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-6 text-white/90 md:text-lg">
-              Küratörlüğünü yaptığımız feribot geçişlerimizle denizlerin huzurunu ve deniz
-              mühendisliğinin hassasiyetini deneyimleyin.
+            <p className="mx-auto mt-4 max-w-2xl animate-hero-sub text-sm font-medium leading-6 text-white/90 opacity-0 md:text-lg">
+              Akdeniz&apos;in Kıbrıs&apos;a en yakın noktası Anamur&apos;dan Girne&apos;ye sadece
+              1 Saat 45 Dakikada Ulaşın.
             </p>
           </div>
 
