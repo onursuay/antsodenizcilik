@@ -168,6 +168,36 @@ body {
   animation: antso-shimmer 2.6s ease-in-out infinite;
 }
 
+@keyframes antso-text-shine {
+  0% {
+    background-position: -120% 0;
+  }
+  55%,
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+.antso-text-shine {
+  background: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 38%,
+    rgba(255, 255, 255, 0.55) 46%,
+    #5eead4 50%,
+    rgba(255, 255, 255, 0.55) 54%,
+    #ffffff 62%,
+    #ffffff 100%
+  );
+  background-size: 250% 100%;
+  background-position: -120% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: antso-text-shine 4.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
 
 .antso-sheen-card {
   isolation: isolate;
