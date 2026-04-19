@@ -1963,68 +1963,74 @@ function TripCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const departureTime = (item.sefer_tarih.match(/\d{1,2}:\d{2}/)?.[0]) ?? item.sefer_tarih;
+  const arrivalTime = inferArrivalTime(item.sefer_tarih);
+  const priceValue = item.formatted_price.replace(/\s*TL\s*$/i, "").trim();
+
   return (
     <article
       className={`rounded-[16px] border bg-white p-5 transition ${
         selected
-          ? "border-[#1f4aa8] bg-white shadow-[0_14px_38px_rgba(31,74,168,0.12)]"
-          : "border-slate-200 bg-white"
+          ? "border-[#1f4aa8] shadow-[0_14px_38px_rgba(31,74,168,0.12)]"
+          : "border-slate-200"
       }`}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-[#1f4aa8]">
-              <FerryIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Akgünler Denizcilik</p>
-              <p className="text-xs text-slate-500">{item.trip_number ? `Sefer No ${item.trip_number}` : item.gemi}</p>
-            </div>
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[#1f4aa8]">
+          <FerryIcon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">Akgünler Denizcilik</p>
+          <p className="truncate text-xs text-slate-500">
+            {item.trip_number ? `Sefer No ${item.trip_number}` : item.gemi}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr_auto] md:gap-6">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+          <div>
+            <p className="font-headline text-3xl font-bold leading-none tracking-[-0.02em] text-slate-900">
+              {departureTime}
+            </p>
+            <p className="mt-1.5 text-xs font-medium text-slate-500">{from}</p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-[110px_1fr_110px_120px] md:items-center">
-            <div>
-              <p className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">
-                {item.sefer_tarih}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">{from}</p>
+          <div className="flex flex-col items-center text-center">
+            <p className="text-xs font-medium text-slate-600">{item.gemi}</p>
+            <div className="my-2 flex w-full items-center gap-2">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span className="text-[#1f4aa8]">⛴</span>
+              <span className="h-px flex-1 bg-slate-200" />
             </div>
+            <p className="text-[11px] text-slate-400">Yaklaşık 2 sa 30 dk</p>
+          </div>
 
-            <div className="text-center">
-              <p className="text-sm font-medium text-slate-700">{item.gemi}</p>
-              <div className="mt-2 border-t border-slate-200 pt-2 text-xs text-slate-500">
-                Yaklaşık 2 sa 30 dk
-              </div>
-            </div>
-
-            <div className="text-left md:text-right">
-              <p className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">
-                {inferArrivalTime(item.sefer_tarih)}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">{to}</p>
-            </div>
-
-            <div className="text-left md:text-right">
-              <p className="text-[34px] font-semibold tracking-[-0.03em] text-slate-900">
-                {item.formatted_price.replace(" TL", "")}
-              </p>
-              <p className="text-xs text-slate-500">TL</p>
-            </div>
+          <div className="text-right">
+            <p className="font-headline text-3xl font-bold leading-none tracking-[-0.02em] text-slate-900">
+              {arrivalTime}
+            </p>
+            <p className="mt-1.5 text-xs font-medium text-slate-500">{to}</p>
           </div>
         </div>
 
-        <div className="flex min-w-[118px] flex-col items-start gap-3 lg:items-end">
+        <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-4 md:justify-end md:border-t-0 md:pt-0 md:pl-6 md:[border-left:1px_solid_#f1f5f9]">
+          <div className="text-right">
+            <p className="whitespace-nowrap font-headline text-2xl font-bold leading-none tracking-[-0.02em] text-slate-900">
+              {priceValue}
+              <span className="ml-1.5 text-sm font-semibold text-slate-500">TL</span>
+            </p>
+          </div>
           <button
             type="button"
             onClick={onSelect}
-            className={`h-[48px] min-w-[118px] rounded-[10px] px-5 text-sm font-semibold transition ${
+            className={`h-[44px] shrink-0 rounded-[10px] px-6 text-sm font-semibold text-white transition ${
               selected
-                ? "bg-[#1f4aa8] text-white"
-                : "bg-[#1f4aa8] text-white hover:bg-[#183f90]"
+                ? "bg-[#183f90]"
+                : "bg-[#1f4aa8] hover:bg-[#183f90]"
             }`}
           >
-            {selected ? "Seçimi Değiştir" : "Seç"}
+            {selected ? "Seçildi" : "Seç"}
           </button>
         </div>
       </div>
