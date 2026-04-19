@@ -1152,6 +1152,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
   const [contact, setContact] = useState({
     email: "",
     phone: "",
+    phone2: "",
   });
   const [payment, setPayment] = useState({
     holder: "",
@@ -1237,7 +1238,12 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         vergi_tur_id: forms[index]?.vergi_tur_id
           ? Number(forms[index]?.vergi_tur_id)
           : undefined,
-        yolcu_tel_no: index === 0 ? contact.phone.trim() : undefined,
+        yolcu_tel_no:
+          index === 0
+            ? contact.phone.trim()
+            : index === 1 && contact.phone2.trim()
+              ? contact.phone2.trim()
+              : undefined,
       }));
 
       const passengerResponse = await fetch("/api/akgunler/passengers", {
@@ -1355,8 +1361,8 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
           </SectionCard>
 
           <SectionCard title="İletişim Bilgisi" compact>
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormField label="E-posta">
+            <div className="grid gap-4 md:grid-cols-3">
+              <FormField label="E-posta Adresi">
                 <input
                   type="email"
                   required
@@ -1368,7 +1374,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
                   placeholder="ornek@mail.com"
                 />
               </FormField>
-              <FormField label="Telefon">
+              <FormField label="Telefon #1">
                 <input
                   type="tel"
                   required
@@ -1380,7 +1386,27 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
                   placeholder="+90 5xx xxx xx xx"
                 />
               </FormField>
+              <FormField label="Telefon #2">
+                <input
+                  type="tel"
+                  value={contact.phone2}
+                  onChange={(event) =>
+                    setContact((current) => ({ ...current, phone2: event.target.value }))
+                  }
+                  className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                  placeholder="+90 5xx xxx xx xx (opsiyonel)"
+                />
+              </FormField>
             </div>
+            <p className="mt-3 flex items-start gap-2 rounded-[10px] bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+              <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+              </svg>
+              <span>
+                Olabilecek sefer saati/tarih değişikliklerinde girdiğiniz telefon numaralarına SMS ile bilgi verilecektir.
+                Gideceğiniz ülkede açık ve SMS alabilecek bir numara olması gerekmektedir.
+              </span>
+            </p>
           </SectionCard>
 
           <SectionCard title="Yolcular">
