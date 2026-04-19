@@ -1954,7 +1954,7 @@ function BookingSearchCard({
 
       <form onSubmit={handleSubmit} className={`space-y-4 ${variant === "compact" ? "rounded-[18px] bg-white p-4 shadow-[0_12px_30px_rgba(0,0,0,0.12)]" : ""}`}>
         {variant === "hero" ? (
-          <div className="flex flex-wrap gap-4 px-2">
+          <div className="flex flex-nowrap items-center gap-4 px-2">
             <TripTypeButton
               active={search.tripType === "tek-gidis"}
               label="Tek Yön"
@@ -1969,7 +1969,7 @@ function BookingSearchCard({
             />
           </div>
         ) : (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-nowrap items-center gap-3">
             <TripTypeButton
               active={search.tripType === "tek-gidis"}
               label="Tek Yön"

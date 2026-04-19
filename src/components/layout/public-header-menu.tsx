@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const KURUMSAL_ITEMS = [
   { label: "Gizlilik Politikası", href: "/kurumsal/gizlilik-politikasi" },
@@ -20,8 +21,13 @@ const NAV_LINKS = [
 export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   const [kurumsalOpen, setKurumsalOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -181,7 +187,9 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
         </button>
       </div>
 
-      {/* Mobile overlay menu */}
+      {/* Mobile overlay menu (portaled to body so backdrop-blur on header
+          doesn't trap the fixed drawer inside an ancestor) */}
+      {mounted && createPortal(
       <div
         className={`fixed inset-0 z-[100] lg:hidden ${mobileOpen ? "pointer-events-auto" : "pointer-events-none"}`}
         aria-hidden={!mobileOpen}
@@ -285,7 +293,9 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
               )}
             </div>
         </div>
-      </div>
+      </div>,
+      document.body
+      )}
     </>
   );
 }
