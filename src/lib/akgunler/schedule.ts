@@ -66,7 +66,9 @@ function slugify(value: string) {
 
 function parseRoutes(html: string): ScheduleRouteLink[] {
   const matches = Array.from(
-    html.matchAll(/href="([^"]*sefer-takvimi\.php\?mod=(\d+)[^"]*)"\s*>\s*([^<]+?)\s*</gi)
+    html.matchAll(
+      /href="([^"]*sefer-takvimi\.php\?mod=(\d+)[^"]*)"[^>]*>[\s\S]*?<b>\s*([^<]+?)\s*<\/b>/gi
+    )
   );
 
   const routes = matches
@@ -181,9 +183,12 @@ async function fetchHtml(url: string) {
   return response.text();
 }
 
+const ANTSO_ROUTE_MOD = "61";
+
 export async function getFerrySchedule(routeSlug?: string): Promise<SchedulePayload> {
   const landingHtml = await fetchHtml(AKGUNLER_SCHEDULE_URL);
-  const routes = parseRoutes(landingHtml);
+  const allRoutes = parseRoutes(landingHtml);
+  const routes = allRoutes.filter((route) => route.mod === ANTSO_ROUTE_MOD);
   const selectedRoute =
     routes.find((route) => route.slug === routeSlug) ??
     routes[0] ??
