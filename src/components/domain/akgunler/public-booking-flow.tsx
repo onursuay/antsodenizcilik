@@ -339,7 +339,7 @@ export function PublicBookingHome() {
     <div className="min-h-screen bg-[#f5fafc] text-[#171d1e]">
       <section
         id="bilet-al"
-        className="relative z-10 flex min-h-[640px] flex-col items-center justify-center px-6 py-20"
+        className="relative z-10 flex min-h-[560px] flex-col items-center justify-start px-6 pb-16 pt-10 md:pt-14"
       >
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -347,13 +347,13 @@ export function PublicBookingHome() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0b1e2e]/20 via-transparent to-[#f5fafccc]" />
 
-        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center pt-8 text-center">
-          <div className="mb-8 w-full">
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center text-center">
+          <div className="mb-6 w-full">
             <h1 className="font-headline mx-auto max-w-5xl animate-hero-title text-3xl font-extrabold tracking-[-0.04em] text-white opacity-0 sm:text-4xl md:text-5xl lg:text-6xl">
               HIZLI VE KONFORLU SEYAHATİN
               <span className="block">AYRICALIĞINI YAŞAYIN</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:whitespace-nowrap md:text-base lg:text-lg">
+            <p className="mx-auto mt-3 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:whitespace-nowrap md:text-base lg:text-lg">
               Akdeniz&apos;in Kıbrıs&apos;a en yakın noktası Anamur&apos;dan Girne&apos;ye sadece 1 Saat 45 Dakikada Ulaşın.
             </p>
           </div>
@@ -1987,10 +1987,10 @@ function BookingSearchCard({
         {error && <ErrorPanel message={error} />}
 
         <div
-          className={`grid gap-3 ${
+          className={`grid gap-3 xl:items-end ${
             variant === "hero"
-              ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.08fr)_112px]"
-              : "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,0.85fr)_minmax(0,0.85fr)_minmax(0,1fr)_120px]"
+              ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.08fr)_128px]"
+              : "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,0.85fr)_minmax(0,0.85fr)_minmax(0,1fr)_128px]"
           }`}
         >
           <RouteField
@@ -2047,20 +2047,23 @@ function BookingSearchCard({
             variant={variant}
           />
 
-          <div ref={popoverRef} className="relative">
+          <div ref={popoverRef} className="relative block">
+            <span
+              className={`mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] ${
+                variant === "hero" ? "ml-1 text-[#595f61]" : "text-slate-400"
+              }`}
+            >
+              Yolcu ve Araç
+            </span>
             <button
               type="button"
               onClick={() => setPopoverOpen((current) => !current)}
-            className={`w-full text-left shadow-sm ${
-              variant === "hero"
-                ? "rounded-xl border-none bg-[#eff4f7] px-4 py-[10px]"
-                : "rounded-[18px] border border-slate-200 bg-white px-4 py-[9px]"
-            }`}
+              className={`flex w-full items-center text-left ${
+                variant === "hero" ? HERO_FIELD_CLASS : FIELD_CLASS
+              }`}
+              style={{ paddingLeft: "1rem" }}
             >
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Yolcu ve Araç
-              </span>
-              <span className="mt-1 block truncate text-sm font-medium text-slate-900">
+              <span className="truncate text-sm font-medium text-slate-900">
                 {buildPassengerSummary(guzergah, search.yolcuTurleri)}
               </span>
             </button>
@@ -2078,12 +2081,15 @@ function BookingSearchCard({
           <button
             type="submit"
             disabled={!isValid}
-            className={`text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:bg-slate-300 ${
+            className={`antso-shimmer relative flex w-full items-center justify-center gap-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
               variant === "hero"
-                ? "h-[56px] rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] shadow-[0_18px_36px_rgba(0,105,113,0.24)] hover:scale-[1.02]"
-                : "h-[58px] rounded-[18px] bg-[#f08a00] hover:bg-[#dd7d00]"
+                ? "h-[56px] rounded-full bg-[#006971] shadow-[0_14px_30px_rgba(0,105,113,0.32)] hover:bg-[#00565c] hover:shadow-[0_18px_40px_rgba(0,105,113,0.42)] disabled:bg-[#006971]/70 disabled:shadow-none active:scale-[0.98]"
+                : "h-[58px] rounded-[18px] bg-[#006971] shadow-[0_10px_24px_rgba(0,105,113,0.28)] hover:bg-[#00565c] disabled:bg-[#006971]/70 disabled:shadow-none"
             }`}
           >
+            <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.2-5.2M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             {submitLabel}
           </button>
         </div>
