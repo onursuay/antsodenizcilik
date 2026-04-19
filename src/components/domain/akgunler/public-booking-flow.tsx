@@ -352,7 +352,7 @@ export function PublicBookingHome() {
     <div className="min-h-screen bg-[#f5fafc] text-[#171d1e]">
       <section
         id="bilet-al"
-        className="relative flex min-h-[640px] flex-col items-center justify-center overflow-hidden px-6 py-20"
+        className="relative z-10 flex min-h-[640px] flex-col items-center justify-center px-6 py-20"
       >
         <div
           className="absolute inset-0 bg-cover bg-center"
