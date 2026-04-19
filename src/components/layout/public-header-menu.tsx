@@ -52,7 +52,23 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   const menuItemClass =
     "inline-flex items-center text-[15.5px] font-medium text-slate-600 transition hover:text-brand-ocean";
   const highlightedMenuItemClass =
-    "antso-gradient-cta inline-flex items-center rounded-full px-4 py-2.5 text-[15.5px] font-semibold text-white transition hover:brightness-105";
+    "antso-gradient-cta inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[15.5px] font-semibold text-white transition hover:brightness-105";
+
+  const ticketIcon = (
+    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V8z" />
+      <path d="M9 6v12" strokeDasharray="2 2" />
+    </svg>
+  );
+
+  const accountIcon = (
+    <svg className="h-[16px] w-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
 
   return (
     <>
@@ -112,14 +128,16 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
       {/* Desktop right actions */}
       <div className="hidden shrink-0 items-center gap-3 lg:flex">
         <Link href="/#bilet-al" className={highlightedMenuItemClass}>
+          {ticketIcon}
           Bilet Al
         </Link>
         {signedIn ? (
           <>
             <Link
               href="/account/bookings"
-              className="antso-gradient-cta rounded-full px-5 py-2.5 text-[15.5px] font-semibold text-white transition hover:brightness-105"
+              className="antso-gradient-cta inline-flex items-center gap-1.5 rounded-full px-3.5 py-2.5 text-[15.5px] font-semibold text-white transition hover:brightness-105"
             >
+              {accountIcon}
               Hesabım
             </Link>
             <form action="/auth/logout" method="post">
@@ -146,8 +164,9 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
         <Link
           href="/#bilet-al"
           onClick={() => setMobileOpen(false)}
-          className="antso-gradient-cta rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+          className="antso-gradient-cta inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
         >
+          {ticketIcon}
           Bilet Al
         </Link>
         <button

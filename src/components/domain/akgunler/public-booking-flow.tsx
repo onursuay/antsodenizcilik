@@ -693,9 +693,11 @@ function ReferenceHeroSearchCard({
           <button
             type="submit"
             disabled={!isValid}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#006971_0%,#34a8b3_100%)] text-lg font-bold text-white shadow-[0_12px_28px_rgba(23,29,30,0.12)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+            className="antso-shimmer relative flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#006971] text-lg font-bold text-white shadow-[0_14px_30px_rgba(0,105,113,0.32)] transition hover:bg-[#00565c] hover:shadow-[0_18px_40px_rgba(0,105,113,0.42)] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#006971]/75 disabled:shadow-none"
           >
-            <span className="text-xl">⌕</span>
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.2-5.2M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             Sefer Ara
           </button>
         </form>
