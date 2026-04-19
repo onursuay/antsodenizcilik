@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 const KURUMSAL_ITEMS = [
@@ -20,6 +21,12 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   const [kurumsalOpen, setKurumsalOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setKurumsalOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -138,6 +145,7 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
       <div className="flex items-center gap-2 lg:hidden">
         <Link
           href="/#bilet-al"
+          onClick={() => setMobileOpen(false)}
           className="antso-gradient-cta rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
         >
           Bilet Al
