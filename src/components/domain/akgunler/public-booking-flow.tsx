@@ -379,6 +379,7 @@ export function PublicBookingHome() {
                 guzergahlar={guzergahlar}
                 variant="hero"
                 submitLabel="Sefer Ara"
+                requireConsent
                 onSearchComplete={(sessionId) => router.push(`/voyages/${sessionId}`)}
               />
               {error && (
@@ -1851,6 +1852,7 @@ function BookingSearchCard({
   variant,
   submitLabel,
   onSearchComplete,
+  requireConsent = false,
 }: {
   guzergahlar: GuzergahData[];
   initialSearch?: BookingSearchState;
@@ -1858,6 +1860,7 @@ function BookingSearchCard({
   variant: "hero" | "compact";
   submitLabel: string;
   onSearchComplete: (sessionId: string) => void;
+  requireConsent?: boolean;
 }) {
   const [search, setSearch] = useState<BookingSearchState>(
     initialSearch ?? buildDefaultSearch(guzergahlar)
@@ -1917,7 +1920,7 @@ function BookingSearchCard({
     event.preventDefault();
     if (!isValid || !guzergah) return;
 
-    if (!acceptedAydinlatma || !acceptedRiza) {
+    if (requireConsent && (!acceptedAydinlatma || !acceptedRiza)) {
       setConsentError(true);
       return;
     }
@@ -1997,13 +2000,15 @@ function BookingSearchCard({
                 onClick={() => updateSearch({ tripType: "gidis-donus" })}
               />
             </div>
-            <ConsentCheckboxes
-              aydinlatma={acceptedAydinlatma}
-              onAydinlatmaChange={setAcceptedAydinlatma}
-              riza={acceptedRiza}
-              onRizaChange={setAcceptedRiza}
-              invalid={consentError}
-            />
+            {requireConsent && (
+              <ConsentCheckboxes
+                aydinlatma={acceptedAydinlatma}
+                onAydinlatmaChange={setAcceptedAydinlatma}
+                riza={acceptedRiza}
+                onRizaChange={setAcceptedRiza}
+                invalid={consentError}
+              />
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
@@ -2021,17 +2026,19 @@ function BookingSearchCard({
               onClick={() => updateSearch({ tripType: "gidis-donus" })}
             />
             </div>
-            <ConsentCheckboxes
-              aydinlatma={acceptedAydinlatma}
-              onAydinlatmaChange={setAcceptedAydinlatma}
-              riza={acceptedRiza}
-              onRizaChange={setAcceptedRiza}
-              invalid={consentError}
-            />
+            {requireConsent && (
+              <ConsentCheckboxes
+                aydinlatma={acceptedAydinlatma}
+                onAydinlatmaChange={setAcceptedAydinlatma}
+                riza={acceptedRiza}
+                onRizaChange={setAcceptedRiza}
+                invalid={consentError}
+              />
+            )}
           </div>
         )}
 
-        {consentError && (
+        {requireConsent && consentError && (
           <p className="rounded-[12px] border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800">
             Devam etmek için Aydınlatma Metni ve Açık Rıza Metni&apos;ni kabul etmeniz gerekiyor.
           </p>
