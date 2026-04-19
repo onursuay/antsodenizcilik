@@ -2430,7 +2430,7 @@ function TripTypeButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+      className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
         dark
           ? active
             ? "bg-white text-[#1f4aa8]"
@@ -2440,8 +2440,8 @@ function TripTypeButton({
             : "text-slate-500"
       }`}
     >
-      <span className="inline-flex items-center gap-2">
-        <span className={`h-4 w-4 rounded-full border ${active ? "border-[#006971]" : "border-slate-300"}`}>
+      <span className="inline-flex items-center gap-2 whitespace-nowrap">
+        <span className={`h-4 w-4 shrink-0 rounded-full border ${active ? "border-[#006971]" : "border-slate-300"}`}>
           <span className={`m-[3px] block h-2 w-2 rounded-full ${active ? "bg-[#006971]" : "bg-transparent"}`} />
         </span>
         {label}
