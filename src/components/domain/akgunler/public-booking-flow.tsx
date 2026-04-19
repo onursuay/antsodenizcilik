@@ -1851,6 +1851,7 @@ function BookingSearchCard({
   const [error, setError] = useState<string | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const isGidisDonus = search.tripType === "gidis-donus";
 
   useEffect(() => {
     if (!initialSearch) {
@@ -1989,8 +1990,12 @@ function BookingSearchCard({
         <div
           className={`grid gap-3 xl:items-end ${
             variant === "hero"
-              ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.08fr)_128px]"
-              : "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,0.85fr)_minmax(0,0.85fr)_minmax(0,1fr)_128px]"
+              ? isGidisDonus
+                ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.08fr)_128px]"
+                : "xl:grid-cols-[minmax(0,1.2fr)_52px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.08fr)_128px]"
+              : isGidisDonus
+                ? "xl:grid-cols-[minmax(0,1.15fr)_52px_minmax(0,1.15fr)_minmax(0,0.85fr)_minmax(0,0.85fr)_minmax(0,1fr)_128px]"
+                : "xl:grid-cols-[minmax(0,1.2fr)_52px_minmax(0,1.2fr)_minmax(0,0.95fr)_minmax(0,1fr)_128px]"
           }`}
         >
           <RouteField
@@ -2039,13 +2044,15 @@ function BookingSearchCard({
             variant={variant}
           />
 
-          <DateField
-            label="Dönüş Tarihi"
-            value={search.donusTarihi}
-            disabled={search.tripType === "tek-gidis"}
-            onChange={(value) => updateSearch({ donusTarihi: value })}
-            variant={variant}
-          />
+          {isGidisDonus && (
+            <DateField
+              label="Dönüş Tarihi"
+              value={search.donusTarihi}
+              min={search.gidisTarihi}
+              onChange={(value) => updateSearch({ donusTarihi: value })}
+              variant={variant}
+            />
+          )}
 
           <div ref={popoverRef} className="relative block">
             <span
@@ -2253,13 +2260,13 @@ function PassengerVehiclePanel({
   if (!guzergah) return null;
 
   return (
-    <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[380px] max-w-[92vw] rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.16)] before:absolute before:bottom-full before:right-10 before:border-[10px] before:border-transparent before:border-b-white before:content-['']">
-      <div className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
+    <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[min(640px,92vw)] rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.16)] before:absolute before:bottom-full before:right-10 before:border-[10px] before:border-transparent before:border-b-white before:content-['']">
+      <div className="max-h-[460px] space-y-4 overflow-y-auto pr-1">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
             Yolcu Sayısı
           </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {[
               ...guzergah.yolcu_turleri,
               ...guzergah.kabin_turleri,
