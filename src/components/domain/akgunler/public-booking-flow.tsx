@@ -749,6 +749,234 @@ function ReferenceSelectField({
   );
 }
 
+const CAL_DAY_NAMES = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
+const CAL_MONTH_NAMES = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+];
+
+function toISODate(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function fromISODate(value: string): Date | null {
+  if (!value) return null;
+  const [y, m, d] = value.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function CalendarMonthGrid({
+  year,
+  month,
+  selected,
+  minDate,
+  onPick,
+}: {
+  year: number;
+  month: number;
+  selected: Date | null;
+  minDate: Date;
+  onPick: (d: Date) => void;
+}) {
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6;
+
+  const cells: (Date | null)[] = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return (
+    <div className="w-[240px]">
+      <div className="mb-3 text-center text-sm font-semibold text-slate-800">
+        {CAL_MONTH_NAMES[month]} {year}
+      </div>
+      <div className="grid grid-cols-7 gap-0.5">
+        {CAL_DAY_NAMES.map((d) => (
+          <div key={d} className="py-1 text-center text-[11px] font-semibold text-slate-400">
+            {d}
+          </div>
+        ))}
+        {cells.map((date, i) => {
+          if (!date) return <div key={`e-${i}`} className="h-8" />;
+          const disabled = date < minDate;
+          const isSelected = selected ? sameDay(date, selected) : false;
+          const isToday = sameDay(date, today);
+          return (
+            <button
+              key={date.getTime()}
+              type="button"
+              disabled={disabled}
+              onClick={() => onPick(date)}
+              className={`h-8 rounded-md text-xs font-medium transition-colors ${
+                disabled
+                  ? "cursor-not-allowed text-slate-300"
+                  : isSelected
+                    ? "bg-[#006971] text-white shadow-sm"
+                    : isToday
+                      ? "ring-1 ring-[#006971]/50 text-[#006971] hover:bg-[#006971]/10"
+                      : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              {date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AntsoDatePicker({
+  label,
+  value,
+  min,
+  disabled,
+  onChange,
+  variant = "hero",
+}: {
+  label: string;
+  value: string;
+  min?: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+  variant?: "hero" | "compact";
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const minDate = (min ? fromISODate(min) : null) ?? today;
+  const selected = fromISODate(value);
+
+  const [viewDate, setViewDate] = useState<Date>(() => {
+    const base = selected ?? minDate;
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    const base = selected ?? minDate;
+    setViewDate(new Date(base.getFullYear(), base.getMonth(), 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const viewYear1 = viewDate.getFullYear();
+  const viewMonth1 = viewDate.getMonth();
+  const viewMonth2 = viewMonth1 === 11 ? 0 : viewMonth1 + 1;
+  const viewYear2 = viewMonth1 === 11 ? viewYear1 + 1 : viewYear1;
+
+  const goBack = () =>
+    setViewDate(new Date(viewYear1, viewMonth1 - 1, 1));
+  const goForward = () =>
+    setViewDate(new Date(viewYear1, viewMonth1 + 1, 1));
+
+  const handlePick = (d: Date) => {
+    onChange(toISODate(d));
+    setOpen(false);
+  };
+
+  const displayValue = selected
+    ? selected.toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
+    : "gg.aa.yyyy";
+
+  const triggerClass = variant === "hero"
+    ? `${HERO_FIELD_CLASS} flex items-center text-left`
+    : `${FIELD_CLASS} flex items-center text-left`;
+
+  const labelClass = variant === "hero"
+    ? "ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-[#595f61]"
+    : "mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400";
+
+  const iconColor = variant === "hero" ? "text-[#006971]" : "text-[#10253d]";
+
+  return (
+    <div ref={ref} className="relative">
+      <span className={labelClass}>{label}</span>
+      <div className="relative mt-2">
+        <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${iconColor}`}>
+          <CalendarIcon className="h-5 w-5" />
+        </span>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen((v) => !v)}
+          className={`${triggerClass} ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+        >
+          <span className={selected ? "text-slate-900" : "text-slate-400"}>
+            {displayValue}
+          </span>
+        </button>
+      </div>
+      {open && !disabled && (
+        <div className="absolute left-0 top-full z-50 mt-2 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_24px_48px_rgba(15,23,42,0.12)]">
+          <div className="mb-2 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={goBack}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100"
+              aria-label="Önceki ay"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={goForward}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100"
+              aria-label="Sonraki ay"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex flex-col gap-6 md:flex-row">
+            <CalendarMonthGrid
+              year={viewYear1}
+              month={viewMonth1}
+              selected={selected}
+              minDate={minDate}
+              onPick={handlePick}
+            />
+            <div className="hidden md:block">
+              <CalendarMonthGrid
+                year={viewYear2}
+                month={viewMonth2}
+                selected={selected}
+                minDate={minDate}
+                onPick={handlePick}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReferenceDateField({
   label,
   value,
@@ -760,26 +988,8 @@ function ReferenceDateField({
   min?: string;
   onChange: (value: string) => void;
 }) {
-  const today = new Date().toISOString().split("T")[0];
-
   return (
-    <label className="space-y-2">
-      <span className="ml-1 block text-xs font-bold uppercase tracking-[0.22em] text-[#595f61]">
-        {label}
-      </span>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#006971]">
-          <CalendarIcon className="h-5 w-5" />
-        </span>
-        <input
-          type="date"
-          min={min ?? today}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-14 w-full rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]"
-        />
-      </div>
-    </label>
+    <AntsoDatePicker label={label} value={value} min={min} onChange={onChange} variant="hero" />
   );
 }
 
@@ -2195,34 +2405,24 @@ function DateField({
   onChange,
   disabled,
   variant,
+  min,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   variant?: "hero" | "compact";
+  min?: string;
 }) {
-  const today = new Date().toISOString().split("T")[0];
-
   return (
-    <label className="block">
-      <span className={`mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] ${variant === "hero" ? "ml-1 text-[#595f61]" : "text-slate-400"}`}>
-        {label}
-      </span>
-      <div className="relative">
-        <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${variant === "hero" ? "text-[#006971]" : "text-[#10253d]"}`}>
-          <CalendarIcon className="h-5 w-5" />
-        </span>
-        <input
-          type="date"
-          value={value}
-          min={today}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
-          className={`${variant === "hero" ? HERO_FIELD_CLASS : FIELD_CLASS} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
-        />
-      </div>
-    </label>
+    <AntsoDatePicker
+      label={label}
+      value={value}
+      min={min}
+      disabled={disabled}
+      onChange={onChange}
+      variant={variant ?? "compact"}
+    />
   );
 }
 
