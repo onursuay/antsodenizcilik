@@ -349,11 +349,11 @@ export function PublicBookingHome() {
 
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center text-center">
           <div className="mb-6 w-full">
-            <h1 className="font-headline mx-auto max-w-5xl animate-hero-title text-3xl font-extrabold tracking-[-0.04em] text-white opacity-0 sm:text-4xl md:text-5xl lg:text-6xl">
+            <h1 className="font-headline mx-auto max-w-5xl animate-hero-title text-3xl font-extrabold leading-[1.2] tracking-[-0.04em] text-white opacity-0 sm:text-4xl md:text-5xl lg:text-6xl">
               HIZLI VE KONFORLU SEYAHATİN
-              <span className="block">AYRICALIĞINI YAŞAYIN</span>
+              <span className="mt-2 block md:mt-3">AYRICALIĞINI YAŞAYIN</span>
             </h1>
-            <p className="mx-auto mt-3 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:whitespace-nowrap md:text-base lg:text-lg">
+            <p className="mx-auto mt-6 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:mt-7 md:whitespace-nowrap md:text-base lg:text-lg">
               Akdeniz&apos;in Kıbrıs&apos;a en yakın noktası Anamur&apos;dan Girne&apos;ye sadece 1 Saat 45 Dakikada Ulaşın.
             </p>
           </div>
