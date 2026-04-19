@@ -111,49 +111,83 @@ function parseDirectionsFromTitle(title: string) {
   return [routeText];
 }
 
-function parseScheduleDays(html: string, directions: string[]): ScheduleDay[] {
-  const lines = toLines(html);
-  const firstDateIndex = lines.findIndex((line) => /^\d{2}\/\d{2}\/\d{4}$/.test(line));
-  if (firstDateIndex === -1) return [];
+function extractScheduleTable(html: string): string | null {
+  const match = html.match(
+    /<table[^>]*id=["']table_sefer_takvimi["'][^>]*>[\s\S]*?<\/table>/i
+  );
+  return match ? match[0] : null;
+}
 
-  const blocks: string[][] = [];
-  let current: string[] = [];
+function parseTableHeaders(tableHtml: string): string[] {
+  const headMatch = tableHtml.match(/<thead[\s\S]*?<\/thead>/i);
+  if (!headMatch) return [];
+  const thMatches = Array.from(headMatch[0].matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi));
+  return thMatches
+    .map((m) => stripTags(m[1]).replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .map((label) => label.replace(/\s*-\s*/g, " → "));
+}
 
-  for (const line of lines.slice(firstDateIndex)) {
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(line) && current.length > 0) {
-      blocks.push(current);
-      current = [line];
-      continue;
+function parseCell(cellHtml: string): { time: string; vessel: string } | null {
+  const text = stripTags(cellHtml)
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text || text === "-") return null;
+
+  const timeMatch = text.match(/(\d{1,2}:\d{2})/);
+  if (!timeMatch) return null;
+
+  const vessel = text.replace(timeMatch[0], "").trim();
+  return { time: timeMatch[1], vessel };
+}
+
+function parseScheduleDays(html: string, fallbackDirections: string[]): ScheduleDay[] {
+  const table = extractScheduleTable(html);
+  if (!table) return [];
+
+  const headers = parseTableHeaders(table);
+  // headers: ["", "Anamur → Girne", "Girne → Anamur"] — skip the empty first column
+  const directions = headers.slice(1).filter(Boolean);
+  const effectiveDirections = directions.length > 0 ? directions : fallbackDirections;
+
+  const rowMatches = Array.from(table.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi));
+
+  const days: ScheduleDay[] = [];
+  for (const rowMatch of rowMatches) {
+    const rowHtml = rowMatch[1];
+    if (/<th[\s>]/i.test(rowHtml)) continue;
+
+    const tdMatches = Array.from(rowHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi));
+    if (tdMatches.length === 0) continue;
+
+    const dateCellText = stripTags(tdMatches[0][1])
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const dateMatch = dateCellText.match(/(\d{2}\/\d{2}\/\d{4})\s*(.*)/);
+    if (!dateMatch) continue;
+
+    const date = dateMatch[1];
+    const weekday = dateMatch[2].trim();
+
+    const trips: ScheduleTrip[] = [];
+    for (let i = 1; i < tdMatches.length; i++) {
+      const cell = parseCell(tdMatches[i][1]);
+      if (!cell) continue;
+      trips.push({
+        direction: effectiveDirections[i - 1] ?? effectiveDirections[0] ?? "Sefer",
+        time: cell.time,
+        vessel: cell.vessel,
+      });
     }
-    current.push(line);
+
+    if (trips.length > 0) {
+      days.push({ date, weekday, trips });
+    }
   }
 
-  if (current.length > 0) blocks.push(current);
-
-  return blocks
-    .map((block) => {
-      const [date, weekdayLine, ...rest] = block;
-      const weekday = (weekdayLine ?? "").split(/\s{2,}/)[0]?.trim() ?? "";
-      const body = rest.join(" ").replace(/\s+/g, " ").trim();
-
-      const tripMatches = Array.from(
-        body.matchAll(/(\d{1,2}:\d{2})\s+([^0-9].*?)(?=(\d{1,2}:\d{2})|$)/g)
-      );
-
-      const trips = tripMatches.map((match, index) => ({
-        direction: directions[index % directions.length] ?? directions[0] ?? "Sefer",
-        time: match[1],
-        vessel: match[2].trim(),
-      }));
-
-      return {
-        date,
-        weekday,
-        trips,
-      };
-    })
-    .filter((day) => day.trips.length > 0 || day.date.length > 0)
-    .slice(0, 6);
+  return days;
 }
 
 async function fetchHtml(url: string) {
