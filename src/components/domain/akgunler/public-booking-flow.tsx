@@ -326,7 +326,6 @@ export function PublicBookingHome() {
   // fetch arka planda route bilgisini günceller.
   const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([REFERENCE_HOME_ROUTE]);
   const [error, setError] = useState<string | null>(null);
-  const loading = false;
 
   useEffect(() => {
     fetch("/api/akgunler/routes")
@@ -372,21 +371,17 @@ export function PublicBookingHome() {
           </div>
 
           <div className="w-full rounded-[2rem] bg-white/20 p-2 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] backdrop-blur-[12px]">
-            <div className="rounded-[1.75rem] bg-white p-8 md:p-10">
-              {loading ? (
-                <SearchSkeleton />
-              ) : (
-                <>
-                  <ReferenceHeroSearchCard
-                    guzergahlar={guzergahlar}
-                    onSearchComplete={(sessionId) => router.push(`/voyages/${sessionId}`)}
-                  />
-                  {error && (
-                    <p className="mt-5 text-left text-sm font-medium text-amber-700">
-                      Sefer sorgulama şu an geçici olarak kullanılamamaktadır. Kısa süre içinde tekrar deneyin.
-                    </p>
-                  )}
-                </>
+            <div className="rounded-[1.75rem] bg-white p-6 md:p-8">
+              <BookingSearchCard
+                guzergahlar={guzergahlar}
+                variant="hero"
+                submitLabel="Sefer Ara"
+                onSearchComplete={(sessionId) => router.push(`/voyages/${sessionId}`)}
+              />
+              {error && (
+                <p className="mt-5 text-left text-sm font-medium text-amber-700">
+                  Sefer sorgulama şu an geçici olarak kullanılamamaktadır. Kısa süre içinde tekrar deneyin.
+                </p>
               )}
             </div>
           </div>
