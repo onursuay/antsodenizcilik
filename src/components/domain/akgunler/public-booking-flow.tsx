@@ -223,6 +223,21 @@ function inferArrivalTime(timeLabel: string) {
   return minutesToTime(minutes + DEFAULT_DURATION_MINUTES);
 }
 
+// Akgünler API bazı kategorileri "*" önekiyle ve/veya diakritikler
+// olmadan döndürüyor (ör. "*OGRENCI"). Görsel uyum için normalize et.
+const CATEGORY_LABEL_FIXES: Record<string, string> = {
+  OGRENCI: "ÖĞRENCİ",
+};
+
+function normalizeCategoryLabel(rawTitle: string) {
+  const cleaned = rawTitle.replace(/^\*+/, "").trim();
+  const upper = cleaned.toLocaleUpperCase("tr-TR");
+  for (const [from, to] of Object.entries(CATEGORY_LABEL_FIXES)) {
+    if (upper === from) return to;
+  }
+  return upper;
+}
+
 function buildPassengerSummary(guzergah: GuzergahData | null, value: YolcuSayi[]) {
   if (!guzergah) return "Yolcu ve araç seçin";
 
@@ -236,7 +251,7 @@ function buildPassengerSummary(guzergah: GuzergahData | null, value: YolcuSayi[]
     .filter((item) => item.sayi > 0)
     .map((item) => {
       const found = all.find((entry) => entry.id === item.id);
-      return found ? `${item.sayi} ${found.title}` : null;
+      return found ? `${item.sayi} ${normalizeCategoryLabel(found.title)}` : null;
     })
     .filter(Boolean);
 
@@ -2274,7 +2289,7 @@ function PassengerVehiclePanel({
             ].map((item) => (
               <CountRow
                 key={item.id}
-                label={item.title}
+                label={normalizeCategoryLabel(item.title)}
                 count={getCount(value, item.id)}
                 onDecrease={() =>
                   onChange(updateCount(value, item.id, getCount(value, item.id) - 1))
