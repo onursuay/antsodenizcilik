@@ -80,14 +80,13 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
           <Link href="/iletisim" className={menuItemClass}>
             İletişim
           </Link>
-
-          <Link href="/#bilet-al" className={highlightedMenuItemClass}>
-            Bilet Al
-          </Link>
         </div>
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+        <Link href="/#bilet-al" className={highlightedMenuItemClass}>
+          Bilet Al
+        </Link>
         {signedIn ? (
           <>
             <Link
