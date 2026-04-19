@@ -4,12 +4,16 @@ import { getGuzergahlar, getGuzergahBilgileri } from "@/lib/akgunler/client";
 // Antso sadece Anamur-Girne güzergahını satar (Akgünler id: 61)
 const ANTSO_GUZERGAH_ID = 61;
 
+// Vercel Edge cache: 1 saat fresh, 1 gün stale-while-revalidate
+const CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+};
+
 export async function GET() {
   try {
     const guzergahlar = await getGuzergahlar();
     const filtered = guzergahlar.filter((g) => g.id === ANTSO_GUZERGAH_ID);
 
-    // Her güzergah için şehirleri de al
     const enriched = await Promise.all(
       filtered.map(async (g) => {
         try {
@@ -34,7 +38,7 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json({ guzergahlar: enriched });
+    return NextResponse.json({ guzergahlar: enriched }, { headers: CACHE_HEADERS });
   } catch (error) {
     console.error("Akgunler routes error:", error);
     return NextResponse.json(

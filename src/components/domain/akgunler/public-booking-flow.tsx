@@ -353,7 +353,7 @@ export function PublicBookingHome() {
       >
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/hero-sea.png')" }}
+          style={{ backgroundImage: "url('/hero-sea.jpg')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0b1e2e]/20 via-transparent to-[#f5fafccc]" />
 
