@@ -131,18 +131,6 @@ const FIELD_CLASS =
 const HERO_FIELD_CLASS =
   "h-[56px] w-full rounded-xl border-none bg-[#eff4f7] pl-12 pr-4 text-[15px] font-medium text-[#171d1e] outline-none transition focus:ring-2 focus:ring-[#34a8b3]";
 
-const PASSENGER_LABELS = [
-  "Yetişkin (12+)",
-  "Öğrenci",
-  "Gazi / Diplomat",
-  "Bebek (0-2 Yaş)",
-  "Bebek (3-6 Yaş)",
-  "Çocuk (7-12 Yaş)",
-  "Asker/Subay",
-  "Subay Ailesi",
-];
-
-const CABIN_LABELS = ["2 Kişilik Kabin", "4 Kişilik Kabin"];
 // Fallback used only when Akgünler API is unreachable (e.g. CF block).
 // IDs are placeholders — real IDs load from API when available.
 const REFERENCE_HOME_ROUTE: GuzergahData = {
@@ -2263,38 +2251,14 @@ function PassengerVehiclePanel({
       <div className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Yolcular
+            Yolcu Sayısı
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {[
-              ...guzergah.yolcu_turleri.filter((item) =>
-                PASSENGER_LABELS.includes(item.title)
-              ),
-              ...guzergah.kabin_turleri.filter((item) =>
-                CABIN_LABELS.includes(item.title)
-              ),
+              ...guzergah.yolcu_turleri,
+              ...guzergah.kabin_turleri,
+              ...guzergah.arac_turleri,
             ].map((item) => (
-              <CountRow
-                key={item.id}
-                label={item.title}
-                count={getCount(value, item.id)}
-                onDecrease={() =>
-                  onChange(updateCount(value, item.id, getCount(value, item.id) - 1))
-                }
-                onIncrease={() =>
-                  onChange(updateCount(value, item.id, getCount(value, item.id) + 1))
-                }
-              />
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Kabin ve Araç
-          </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {guzergah.arac_turleri.map((item) => (
               <CountRow
                 key={item.id}
                 label={item.title}
