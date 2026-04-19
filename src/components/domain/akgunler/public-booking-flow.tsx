@@ -324,9 +324,6 @@ export function PublicBookingHome() {
   const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [schedule, setSchedule] = useState<SchedulePayload | null>(null);
-  const [scheduleLoading, setScheduleLoading] = useState(true);
-  const [scheduleError, setScheduleError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/akgunler/routes")
@@ -348,28 +345,12 @@ export function PublicBookingHome() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    fetch("/api/akgunler/schedule")
-      .then(async (response) => {
-        const json = (await response.json()) as SchedulePayload | { error?: string };
-        if (!response.ok) {
-          throw new Error("error" in json ? json.error ?? "Sefer takvimi alınamadı." : "Sefer takvimi alınamadı.");
-        }
-        setSchedule(json as SchedulePayload);
-      })
-      .catch((requestError) => {
-        setScheduleError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Sefer takvimi alınamadı."
-        );
-      })
-      .finally(() => setScheduleLoading(false));
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#f5fafc] text-[#171d1e]">
-      <section className="relative flex h-[600px] flex-col items-center justify-center overflow-hidden px-6">
+      <section
+        id="bilet-al"
+        className="relative flex min-h-[640px] flex-col items-center justify-center overflow-hidden px-6 py-20"
+      >
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -379,7 +360,7 @@ export function PublicBookingHome() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5fafccc]" />
 
-        <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col items-center justify-center pt-8 text-center">
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center pt-8 text-center">
           <div className="mb-8">
             <h1 className="font-headline mx-auto max-w-4xl animate-hero-title text-4xl font-extrabold tracking-[-0.06em] text-white opacity-0 md:text-6xl">
               HIZLI VE KONFORLU
@@ -413,265 +394,143 @@ export function PublicBookingHome() {
         </div>
       </section>
 
-      <section id="sefer-takvimi" className="mx-auto max-w-screen-2xl px-8 py-24">
-        <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="mb-4 block text-sm font-bold uppercase tracking-[0.22em] text-[#006971]">
-              Sefer Takvimi
-            </span>
-            <h2 className="text-4xl font-extrabold tracking-[-0.04em] md:text-5xl">
-              Yön, tarih ve gemi detaylarını canlı kaynaktan alın
-            </h2>
-          </div>
-          {schedule?.sourceUrl && (
-            <a
-              href={schedule.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-bold text-[#006971]"
-            >
-              Kaynağı Aç →
-            </a>
-          )}
-        </div>
+      <WhyChooseUsSection />
 
-        {schedule?.selectedRoute ? (
-          <div className="mb-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
-            <div className="rounded-[28px] bg-white p-6 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] ring-1 ring-slate-100">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#006971]">
-                Aktif Hat
-              </p>
-              <h3 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-slate-900">
-                {schedule.selectedRoute.title}
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-slate-600">
-                Ana sayfadaki takvim verisi doğrudan Akgünler sefer takvimi sayfasından çekilir.
-                Yön, tarih ve saat detayları aşağıdaki kartlarda canlı olarak listelenir.
-              </p>
-            </div>
-
-            <div className="rounded-[28px] bg-[#eff4f7] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Yönler
-              </p>
-              <div className="mt-4 space-y-3">
-                {schedule.directions.slice(0, 2).map((direction) => (
-                  <div
-                    key={direction}
-                    className="rounded-[18px] bg-white px-4 py-3 text-sm font-semibold text-slate-800"
-                  >
-                    {direction}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[28px] bg-[#eff4f7] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Yaklaşan Bilgi
-              </p>
-              <div className="mt-4 rounded-[18px] bg-white px-4 py-4">
-                <div className="text-sm text-slate-500">İlk görünür tarih</div>
-                <div className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
-                  {schedule.days[0]?.date ?? "-"}
-                </div>
-                <div className="mt-3 text-sm text-slate-500">Görünen toplam gün</div>
-                <div className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
-                  {schedule.days.length}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {schedule?.routes?.length ? (
-          <div className="mb-6 flex flex-wrap gap-3">
-            {schedule.routes.slice(0, 4).map((route) => (
-              <button
-                key={route.mod}
-                type="button"
-                onClick={() => {
-                  setScheduleLoading(true);
-                  setScheduleError(null);
-                  fetch(`/api/akgunler/schedule?route=${route.slug}`)
-                    .then(async (response) => {
-                      const json = (await response.json()) as SchedulePayload | { error?: string };
-                      if (!response.ok) {
-                        throw new Error("error" in json ? json.error ?? "Sefer takvimi alınamadı." : "Sefer takvimi alınamadı.");
-                      }
-                      setSchedule(json as SchedulePayload);
-                    })
-                    .catch((requestError) => {
-                      setScheduleError(
-                        requestError instanceof Error
-                          ? requestError.message
-                          : "Sefer takvimi alınamadı."
-                      );
-                    })
-                    .finally(() => setScheduleLoading(false));
-                }}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  schedule.selectedRoute?.mod === route.mod
-                    ? "bg-[#006971] text-white"
-                    : "bg-[#eff4f7] text-slate-700"
-                }`}
-              >
-                {route.title}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        {scheduleLoading ? (
-          <div className="grid gap-5 md:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="h-56 animate-pulse rounded-[28px] bg-[#eff4f7]" />
-            ))}
-          </div>
-        ) : schedule?.days?.length ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {schedule.days.map((day) => (
-              <article
-                key={`${day.date}-${day.weekday}`}
-                className="rounded-[28px] bg-white p-6 shadow-[0_24px_48px_-12px_rgba(23,29,30,0.08)] ring-1 ring-slate-100"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#006971]">
-                      {day.weekday}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-slate-900">
-                      {day.date}
-                    </h3>
-                  </div>
-                  <div className="rounded-full bg-[#eff4f7] px-3 py-1 text-xs font-semibold text-slate-600">
-                    {day.trips.length} sefer
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  {day.trips.slice(0, 4).map((trip, index) => (
-                    <div
-                      key={`${trip.time}-${trip.direction}-${index}`}
-                      className="rounded-[18px] bg-[#f8fbfc] p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-lg font-bold text-slate-900">{trip.time}</span>
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#006971]">
-                          {trip.direction}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{trip.vessel}</p>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-            {scheduleError ?? "Sefer takvimi verisi şu anda alınamadı."}
-          </div>
-        )}
-      </section>
-
-      <section className="mx-auto max-w-screen-2xl px-8 pb-24">
-        <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="mb-4 block text-sm font-bold uppercase tracking-[0.22em] text-[#006971]">
-              Görsel Sefer Kartları
-            </span>
-            <h2 className="text-4xl font-extrabold tracking-[-0.04em] md:text-5xl">
-              Takvim verisini görsel kartlarla hızlı okuyun
-            </h2>
-          </div>
-        </div>
-
-        {schedule?.days?.length ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
-            <article className="group relative overflow-hidden rounded-[32px] shadow-[0_24px_48px_-12px_rgba(23,29,30,0.12)] md:col-span-7">
-              <img
-                src="/antso-liman.jpg"
-                alt={schedule.selectedRoute?.title ?? "Sefer kartı"}
-                className="h-full min-h-[520px] w-full object-cover transition duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-              <div className="absolute bottom-8 left-8 right-8 flex items-end justify-between gap-5">
-                <div>
-                  <span className="mb-3 inline-block rounded-full bg-[#006971]/30 px-3 py-1 text-xs font-bold uppercase text-white backdrop-blur-md">
-                    Öne çıkan gün
-                  </span>
-                  <h3 className="text-3xl font-bold text-white">
-                    {schedule.days[0]?.date} {schedule.days[0]?.weekday ? `· ${schedule.days[0].weekday}` : ""}
-                  </h3>
-                  <p className="mt-2 text-sm font-medium text-white/85">
-                    {schedule.selectedRoute?.title}
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    {schedule.days[0]?.trips.slice(0, 3).map((trip, index) => (
-                      <div
-                        key={`${trip.time}-${trip.direction}-${index}`}
-                        className="rounded-full bg-white/14 px-4 py-2 text-sm text-white backdrop-blur-sm"
-                      >
-                        <span className="font-semibold">{trip.time}</span>
-                        <span className="mx-2 text-white/60">•</span>
-                        <span>{trip.direction}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold uppercase text-white/60">Toplam sefer</p>
-                  <p className="text-3xl font-bold text-white">
-                    {schedule.days[0]?.trips.length ?? 0}
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <div className="flex flex-col gap-8 md:col-span-5">
-              {schedule.days.slice(1, 3).map((day) => (
-                <article
-                  key={`${day.date}-${day.weekday}`}
-                  className="group relative overflow-hidden rounded-[32px] shadow-[0_24px_48px_-12px_rgba(23,29,30,0.12)]"
-                >
-                  <img
-                    src="/antso-liman.jpg"
-                    alt={`${day.date} sefer kartı`}
-                    className="h-[246px] w-full object-cover transition duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <h3 className="text-2xl font-bold text-white">
-                      {day.date}
-                    </h3>
-                    <p className="mt-1 text-sm text-white/80">{day.weekday}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {day.trips.slice(0, 2).map((trip, index) => (
-                        <span
-                          key={`${trip.time}-${trip.direction}-${index}`}
-                          className="rounded-full bg-white/14 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm"
-                        >
-                          {trip.time} · {trip.direction}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
-            <div className="min-h-[520px] rounded-[32px] bg-[#eff4f7] md:col-span-7" />
-            <div className="grid gap-8 md:col-span-5">
-              <div className="h-[246px] rounded-[32px] bg-[#eff4f7]" />
-              <div className="h-[246px] rounded-[32px] bg-[#eff4f7]" />
-            </div>
-          </div>
-        )}
-      </section>
     </div>
+  );
+}
+
+function useInView<T extends HTMLElement>(options?: IntersectionObserverInit) {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, ...options }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [options]);
+
+  return { ref, inView };
+}
+
+const FEATURES = [
+  {
+    title: "EN YAKIN ROTA",
+    description:
+      "Kıbrıs'a en yakın noktada bulunan Antso Limanı'ndan, Girne'ye 1,5 saatte ulaşın.",
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
+        <path d="M32 8c-7.18 0-13 5.82-13 13 0 9.75 13 25 13 25s13-15.25 13-25c0-7.18-5.82-13-13-13z" fill="#0f2d4c" />
+        <circle cx="32" cy="21" r="5" fill="#fff" />
+        <path d="M8 50c6-2 10-2 14 0s10 2 14 0 8-2 12 0 6 2 8 1" stroke="#7fb8d1" strokeWidth="2" strokeLinecap="round" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    title: "KONFORLU SEYAHAT",
+    description:
+      "Yolcularımıza özel güvenlik standartları ve üstün konfor özelliklerinden faydalanın.",
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
+        <circle cx="26" cy="18" r="7" stroke="#0f2d4c" strokeWidth="2.5" fill="none" />
+        <path d="M18 54V36c0-4 3-7 8-7s8 3 8 7v18" stroke="#0f2d4c" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <rect x="36" y="30" width="14" height="22" rx="2" fill="#7fb8d1" />
+        <path d="M40 30v-5h6v5" stroke="#0f2d4c" strokeWidth="2" fill="none" />
+        <circle cx="22" cy="14" r="3" fill="#7fb8d1" />
+        <path d="M19 14l2 2 4-4" stroke="#0f2d4c" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    title: "HIZLI ULAŞIM",
+    description:
+      "350 metre uzunluğunda hizmet veren iskelemize 2 adet gemi yanaşabilmektedir.",
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
+        <path d="M12 42h40l-4 8H16l-4-8z" fill="#0f2d4c" />
+        <path d="M18 42V28h28v14" fill="#0f2d4c" />
+        <rect x="22" y="22" width="20" height="6" fill="#0f2d4c" />
+        <rect x="30" y="16" width="4" height="6" fill="#0f2d4c" />
+        <rect x="24" y="32" width="4" height="4" fill="#fff" />
+        <rect x="32" y="32" width="4" height="4" fill="#fff" />
+        <rect x="40" y="32" width="4" height="4" fill="#fff" />
+        <path d="M6 54c4-2 8-2 12 0s8 2 12 0 8-2 12 0 8 2 12 0 6-2 8-1" stroke="#7fb8d1" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+      </svg>
+    ),
+  },
+  {
+    title: "GÜVENLİ ÖDEME",
+    description:
+      "Güvenli ödeme sistemimiz sayesinde kişisel bilgileriniz daima güvende rahat edin.",
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
+        <rect x="8" y="18" width="42" height="28" rx="3" fill="#0f2d4c" />
+        <rect x="8" y="24" width="42" height="6" fill="#7fb8d1" />
+        <rect x="14" y="36" width="10" height="4" rx="1" fill="#fff" />
+        <path d="M42 30l12 3v8c0 7-5 11-12 13-7-2-12-6-12-13v-8l12-3z" fill="#7fb8d1" stroke="#0f2d4c" strokeWidth="2" />
+        <path d="M36 40l4 4 8-8" stroke="#0f2d4c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>
+    ),
+  },
+];
+
+function WhyChooseUsSection() {
+  const { ref, inView } = useInView<HTMLDivElement>();
+
+  return (
+    <section className="relative overflow-hidden bg-white py-24">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-16 select-none text-center font-headline text-[80px] font-extrabold uppercase leading-none tracking-tight text-[#e2eef5]/70 md:text-[140px]"
+      >
+        Anamur Deniz
+        <br />
+        Otobüsleri
+      </span>
+
+      <div ref={ref} className="relative mx-auto max-w-7xl px-6">
+        <div className="mb-16 text-center">
+          <p className="mb-3 flex items-center justify-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-[#56b9d0]">
+            <span className="h-px w-8 bg-[#56b9d0]" />
+            Anamur Deniz Otobüsleri
+            <span className="h-px w-8 bg-[#56b9d0]" />
+          </p>
+          <h2 className="font-headline text-3xl font-extrabold tracking-tight text-[#0f2d4c] md:text-5xl">
+            NEDEN BİZİ TERCİH ETMELİSİNİZ
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((feature, index) => (
+            <div
+              key={feature.title}
+              style={{ transitionDelay: `${index * 120}ms` }}
+              className={`group relative flex flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white px-6 py-10 text-center shadow-sm transition-all duration-700 ease-out hover:-translate-y-2 hover:border-[#56b9d0]/50 hover:shadow-[0_20px_40px_-12px_rgba(15,45,76,0.18)] ${
+                inView ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+              }`}
+            >
+              <div className="mx-auto mb-6 h-24 w-24 transition-transform duration-500 group-hover:scale-110">
+                {feature.icon}
+              </div>
+              <h3 className="mb-4 font-headline text-lg font-extrabold tracking-wide text-[#0f2d4c]">
+                {feature.title}
+              </h3>
+              <p className="text-sm leading-6 text-slate-500">{feature.description}</p>
+              <span className="absolute bottom-0 right-0 h-0 w-0 border-b-[18px] border-l-[18px] border-b-[#56b9d0]/50 border-l-transparent transition-all duration-500 group-hover:border-b-[24px] group-hover:border-l-[24px]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
