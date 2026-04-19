@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { CloudflareTurnstile } from "@/components/ui/cloudflare-turnstile";
 
 function LoginForm() {
   const router = useRouter();
@@ -15,10 +16,17 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(callbackError ?? "");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!turnstileToken) {
+      setError("Lütfen önce 'Gerçek kişi olduğunuzu doğrulayın' adımını tamamlayın.");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createBrowserSupabase();
@@ -38,7 +46,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="grid w-full max-w-5xl antso-box-gap lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="grid w-full max-w-6xl antso-box-gap lg:grid-cols-[1fr_1.1fr]">
       <section className="rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,#132a40_0%,#10253d_100%)] p-8 text-white shadow-[0_30px_80px_rgba(18,38,60,0.18)] lg:p-10">
         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam">
           <span className="h-2 w-2 rounded-full bg-brand-sky" />
@@ -71,7 +79,7 @@ function LoginForm() {
         </div>
       </section>
 
-      <section className="rounded-[34px] border border-[#d3e1e7] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,250,252,0.98))] p-7 shadow-[0_26px_70px_rgba(18,38,60,0.08)] lg:p-8">
+      <section className="rounded-[34px] border border-[#d3e1e7] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,250,252,0.98))] p-8 shadow-[0_26px_70px_rgba(18,38,60,0.08)] lg:p-10">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/62">Kullanıcı girişi</p>
           <h2 className="text-2xl font-semibold text-slate-900">Giriş Yap</h2>
@@ -115,10 +123,14 @@ function LoginForm() {
             />
           </div>
 
+          <div className="pt-1">
+            <CloudflareTurnstile onVerify={setTurnstileToken} />
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full rounded-full bg-[linear-gradient(180deg,#15314b_0%,#10253d_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_20px_40px_rgba(18,38,60,0.18)] transition hover:brightness-105 disabled:opacity-50"
+            disabled={loading || !turnstileToken}
+            className="w-full rounded-full bg-[linear-gradient(180deg,#15314b_0%,#10253d_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_20px_40px_rgba(18,38,60,0.18)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
           </button>

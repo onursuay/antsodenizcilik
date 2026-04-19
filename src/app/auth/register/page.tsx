@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { CloudflareTurnstile } from "@/components/ui/cloudflare-turnstile";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -10,10 +11,16 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!turnstileToken) {
+      setError("Lütfen önce 'Gerçek kişi olduğunuzu doğrulayın' adımını tamamlayın.");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Şifreler eşleşmiyor");
@@ -70,7 +77,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center antso-page-space">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-lg border p-6"
+        className="w-full max-w-md space-y-4 rounded-lg border p-8"
       >
         <h1 className="text-xl font-semibold">Kayıt Ol</h1>
 
@@ -123,10 +130,14 @@ export default function RegisterPage() {
           />
         </div>
 
+        <div className="pt-1">
+          <CloudflareTurnstile onVerify={setTurnstileToken} />
+        </div>
+
         <button
           type="submit"
-          disabled={loading}
-          className="w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          disabled={loading || !turnstileToken}
+          className="w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
         </button>
