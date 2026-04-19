@@ -9,8 +9,16 @@ const KURUMSAL_ITEMS = [
   { label: "Çerez Politikası", href: "/kurumsal/cerez-politikasi" },
 ];
 
+const NAV_LINKS = [
+  { label: "Ana Sayfa", href: "/" },
+  { label: "Sefer Takvimi", href: "/sefer-takvimi" },
+  { label: "S.S.S.", href: "/sss" },
+  { label: "İletişim", href: "/iletisim" },
+];
+
 export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   const [kurumsalOpen, setKurumsalOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,15 +31,27 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const menuItemClass =
     "inline-flex items-center text-[15.5px] font-medium text-slate-600 transition hover:text-brand-ocean";
   const highlightedMenuItemClass =
     "antso-gradient-cta inline-flex items-center rounded-full px-4 py-2.5 text-[15.5px] font-semibold text-white transition hover:brightness-105";
 
   return (
-    <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-4 xl:flex-nowrap">
-      <div className="hidden min-w-0 flex-1 items-center justify-center gap-7 md:flex xl:justify-center">
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-6 rounded-full bg-white/72 px-6 py-3 shadow-[0_12px_32px_rgba(18,38,60,0.05)] ring-1 ring-white/90 backdrop-blur-xl">
+    <>
+      {/* Desktop menu */}
+      <div className="hidden min-w-0 flex-1 items-center justify-center gap-4 lg:flex">
+        <div className="flex min-w-0 items-center gap-8 rounded-full bg-white/72 px-8 py-3 shadow-[0_12px_32px_rgba(18,38,60,0.05)] ring-1 ring-white/90 backdrop-blur-xl xl:gap-10 xl:px-10">
           <Link href="/" className={menuItemClass}>
             Ana Sayfa
           </Link>
@@ -40,7 +60,6 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
             Sefer Takvimi
           </Link>
 
-          {/* Kurumsal dropdown */}
           <div ref={dropdownRef} className="relative">
             <button
               onClick={() => setKurumsalOpen((v) => !v)}
@@ -83,7 +102,8 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+      {/* Desktop right actions */}
+      <div className="hidden shrink-0 items-center gap-3 lg:flex">
         <Link href="/#bilet-al" className={highlightedMenuItemClass}>
           Bilet Al
         </Link>
@@ -113,6 +133,125 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
           </Link>
         )}
       </div>
-    </div>
+
+      {/* Mobile right-side actions */}
+      <div className="flex items-center gap-2 lg:hidden">
+        <Link
+          href="/#bilet-al"
+          className="antso-gradient-cta rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+        >
+          Bilet Al
+        </Link>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Menüyü aç"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white/20"
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile overlay menu */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <div
+            className="absolute inset-0 bg-[#0b1e2e]/70 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="absolute right-0 top-0 flex h-full w-[84%] max-w-sm flex-col overflow-y-auto bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <span className="font-headline text-lg font-bold tracking-tight text-[#0f2d4c]">
+                Menü
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Menüyü kapat"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <nav className="flex-1 space-y-1 p-4">
+              {NAV_LINKS.slice(0, 2).map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-xl px-4 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-ocean"
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+              <div className="rounded-xl px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                  Kurumsal
+                </p>
+                <div className="space-y-1">
+                  {KURUMSAL_ITEMS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="block rounded-lg px-2 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-ocean"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {NAV_LINKS.slice(2).map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-xl px-4 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-ocean"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="space-y-2 border-t border-slate-100 p-4">
+              {signedIn ? (
+                <>
+                  <Link
+                    href="/account/bookings"
+                    onClick={() => setMobileOpen(false)}
+                    className="antso-gradient-cta block rounded-full px-5 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    Hesabım
+                  </Link>
+                  <form action="/auth/logout" method="post">
+                    <button
+                      type="submit"
+                      className="w-full rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-600"
+                    >
+                      Çıkış
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-full border border-brand-ocean/20 bg-white px-5 py-3 text-center text-sm font-semibold text-brand-ocean"
+                >
+                  Giriş Yap
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
