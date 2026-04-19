@@ -22,13 +22,11 @@ export async function PublicHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#10253d]/96 shadow-[0_10px_30px_rgba(4,12,25,0.24)] backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center">
-          <div className="rounded-[18px] bg-white px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.18)] ring-1 ring-white/70">
-            <BrandLogo
-              priority
-              className="w-[74px] sm:w-[84px]"
-              imageClassName="h-auto w-full object-contain"
-            />
-          </div>
+          <BrandLogo
+            priority
+            className="w-[120px] sm:w-[140px]"
+            imageClassName="h-auto w-full object-contain"
+          />
         </Link>
 
         <PublicHeaderMenu signedIn={Boolean(user)} />
