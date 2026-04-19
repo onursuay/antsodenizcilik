@@ -353,12 +353,9 @@ export function PublicBookingHome() {
       >
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCMcWsJBl-zumd0rfr2S95kp8hojXNb6zBiUBusC-RSEzr34ERnbQcSJXpQevWyviXgb0ZVg-UsywZ5_c96S22RGvjsWWROvAw2pJ35C5EZrPFPZNXdbZ-ieOSH4NZvSCv6YXIEaIqkfcZTO8R6-jWLK-JBSR2AQwXnlDwB45hcWDp-kmsZDIY_2JKr1zu_tV7ubYbi06aA6_i1qHn0YzAdGTlcmrn23Ff8f3c07AU0GKqtXdnWu_EQ1NNwOSMDoQETDg0hxqeLTAv0')",
-          }}
+          style={{ backgroundImage: "url('/hero-sea.png')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5fafccc]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b1e2e]/20 via-transparent to-[#f5fafccc]" />
 
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center pt-8 text-center">
           <div className="mb-8">
