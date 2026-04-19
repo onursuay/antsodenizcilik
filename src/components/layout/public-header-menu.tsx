@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 const KURUMSAL_ITEMS = [
   { label: "Gizlilik Politikası", href: "/kurumsal/gizlilik-politikasi" },
   { label: "Aydınlatma Metni", href: "/kurumsal/aydinlatma-metni" },
+  { label: "Açık Rıza Metni", href: "/kurumsal/acik-riza-metni" },
   { label: "Çerez Politikası", href: "/kurumsal/cerez-politikasi" },
 ];
 

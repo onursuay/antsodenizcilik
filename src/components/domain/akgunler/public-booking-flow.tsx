@@ -1865,6 +1865,9 @@ function BookingSearchCard({
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [acceptedAydinlatma, setAcceptedAydinlatma] = useState(false);
+  const [acceptedRiza, setAcceptedRiza] = useState(false);
+  const [consentError, setConsentError] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const isGidisDonus = search.tripType === "gidis-donus";
 
@@ -1884,6 +1887,10 @@ function BookingSearchCard({
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
+
+  useEffect(() => {
+    if (acceptedAydinlatma && acceptedRiza) setConsentError(false);
+  }, [acceptedAydinlatma, acceptedRiza]);
 
   const guzergah = getSelectedGuzergah(guzergahlar, search);
   const sehirler = guzergah?.sehirler ?? [];
@@ -1910,6 +1917,12 @@ function BookingSearchCard({
     event.preventDefault();
     if (!isValid || !guzergah) return;
 
+    if (!acceptedAydinlatma || !acceptedRiza) {
+      setConsentError(true);
+      return;
+    }
+
+    setConsentError(false);
     setError(null);
     setOverlayOpen(true);
 
@@ -1969,22 +1982,32 @@ function BookingSearchCard({
 
       <form onSubmit={handleSubmit} className={`space-y-4 ${variant === "compact" ? "rounded-[18px] bg-white p-4 shadow-[0_12px_30px_rgba(0,0,0,0.12)]" : ""}`}>
         {variant === "hero" ? (
-          <div className="flex flex-nowrap items-center gap-4 px-2">
-            <TripTypeButton
-              active={search.tripType === "tek-gidis"}
-              label="Tek Yön"
-              onClick={() =>
-                updateSearch({ tripType: "tek-gidis", donusTarihi: "" })
-              }
-            />
-            <TripTypeButton
-              active={search.tripType === "gidis-donus"}
-              label="Gidiş - Dönüş"
-              onClick={() => updateSearch({ tripType: "gidis-donus" })}
+          <div className="flex flex-col gap-3 px-2 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+            <div className="flex flex-nowrap items-center gap-4">
+              <TripTypeButton
+                active={search.tripType === "tek-gidis"}
+                label="Tek Yön"
+                onClick={() =>
+                  updateSearch({ tripType: "tek-gidis", donusTarihi: "" })
+                }
+              />
+              <TripTypeButton
+                active={search.tripType === "gidis-donus"}
+                label="Gidiş - Dönüş"
+                onClick={() => updateSearch({ tripType: "gidis-donus" })}
+              />
+            </div>
+            <ConsentCheckboxes
+              aydinlatma={acceptedAydinlatma}
+              onAydinlatmaChange={setAcceptedAydinlatma}
+              riza={acceptedRiza}
+              onRizaChange={setAcceptedRiza}
+              invalid={consentError}
             />
           </div>
         ) : (
-          <div className="flex flex-nowrap items-center gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+            <div className="flex flex-nowrap items-center gap-3">
             <TripTypeButton
               active={search.tripType === "tek-gidis"}
               label="Tek Yön"
@@ -1997,7 +2020,21 @@ function BookingSearchCard({
               label="Gidiş - Dönüş"
               onClick={() => updateSearch({ tripType: "gidis-donus" })}
             />
+            </div>
+            <ConsentCheckboxes
+              aydinlatma={acceptedAydinlatma}
+              onAydinlatmaChange={setAcceptedAydinlatma}
+              riza={acceptedRiza}
+              onRizaChange={setAcceptedRiza}
+              invalid={consentError}
+            />
           </div>
+        )}
+
+        {consentError && (
+          <p className="rounded-[12px] border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800">
+            Devam etmek için Aydınlatma Metni ve Açık Rıza Metni&apos;ni kabul etmeniz gerekiyor.
+          </p>
         )}
 
         {error && <ErrorPanel message={error} />}
@@ -2412,6 +2449,68 @@ function DateField({
       onChange={onChange}
       variant={variant ?? "compact"}
     />
+  );
+}
+
+function ConsentCheckboxes({
+  aydinlatma,
+  onAydinlatmaChange,
+  riza,
+  onRizaChange,
+  invalid,
+}: {
+  aydinlatma: boolean;
+  onAydinlatmaChange: (value: boolean) => void;
+  riza: boolean;
+  onRizaChange: (value: boolean) => void;
+  invalid: boolean;
+}) {
+  const ringClass = invalid && (!aydinlatma || !riza) ? "ring-1 ring-amber-400" : "";
+  const rowClass = `flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5 ${ringClass} ${invalid ? "rounded-lg" : ""}`;
+
+  return (
+    <div className={rowClass}>
+      <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600 sm:text-sm">
+        <input
+          type="checkbox"
+          checked={aydinlatma}
+          onChange={(event) => onAydinlatmaChange(event.target.checked)}
+          className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 text-[#006971] focus:ring-[#006971]"
+        />
+        <span>
+          <a
+            href="/kurumsal/aydinlatma-metni"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[#006971] hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Aydınlatma Metni
+          </a>
+          &apos;ni okudum ve kabul ediyorum.
+        </span>
+      </label>
+      <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600 sm:text-sm">
+        <input
+          type="checkbox"
+          checked={riza}
+          onChange={(event) => onRizaChange(event.target.checked)}
+          className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 text-[#006971] focus:ring-[#006971]"
+        />
+        <span>
+          <a
+            href="/kurumsal/acik-riza-metni"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[#006971] hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Açık Rıza Metni
+          </a>
+          &apos;ni okudum ve onaylıyorum.
+        </span>
+      </label>
+    </div>
   );
 }
 
