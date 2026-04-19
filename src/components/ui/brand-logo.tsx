@@ -14,10 +14,10 @@ export function BrandLogo({
   return (
     <div className={className}>
       <Image
-        src="/antso-denizcilik-logo.png"
+        src="/antso-logo.png"
         alt="Antso Denizcilik"
-        width={291}
-        height={123}
+        width={400}
+        height={400}
         priority={priority}
         className={imageClassName}
       />

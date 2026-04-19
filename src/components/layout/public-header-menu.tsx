@@ -165,8 +165,8 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
         )}
       </div>
 
-      {/* Mobile right-side actions */}
-      <div className="flex items-center gap-2 lg:hidden">
+      {/* Mobile actions: Bilet Al centered between logo and hamburger */}
+      <div className="flex flex-1 items-center justify-center lg:hidden">
         <Link
           href="/#bilet-al"
           onClick={() => setMobileOpen(false)}
@@ -175,6 +175,8 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
           {ticketIcon}
           Bilet Al
         </Link>
+      </div>
+      <div className="flex items-center lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
