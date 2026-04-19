@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { bileteDonustur3D } from "@/lib/akgunler/client";
 
 export async function POST(request: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://antsodenizcilik.vercel.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bilet.antsodenizcilik.com";
 
   try {
     const formData = await request.formData();

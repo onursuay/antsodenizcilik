@@ -11,7 +11,7 @@ Tek güzergah: **Anamur ↔ Girne** (feribot).
 Müşteri biletleri Akgünler'in kendi API'si üzerinden alınır; ödeme Akgünler'in 3D Secure sistemi ile yapılır.
 
 - **GitHub:** https://github.com/onursuay/antso_denizcilik
-- **Canlı site:** https://antsodenizcilik.vercel.app
+- **Canlı site:** https://bilet.antsodenizcilik.com
 - **Stack:** Next.js 16 App Router + TypeScript + Tailwind + Supabase (PostgreSQL + Auth + RLS)
 - **Deploy:** Vercel (otomatik, `main` push'ta)
 
@@ -149,7 +149,7 @@ REFUND_WEBHOOK_SECRET=
 CRON_SECRET=                        # Vercel Cron isteklerini doğrular
 
 # App
-NEXT_PUBLIC_APP_URL=https://antsodenizcilik.vercel.app
+NEXT_PUBLIC_APP_URL=https://bilet.antsodenizcilik.com
 WEBHOOK_SKIP_VERIFICATION=          # Sadece dev'de: true
 
 # Akgünler API (prod'da Vercel'e eklenmelidir)
@@ -157,7 +157,7 @@ AKGUNLER_BASE_URL=https://www.akgunlerbilet.com/akgunler_web_service/api.php
 AKGUNLER_A_ID=2145
 AKGUNLER_AK_ID=777
 AKGUNLER_3D_PAYMENT_URL=https://www.akgunlerbilet.com/ws_secure_payment.php
-AKGUNLER_CALLBACK_URL=https://antsodenizcilik.vercel.app/api/akgunler/payment-callback
+AKGUNLER_CALLBACK_URL=https://bilet.antsodenizcilik.com/api/akgunler/payment-callback
 ```
 
 **Not:** `CRON_SECRET` Vercel'e eklenirken `printf '%s' 'değer'` kullanın, `echo` kullanmayın (trailing newline sorunu yaratır).

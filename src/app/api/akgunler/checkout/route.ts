@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Eksik odeme bilgileri" }, { status: 400 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://antsodenizcilik.vercel.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bilet.antsodenizcilik.com";
     const callbackUrl = `${appUrl}/api/akgunler/payment-callback`;
 
     const formParams = build3DSecureFormParams({
