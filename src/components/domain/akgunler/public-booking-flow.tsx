@@ -2088,10 +2088,10 @@ function BookingSearchCard({
           <button
             type="submit"
             disabled={!isValid}
-            className={`antso-shimmer relative flex w-full items-center justify-center gap-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
+            className={`antso-shimmer relative flex w-full items-center justify-center gap-2 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none ${
               variant === "hero"
-                ? "h-[56px] rounded-full bg-[#006971] shadow-[0_14px_30px_rgba(0,105,113,0.32)] hover:bg-[#00565c] hover:shadow-[0_18px_40px_rgba(0,105,113,0.42)] disabled:bg-[#006971]/70 disabled:shadow-none active:scale-[0.98]"
-                : "h-[58px] rounded-[18px] bg-[#006971] shadow-[0_10px_24px_rgba(0,105,113,0.28)] hover:bg-[#00565c] disabled:bg-[#006971]/70 disabled:shadow-none"
+                ? "h-[56px] rounded-full bg-[linear-gradient(135deg,#0d9488_0%,#14b8a6_45%,#22d3ee_100%)] shadow-[0_18px_36px_rgba(20,184,166,0.45)] hover:brightness-110 hover:shadow-[0_22px_46px_rgba(20,184,166,0.58)] active:scale-[0.98]"
+                : "h-[58px] rounded-[18px] bg-[linear-gradient(135deg,#0d9488_0%,#14b8a6_45%,#22d3ee_100%)] shadow-[0_14px_30px_rgba(20,184,166,0.38)] hover:brightness-110"
             }`}
           >
             <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
