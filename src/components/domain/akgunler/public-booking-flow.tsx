@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { ProcessingOverlay } from "./processing-overlay";
 
@@ -321,9 +322,11 @@ function getTripSelectionReady(session: BookingSession) {
 
 export function PublicBookingHome() {
   const router = useRouter();
-  const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Form hemen render edilsin — Anamur-Girne varsayılanıyla başla,
+  // fetch arka planda route bilgisini günceller.
+  const [guzergahlar, setGuzergahlar] = useState<GuzergahData[]>([REFERENCE_HOME_ROUTE]);
   const [error, setError] = useState<string | null>(null);
+  const loading = false;
 
   useEffect(() => {
     fetch("/api/akgunler/routes")
@@ -332,17 +335,17 @@ export function PublicBookingHome() {
         if (!response.ok) {
           throw new Error(json.error ?? "Güzergah bilgisi alınamadı.");
         }
-        setGuzergahlar(json.guzergahlar ?? []);
+        if (json.guzergahlar?.length) {
+          setGuzergahlar(json.guzergahlar);
+        }
       })
       .catch((requestError) => {
-        setGuzergahlar([REFERENCE_HOME_ROUTE]);
         setError(
           requestError instanceof Error
             ? requestError.message
             : "Güzergah bilgisi alınamadı."
         );
-      })
-      .finally(() => setLoading(false));
+      });
   }, []);
 
   return (
@@ -870,10 +873,31 @@ export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
     (summary.gidis?.ucret ?? 0) + (summary.donus?.ucret ?? 0)
   );
 
+  const matchesDate = (item: SeferData, date: string) =>
+    !date || (item.sefer_tarih ?? "").slice(0, 10) === date;
+
+  const gidisItems = session.sailings.g_seferler.filter((item) =>
+    matchesDate(item, session.search.gidisTarihi)
+  );
+  const donusItems = session.sailings.d_seferler.filter((item) =>
+    matchesDate(item, session.search.donusTarihi)
+  );
+
   return (
     <div className="min-h-screen bg-[#f3f5f8] pb-10">
       <section className="bg-[#10253d] pb-8 pt-4">
         <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-3 flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm font-medium text-white/80 transition hover:text-white"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Ana sayfaya dön
+            </Link>
+          </div>
           <BookingSearchCard
             guzergahlar={session.guzergahlar}
             initialSearch={session.search}
@@ -900,7 +924,7 @@ export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
                 session.search.gidisTarihi
               )}`}
               dateLabel={formatDateLabel(session.search.gidisTarihi)}
-              items={session.sailings.g_seferler}
+              items={gidisItems}
               from={summary.from}
               to={summary.to}
               selectedId={session.selected.gidisSeferId}
@@ -919,7 +943,7 @@ export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
                   session.search.donusTarihi
                 )}`}
                 dateLabel={formatDateLabel(session.search.donusTarihi)}
-                items={session.sailings.d_seferler}
+                items={donusItems}
                 from={summary.to}
                 to={summary.from}
                 selectedId={session.selected.donusSeferId}
@@ -1749,11 +1773,10 @@ function BookingSearchCard({
             />
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2 text-white">
+          <div className="flex flex-wrap gap-3">
             <TripTypeButton
               active={search.tripType === "tek-gidis"}
               label="Tek Yön"
-              dark
               onClick={() =>
                 updateSearch({ tripType: "tek-gidis", donusTarihi: "" })
               }
@@ -1761,7 +1784,6 @@ function BookingSearchCard({
             <TripTypeButton
               active={search.tripType === "gidis-donus"}
               label="Gidiş - Dönüş"
-              dark
               onClick={() => updateSearch({ tripType: "gidis-donus" })}
             />
           </div>

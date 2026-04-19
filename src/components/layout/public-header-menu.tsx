@@ -155,13 +155,21 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
       </div>
 
       {/* Mobile overlay menu */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          <div
-            className="absolute inset-0 bg-[#0b1e2e]/70 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="absolute right-0 top-0 flex h-full w-[84%] max-w-sm flex-col overflow-y-auto bg-white shadow-2xl">
+      <div
+        className={`fixed inset-0 z-[100] lg:hidden ${mobileOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          className={`absolute inset-0 bg-[#0b1e2e]/70 backdrop-blur-sm transition-opacity duration-300 ${
+            mobileOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setMobileOpen(false)}
+        />
+        <div
+          className={`absolute right-0 top-0 flex h-full w-[86%] max-w-sm flex-col overflow-y-auto rounded-l-[28px] bg-white shadow-[0_0_60px_rgba(4,12,25,0.45)] transition-transform duration-300 ease-out ${
+            mobileOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <span className="font-headline text-lg font-bold tracking-tight text-[#0f2d4c]">
                 Menü
@@ -249,9 +257,8 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
                 </Link>
               )}
             </div>
-          </div>
         </div>
-      )}
+      </div>
     </>
   );
 }
