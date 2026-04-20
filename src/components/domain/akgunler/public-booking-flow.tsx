@@ -1634,17 +1634,6 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
             </div>
           </SectionCard>
 
-          <SectionCard title="Ekstra Hizmetler" compact>
-            <div className="space-y-3">
-              {["KKTC 2GB eSIM İnternet Paketi", "KKTC 3GB eSIM İnternet Paketi", "KKTC 5GB eSIM İnternet Paketi"].map((item, index) => (
-                <label key={item} className="flex items-start gap-3 rounded-[10px] border border-slate-200 px-3 py-3 text-sm text-slate-600">
-                  <input type="checkbox" className="mt-1 h-4 w-4 rounded border-slate-300" />
-                  <span>{item} · {(261.11 + index * 52).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</span>
-                </label>
-              ))}
-            </div>
-          </SectionCard>
-
           <SectionCard title="Hediye İndirim Kodları" compact>
             <div className="grid gap-3 md:grid-cols-[1fr_120px]">
               <input
