@@ -69,6 +69,8 @@ export function PublicFooter() {
                 </a>
               ))}
             </div>
+
+            <p className="mt-6 text-sm text-white/48">Feribot taşımacılığının güvenli adresi.</p>
           </section>
 
           <FooterColumn title="Hızlı Bağlantılar">
@@ -122,10 +124,9 @@ export function PublicFooter() {
           </section>
         </div>
 
-        <div className="mt-6 flex flex-col antso-box-gap text-sm text-white/48 md:flex-row md:items-center md:justify-between">
-          <p>Feribot taşımacılığının güvenli adresi.</p>
-          <p>Tüm Hakları Saklıdır © {year}, ANTSO Denizcilik</p>
-        </div>
+        <p className="mt-6 text-center text-sm text-white/48">
+          Tüm Hakları Saklıdır © {year}, ANTSO Denizcilik
+        </p>
       </div>
     </footer>
   );
