@@ -16,8 +16,8 @@ export function BrandLogo({
       <Image
         src="/antso-logo.png"
         alt="Antso Denizcilik"
-        width={300}
-        height={136}
+        width={600}
+        height={307}
         priority={priority}
         className={imageClassName}
       />
