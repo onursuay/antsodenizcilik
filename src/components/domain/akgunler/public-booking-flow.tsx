@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BrandLogo } from "@/components/ui/brand-logo";
 import { ProcessingOverlay } from "./processing-overlay";
 
 type TripType = "tek-gidis" | "gidis-donus";
@@ -1426,14 +1425,11 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
 
       <section className="bg-[#10253d] py-5">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-between gap-4 text-white">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[#8ec4db]">
-                Yolcu ve Ödeme
-              </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Rezervasyon bilgilerinizi tamamlayın</h1>
-            </div>
-            <BrandLogo className="w-[104px]" imageClassName="h-auto w-full object-contain brightness-0 invert" />
+          <div className="text-white">
+            <p className="text-xs uppercase tracking-[0.24em] text-[#8ec4db]">
+              Yolcu ve Ödeme
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Rezervasyon bilgilerinizi tamamlayın</h1>
           </div>
         </div>
       </section>
