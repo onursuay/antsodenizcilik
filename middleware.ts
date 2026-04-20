@@ -22,8 +22,9 @@ const AUTH_PREFIXES = [
 ];
 
 // Page routes requiring auth (non-API).
+// Akgünler booking flow (/voyages/[id]/book) is intentionally public so
+// guests can complete a purchase without signing up.
 const AUTH_PAGE_PATTERNS = [
-  /^\/voyages\/[^/]+\/book/,
   /^\/holds\//,
   /^\/bookings\//,
 ];

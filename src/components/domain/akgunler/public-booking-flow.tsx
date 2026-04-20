@@ -2464,19 +2464,15 @@ function ConsentCheckboxes({
   onAydinlatmaChange,
   riza,
   onRizaChange,
-  invalid,
 }: {
   aydinlatma: boolean;
   onAydinlatmaChange: (value: boolean) => void;
   riza: boolean;
   onRizaChange: (value: boolean) => void;
-  invalid: boolean;
+  invalid?: boolean;
 }) {
-  const ringClass = invalid && (!aydinlatma || !riza) ? "ring-1 ring-amber-400" : "";
-  const rowClass = `flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5 ${ringClass} ${invalid ? "rounded-lg" : ""}`;
-
   return (
-    <div className={rowClass}>
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
       <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600 sm:text-sm">
         <input
           type="checkbox"
