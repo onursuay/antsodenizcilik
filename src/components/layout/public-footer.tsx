@@ -9,11 +9,11 @@ const QUICK_LINKS = [
   { label: "İletişim", href: "/#iletisim" },
 ] as const;
 
-const BOOKING_LINKS = [
-  { label: "Bilet Al", href: "/#bilet-al" },
-  { label: "Rezervasyonlarım", href: "/account/bookings" },
-  { label: "Giriş Yap", href: "/auth/login" },
-  { label: "Akgünler Seferleri", href: "https://www.akgunlerbilet.com/" },
+const KURUMSAL_LINKS = [
+  { label: "Gizlilik Politikası", href: "/kurumsal/gizlilik-politikasi" },
+  { label: "Aydınlatma Metni", href: "/kurumsal/aydinlatma-metni" },
+  { label: "Açık Rıza Metni", href: "/kurumsal/acik-riza-metni" },
+  { label: "Çerez Politikası", href: "/kurumsal/cerez-politikasi" },
 ] as const;
 
 const SOCIAL_LINKS = [
@@ -85,32 +85,20 @@ export function PublicFooter() {
             ))}
           </FooterColumn>
 
-          <FooterColumn title="Bilet İşlemleri">
-            {BOOKING_LINKS.map((item) =>
-              item.href.startsWith("http") ? (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-white/68 transition hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm text-white/68 transition hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              )
-            )}
+          <FooterColumn title="Kurumsal">
+            {KURUMSAL_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm text-white/68 transition hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ))}
           </FooterColumn>
 
           <section>
-            <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">İletişim</p>
+            <p className="text-[13px] font-semibold uppercase tracking-[0.22em] text-brand-seafoam">İletişim</p>
             <div className="mt-5 antso-box-stack">
               <ContactItem label="E-posta" value="info@antsodenizcilik.com" href="mailto:info@antsodenizcilik.com" />
               <ContactItem label="Telefon" value="+90 530 257 48 55" href="tel:+905302574855" />
@@ -141,7 +129,7 @@ function FooterColumn({
 }) {
   return (
     <section>
-      <p className="text-xs uppercase tracking-[0.24em] text-brand-seafoam">{title}</p>
+      <p className="text-[13px] font-semibold uppercase tracking-[0.22em] text-brand-seafoam">{title}</p>
       <div className="mt-5 flex flex-col antso-box-gap">{children}</div>
     </section>
   );
