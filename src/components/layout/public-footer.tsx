@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrandLogo } from "@/components/ui/brand-logo";
+import Image from "next/image";
 
 const QUICK_LINKS = [
   { label: "Ana Sayfa", href: "/#ana-sayfa" },
@@ -47,14 +47,13 @@ export function PublicFooter() {
       <div className="antso-footer-inner">
         <div className="grid antso-box-gap border-b border-white/8 pb-8 lg:grid-cols-[1.2fr_0.9fr_0.95fr_1fr]">
           <section className="max-w-sm">
-            <div className="inline-flex rounded-[18px] bg-white px-3 py-2 shadow-[0_12px_28px_rgba(0,0,0,0.14)]">
-              <BrandLogo className="w-[92px] sm:w-[108px]" imageClassName="h-auto w-full object-contain" />
-            </div>
-
-            <p className="mt-5 text-sm leading-7 text-white/62">
-              Anamur ile Girne arasında hızlı, düzenli ve güvenli feribot rezervasyonu için
-              tasarlanan kurumsal biletleme deneyimi.
-            </p>
+            <Image
+              src="/antso-footer-logo.png"
+              alt="Antso Denizcilik"
+              width={500}
+              height={256}
+              className="h-auto w-[160px] sm:w-[190px]"
+            />
 
             <div className="mt-6 flex flex-wrap antso-box-gap">
               {SOCIAL_LINKS.map((item) => (
@@ -115,7 +114,7 @@ export function PublicFooter() {
               <ContactItem label="Telefon" value="+90 530 257 48 55" href="tel:+905302574855" />
             </div>
 
-            <div className="mt-6 rounded-[24px] bg-white/[0.04] p-4 ring-1 ring-white/8">
+            <div className="mt-6">
               <p className="text-xs uppercase tracking-[0.22em] text-white/44">Çalışma Saatleri</p>
               <p className="mt-3 text-sm text-white">Her gün 07:00 – 22:00</p>
               <p className="mt-1 text-sm text-white/62">Pazartesi - Pazar ve özel günler dahil</p>
