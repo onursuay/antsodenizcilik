@@ -76,6 +76,7 @@ interface BookingSession {
   id: string;
   guzergahlar: GuzergahData[];
   search: BookingSearchState;
+  cartToken: string;
   sailings: {
     s_id: number;
     g_seferler: SeferData[];
@@ -93,7 +94,7 @@ interface BookingSession {
 
 interface CheckoutPayload {
   formAction: string;
-  formParams: Record<string, string>;
+  staticParams: Record<string, string>;
 }
 
 interface ScheduleRouteLink {
@@ -601,6 +602,7 @@ function ReferenceHeroSearchCard({
         id,
         guzergahlar,
         search: { ...search },
+        cartToken: json.cart_token ?? "",
         sailings: {
           s_id: json.s_id ?? 0,
           g_seferler: json.g_seferler ?? [],
@@ -1038,6 +1040,7 @@ export function PublicBookingResultsPage({ sessionId }: { sessionId: string }) {
         s_id: String(session.sailings.s_id),
         gs_id: String(session.selected.gidisSeferId),
         y_mod: session.search.tripType,
+        cart_token: session.cartToken,
       });
 
       if (session.selected.donusSeferId) {
@@ -1341,6 +1344,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         body: JSON.stringify({
           s_id: session.sailings.s_id,
           yolcular,
+          cart_token: session.cartToken,
         }),
       });
 
@@ -1364,12 +1368,8 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sepetId: session.sailings.s_id,
-          ccHolder: payment.holder.trim().toUpperCase(),
-          ccNr: payment.cardNumber.replace(/\s/g, ""),
-          ccCvc2: payment.cvv,
-          ccExpMonth: payment.expMonth,
-          ccExpYear: payment.expYear,
           email: contact.email.trim(),
+          cartToken: session.cartToken,
         }),
       });
 
@@ -1378,7 +1378,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         throw new Error(checkoutJson.error ?? "Ödeme yönlendirmesi oluşturulamadı.");
       }
 
-      setCheckoutPayload(checkoutJson as CheckoutPayload);
+      setCheckoutPayload(checkoutJson as CheckoutPayload); // staticParams içerir; kart verisi yok
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -1410,6 +1410,9 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
 
   return (
     <div className="min-h-screen bg-[#f3f5f8] pb-10">
+      {/* Akgünler'e doğrudan POST eden form.
+          Statik alanlar sunucudan gelir; kart verisi React state'ten doldurulur.
+          Kart verisi (cc_nr, cc_cvc2) bizim sunucuya hiç gitmez. */}
       {checkoutPayload && (
         <form
           ref={autoFormRef}
@@ -1417,9 +1420,19 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
           action={checkoutPayload.formAction}
           className="hidden"
         >
-          {Object.entries(checkoutPayload.formParams).map(([name, value]) => (
-            <input key={name} type="hidden" name={name} value={value} />
+          {Object.entries(checkoutPayload.staticParams).map(([name, value]) => (
+            <input
+              key={name}
+              type="hidden"
+              name={name}
+              value={name === "email" ? contact.email.trim() : value}
+            />
           ))}
+          <input type="hidden" name="cc_holder" value={payment.holder.trim().toUpperCase()} />
+          <input type="hidden" name="cc_nr" value={payment.cardNumber.replace(/\s/g, "")} />
+          <input type="hidden" name="cc_cvc2" value={payment.cvv} />
+          <input type="hidden" name="cc_exp_month" value={payment.expMonth} />
+          <input type="hidden" name="cc_exp_year" value={payment.expYear} />
         </form>
       )}
 
@@ -1938,6 +1951,7 @@ function BookingSearchCard({
         id,
         guzergahlar,
         search,
+        cartToken: json.cart_token ?? "",
         sailings: {
           s_id: json.s_id ?? 0,
           g_seferler: json.g_seferler ?? [],

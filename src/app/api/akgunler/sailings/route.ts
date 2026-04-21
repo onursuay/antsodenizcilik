@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSeferler } from "@/lib/akgunler/client";
+import { generateCartToken } from "@/lib/akgunler/cart-token";
 
 export async function GET(request: Request) {
   try {
@@ -27,7 +28,12 @@ export async function GET(request: Request) {
       yolcuTurleri: yolcuTurleri ? JSON.parse(yolcuTurleri) : [{ id: 1, sayi: 1 }],
     });
 
-    return NextResponse.json(result);
+    const sepetId = (result as Record<string, unknown>).s_id as number | undefined;
+
+    return NextResponse.json({
+      ...result,
+      ...(sepetId ? { cart_token: generateCartToken(sepetId) } : {}),
+    });
   } catch (error) {
     console.error("Akgunler sailings error:", error);
     return NextResponse.json(

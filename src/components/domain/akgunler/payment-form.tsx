@@ -20,6 +20,7 @@ interface YolcuData {
 
 interface PaymentFormProps {
   sepetId: number;
+  cartToken: string;
   toplamFiyat: number;
   onBack: () => void;
   sefer: SeferData | undefined;
@@ -28,9 +29,9 @@ interface PaymentFormProps {
   yolcular: YolcuData[];
 }
 
-interface ThreeDFormParams {
-  action_url: string;
-  fields: Record<string, string>;
+interface CheckoutInitData {
+  formAction: string;
+  staticParams: Record<string, string>;
 }
 
 function formatCardNumber(value: string) {
@@ -71,6 +72,7 @@ function Field({
 
 export function PaymentForm({
   sepetId,
+  cartToken,
   toplamFiyat,
   onBack,
   sefer,
@@ -83,71 +85,60 @@ export function PaymentForm({
   const [expMonth, setExpMonth] = useState("");
   const [expYear, setExpYear] = useState("");
   const [cvv, setCvv] = useState("");
+  const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [threeDParams, setThreeDParams] = useState<ThreeDFormParams | null>(null);
-  const autoFormRef = useRef<HTMLFormElement>(null);
+  const [initData, setInitData] = useState<CheckoutInitData | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
+  // Bileşen yüklendiğinde sunucudan statik form alanlarını al.
+  // Kart verisi bu istekte YOK — sunucuya asla ulaşmaz.
   useEffect(() => {
-    if (threeDParams && autoFormRef.current) {
-      autoFormRef.current.submit();
-    }
-  }, [threeDParams]);
+    fetch("/api/akgunler/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sepetId, email: "", cartToken }),
+    })
+      .then((res) => res.json())
+      .then((data: CheckoutInitData) => setInitData(data))
+      .catch(() => setInitError("Ödeme ekranı yüklenemedi. Lütfen sayfayı yenileyin."));
+  }, [sepetId]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
 
-    try {
-      const response = await fetch("/api/akgunler/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          s_id: sepetId,
-          kart_sahibi: cardHolder,
-          kart_no: cardNumber.replace(/\s/g, ""),
-          son_kullanma_ay: expMonth,
-          son_kullanma_yil: expYear,
-          cvv,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error ?? "Ödeme başlatılamadı");
-      }
-
-      setThreeDParams(data);
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error ? requestError.message : "Ödeme işlemi başarısız"
-      );
-    } finally {
-      setLoading(false);
+    if (!initData) {
+      setSubmitError("Ödeme bilgileri henüz hazır değil. Lütfen bekleyin.");
+      return;
     }
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    // E-posta alanını staticParams içine güncelle, ardından formu doğrudan Akgünler'e gönder.
+    // Kart verisi (cc_nr, cc_cvc2) sunucuya hiç gitmez; tarayıcıdan Akgünler'e doğrudan POST edilir.
+    const emailInput = formRef.current?.querySelector<HTMLInputElement>('input[name="email"]');
+    if (emailInput) emailInput.value = email;
+
+    formRef.current?.submit();
   }
 
   const cardPreviewNumber = cardNumber || "0000 0000 0000 0000";
   const cardPreviewName = cardHolder || "AD SOYAD";
   const cardPreviewExpiry = expMonth && expYear ? `${expMonth}/${expYear.slice(-2)}` : "AA/YY";
 
+  if (initError) {
+    return (
+      <div className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
+        {initError}
+      </div>
+    );
+  }
+
   return (
     <div>
-      {threeDParams && (
-        <form
-          ref={autoFormRef}
-          method="POST"
-          action={threeDParams.action_url}
-          style={{ display: "none" }}
-        >
-          {Object.entries(threeDParams.fields).map(([name, value]) => (
-            <input key={name} type="hidden" name={name} value={value} />
-          ))}
-        </form>
-      )}
-
       <div className="grid antso-box-gap xl:grid-cols-[1.08fr_0.92fr]">
         <div className="antso-box-stack">
           <div className="antso-elevated-card rounded-[32px] p-6 sm:p-8">
@@ -172,19 +163,38 @@ export function PaymentForm({
             </div>
           </div>
 
-          {error && (
+          {submitError && (
             <div className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
-              {error}
+              {submitError}
             </div>
           )}
 
-          {loading && (
+          {submitting && (
             <div className="rounded-[24px] border border-brand-sky/20 bg-brand-mist px-5 py-4 text-sm text-brand-ink">
               3D Secure doğrulama ekranına yönlendiriliyorsunuz.
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="antso-box-stack">
+          {/*
+            Bu form doğrudan Akgünler'e POST eder.
+            Statik hidden alanlar sunucudan gelir (sepet_id, dil, _redirection_url).
+            Kart alanları (cc_nr, cc_cvc2 vb.) yalnızca burada — tarayıcıdan Akgünler'e gider,
+            bizim sunucumuza asla ulaşmaz.
+          */}
+          <form
+            ref={formRef}
+            method="POST"
+            action={initData?.formAction ?? ""}
+            onSubmit={handleSubmit}
+            className="antso-box-stack"
+          >
+            {/* Sunucudan gelen statik hidden alanlar */}
+            {initData &&
+              Object.entries(initData.staticParams).map(([name, value]) => (
+                <input key={name} type="hidden" name={name} value={name === "email" ? email : value} />
+              ))}
+
+            {/* Kart alanları — tarayıcıda kalır, sunucuya gitmez */}
             <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] ring-1 ring-white">
               <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-6 text-white">
                 <div className="flex items-start justify-between gap-4">
@@ -216,10 +226,12 @@ export function PaymentForm({
                   <input
                     type="text"
                     required
+                    name="cc_nr"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                     placeholder="0000 0000 0000 0000"
                     maxLength={19}
+                    autoComplete="cc-number"
                     className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 font-mono text-sm tracking-[0.25em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
                 </Field>
@@ -228,10 +240,24 @@ export function PaymentForm({
                   <input
                     type="text"
                     required
+                    name="cc_holder"
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
                     placeholder="AD SOYAD"
+                    autoComplete="cc-name"
                     className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium uppercase tracking-[0.12em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
+                  />
+                </Field>
+
+                <Field label="E-posta" hint="Ödeme onayı ve bilet bilgileri bu adrese gönderilir.">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ornek@eposta.com"
+                    autoComplete="email"
+                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                   />
                 </Field>
 
@@ -239,6 +265,7 @@ export function PaymentForm({
                   <Field label="Ay">
                     <select
                       required
+                      name="cc_exp_month"
                       value={expMonth}
                       onChange={(e) => setExpMonth(e.target.value)}
                       className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
@@ -258,6 +285,7 @@ export function PaymentForm({
                   <Field label="Yıl">
                     <select
                       required
+                      name="cc_exp_year"
                       value={expYear}
                       onChange={(e) => setExpYear(e.target.value)}
                       className="w-full appearance-none rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
@@ -278,10 +306,12 @@ export function PaymentForm({
                     <input
                       type="text"
                       required
+                      name="cc_cvc2"
                       value={cvv}
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                       placeholder="•••"
                       maxLength={4}
+                      autoComplete="cc-csc"
                       className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-center font-mono text-sm tracking-[0.2em] text-slate-900 outline-none transition focus:border-brand-sky focus:bg-white"
                     />
                   </Field>
@@ -318,10 +348,10 @@ export function PaymentForm({
               </button>
               <button
                 type="submit"
-                disabled={loading || !agreed}
+                disabled={submitting || !agreed || !initData}
                 className="antso-gradient-cta inline-flex flex-1 items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {loading ? "Yönlendiriliyor..." : `Güvenli öde · ${formatPrice(toplamFiyat)} TL`}
+                {submitting ? "Yönlendiriliyor..." : `Güvenli öde · ${formatPrice(toplamFiyat)} TL`}
               </button>
             </div>
           </form>
@@ -372,7 +402,7 @@ export function PaymentForm({
           <div className="antso-elevated-card rounded-[32px] p-6">
             <p className="text-xs uppercase tracking-[0.24em] text-brand-ocean/60">Güvenli ödeme</p>
             <div className="mt-4 antso-box-stack text-sm text-slate-600">
-              <ChecklistItem text="Kart bilgileriniz sunucuda saklanmaz." />
+              <ChecklistItem text="Kart bilgileriniz sunucumuzdan geçmez, doğrudan Akgünler'e iletilir." />
               <ChecklistItem text="Ödeme Akgünler 3D Secure ekranında tamamlanır." />
               <ChecklistItem text="Ödeme sonrası biletleriniz anında oluşturulur." />
             </div>

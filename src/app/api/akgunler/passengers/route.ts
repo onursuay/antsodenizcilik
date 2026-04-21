@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getYolcular, setYolcuBilgisi } from "@/lib/akgunler/client";
+import { verifyCartToken } from "@/lib/akgunler/cart-token";
 import type { YolcuBilgiInput } from "@/lib/akgunler/types";
 
 export async function GET(request: Request) {
@@ -9,9 +10,14 @@ export async function GET(request: Request) {
     const gsId = searchParams.get("gs_id");
     const dsId = searchParams.get("ds_id");
     const yMod = searchParams.get("y_mod") ?? "tek-gidis";
+    const cartToken = searchParams.get("cart_token") ?? "";
 
     if (!sId || !gsId) {
       return NextResponse.json({ error: "s_id ve gs_id zorunlu" }, { status: 400 });
+    }
+
+    if (!verifyCartToken(parseInt(sId), cartToken)) {
+      return NextResponse.json({ error: "Gecersiz oturum" }, { status: 403 });
     }
 
     const result = await getYolcular({
@@ -36,10 +42,15 @@ export async function POST(request: Request) {
     const body = await request.json() as {
       s_id: number;
       yolcular: YolcuBilgiInput[];
+      cart_token: string;
     };
 
     if (!body.s_id || !body.yolcular?.length) {
       return NextResponse.json({ error: "s_id ve yolcular zorunlu" }, { status: 400 });
+    }
+
+    if (!verifyCartToken(body.s_id, body.cart_token)) {
+      return NextResponse.json({ error: "Gecersiz oturum" }, { status: 403 });
     }
 
     const result = await setYolcuBilgisi(body.s_id, body.yolcular);

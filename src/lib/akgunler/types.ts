@@ -1,3 +1,20 @@
+/**
+ * Checkout API istek tipi.
+ * Kart alanları (ccNr, ccCvc2 vb.) kasıtlı olarak dışarıda bırakılmıştır.
+ * Kart verisi sunucuya asla ulaşmamalı; tarayıcıdan doğrudan Akgünler'e POST edilir.
+ */
+export interface CheckoutRequestBody {
+  sepetId: number;
+  email: string;
+  cartToken: string;
+  // Kart alanlarını eklemek derleme hatasına neden olur:
+  ccNr?: never;
+  ccCvc2?: never;
+  ccHolder?: never;
+  ccExpMonth?: never;
+  ccExpYear?: never;
+}
+
 export interface AkgunlerResponse<T> {
   durum: "basarili" | "basarisiz";
   hata: string;

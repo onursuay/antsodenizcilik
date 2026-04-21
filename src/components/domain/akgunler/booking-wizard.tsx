@@ -121,6 +121,7 @@ export function AkgunlerBookingWizard() {
 
   const [seferler, setSeferler] = useState<SeferData[]>([]);
   const [sepetId, setSepetId] = useState(0);
+  const [cartToken, setCartToken] = useState("");
   const [selectedSeferId, setSelectedSeferId] = useState(0);
 
   const [yolcular, setYolcular] = useState<YolcuData[]>([]);
@@ -205,6 +206,7 @@ export function AkgunlerBookingWizard() {
 
       setSeferler(data.g_seferler ?? []);
       setSepetId(data.s_id ?? 0);
+      setCartToken(data.cart_token ?? "");
       setSelectedSeferId(0);
       setStep("sailing");
     } catch (requestError) {
@@ -227,6 +229,7 @@ export function AkgunlerBookingWizard() {
         s_id: String(sepetId),
         gs_id: String(seferId),
         y_mod: tripType,
+        cart_token: cartToken,
       });
 
       const response = await fetch(`/api/akgunler/passengers?${search}`);
@@ -260,7 +263,7 @@ export function AkgunlerBookingWizard() {
       const response = await fetch("/api/akgunler/passengers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ s_id: sepetId, yolcular: yolcuBilgileri }),
+        body: JSON.stringify({ s_id: sepetId, yolcular: yolcuBilgileri, cart_token: cartToken }),
       });
 
       const data = await response.json();
@@ -642,6 +645,7 @@ export function AkgunlerBookingWizard() {
             {step === "payment" && (
               <PaymentForm
                 sepetId={sepetId}
+                cartToken={cartToken}
                 toplamFiyat={toplamFiyat}
                 onBack={() => setStep("passenger")}
                 sefer={selectedSefer}

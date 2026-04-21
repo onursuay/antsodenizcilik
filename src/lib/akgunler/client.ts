@@ -215,7 +215,7 @@ export async function getUlkeler(): Promise<Ulke[]> {
   return makeRequest<Ulke[]>("getUlkeler");
 }
 
-// 3D Secure form parametreleri oluştur
+// 3D Secure form parametreleri oluştur (kart verisi içerir — sunucuda KULLANILMAMALI)
 export function build3DSecureFormParams(params: {
   sepetId: number;
   ccHolder: string;
@@ -234,6 +234,20 @@ export function build3DSecureFormParams(params: {
     cc_cvc2: params.ccCvc2,
     cc_exp_month: params.ccExpMonth,
     cc_exp_year: params.ccExpYear,
+    email: params.email,
+    _redirection_url: params.redirectionUrl,
+  };
+}
+
+// Kart verisi içermeyen statik form alanları — sunucu tarafından güvenle döndürülebilir
+export function buildStaticFormParams(params: {
+  sepetId: number;
+  email: string;
+  redirectionUrl: string;
+}): Record<string, string> {
+  return {
+    dil: "tr",
+    sepet_id: String(params.sepetId),
     email: params.email,
     _redirection_url: params.redirectionUrl,
   };
