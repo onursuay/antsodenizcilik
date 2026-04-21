@@ -106,11 +106,20 @@ export function PaymentForm({
       .catch(() => setInitError("Ödeme ekranı yüklenemedi. Lütfen sayfayı yenileyin."));
   }, [sepetId]);
 
+  function clearSensitiveCardState() {
+    setCardNumber("");
+    setCvv("");
+    setExpMonth("");
+    setExpYear("");
+    setCardHolder("");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!initData) {
-      setSubmitError("Ödeme bilgileri henüz hazır değil. Lütfen bekleyin.");
+      clearSensitiveCardState();
+      setSubmitError("Ödeme bilgileri henüz hazır değil. Lütfen sayfayı yenileyin.");
       return;
     }
 

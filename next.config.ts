@@ -58,6 +58,27 @@ const securityHeaders = [
   },
 ];
 
+// Ödeme sayfaları için daha sıkı CSP — Supabase bağlantısı kaldırıldı.
+// Bu headers global CSP ile birlikte uygulanır; tarayıcı ikisini de zorunlu kılar (intersection).
+const paymentSecurityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      // Ödeme sayfalarında Supabase bağlantısı gerekmez
+      "connect-src 'self'",
+      `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join("; "),
+  },
+];
+
 const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
@@ -67,6 +88,11 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // Ödeme route'larına ek sıkı CSP (Supabase kaldırıldı)
+      {
+        source: "/akgunler/(.*)",
+        headers: paymentSecurityHeaders,
       },
     ];
   },

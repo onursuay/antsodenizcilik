@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PassengerForm } from "./passenger-form";
-import { PaymentForm } from "./payment-form";
 import { ProcessingOverlay } from "./processing-overlay";
 import { RouteSelector } from "./route-selector";
 import { SailingList } from "./sailing-list";
+import { CHECKOUT_SESSION_KEY } from "@/app/(payment)/akgunler/checkout/checkout-client";
 
 interface GuzergahData {
   id: number;
@@ -125,7 +126,7 @@ export function AkgunlerBookingWizard() {
   const [selectedSeferId, setSelectedSeferId] = useState(0);
 
   const [yolcular, setYolcular] = useState<YolcuData[]>([]);
-  const [toplamFiyat, setToplamFiyat] = useState(0);
+  const router = useRouter();
 
   const cikisSehirAd =
     selectedGuzergah?.sehirler.find((item) => item.id === cikisSehirId)?.ad ?? "";
@@ -271,8 +272,18 @@ export function AkgunlerBookingWizard() {
         throw new Error(data.error);
       }
 
-      setToplamFiyat(data.toplam_fiyat ?? 0);
-      setStep("payment");
+      // Özet verisini sessionStorage'a kaydet; ödeme sayfası okuyacak
+      sessionStorage.setItem(
+        CHECKOUT_SESSION_KEY,
+        JSON.stringify({
+          toplamFiyat: data.toplam_fiyat ?? 0,
+          sefer: selectedSefer,
+          cikisSehirAd,
+          varisSehirAd,
+          yolcular,
+        })
+      );
+      router.push(`/akgunler/checkout?sid=${sepetId}&ct=${encodeURIComponent(cartToken)}`);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -642,18 +653,6 @@ export function AkgunlerBookingWizard() {
               />
             )}
 
-            {step === "payment" && (
-              <PaymentForm
-                sepetId={sepetId}
-                cartToken={cartToken}
-                toplamFiyat={toplamFiyat}
-                onBack={() => setStep("passenger")}
-                sefer={selectedSefer}
-                cikisSehirAd={cikisSehirAd}
-                varisSehirAd={varisSehirAd}
-                yolcular={yolcular}
-              />
-            )}
           </>
         )}
       </section>

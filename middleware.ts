@@ -1,34 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-
-// ---------------------------------------------------------------------------
-// Rate limiting — IP başına kayan pencere (instance-local, temel koruma)
-// Production-grade için Vercel KV veya Upstash Redis entegre edilmeli.
-// ---------------------------------------------------------------------------
-const RL_WINDOW_MS = 60_000;
-const RL_LIMITS: Record<string, number> = {
-  "/api/akgunler/sailings": 15,
-  "/api/akgunler/passengers": 20,
-  "/api/akgunler/checkout": 10,
-  "/api/akgunler/tickets": 15,
-  "/api/akgunler/payment-callback": 5,
-};
-
-const rlStore = new Map<string, number[]>();
-
-function isRateLimited(ip: string, path: string): boolean {
-  const limit = RL_LIMITS[path];
-  if (!limit) return false;
-
-  const key = `${ip}:${path}`;
-  const now = Date.now();
-  const hits = (rlStore.get(key) ?? []).filter((t) => now - t < RL_WINDOW_MS);
-  if (hits.length >= limit) return true;
-
-  hits.push(now);
-  rlStore.set(key, hits);
-  return false;
-}
+import { rateLimiter, RL_LIMITS } from "@/lib/rate-limit";
 
 // Routes that do not require any authentication.
 const PUBLIC_ROUTES = [
@@ -73,7 +45,7 @@ export async function middleware(request: NextRequest) {
       request.headers.get("x-real-ip") ??
       "unknown";
 
-    if (isRateLimited(ip, pathname)) {
+    if (rateLimiter.isLimited(ip, pathname)) {
       return NextResponse.json(
         { error: "Cok fazla istek. Lutfen bir dakika bekleyin." },
         {
