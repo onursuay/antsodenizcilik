@@ -46,7 +46,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="grid w-full max-w-6xl antso-box-gap lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid w-full max-w-6xl antso-box-gap lg:grid-cols-[1.2fr_1fr]">
       <section className="rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,#132a40_0%,#10253d_100%)] p-8 text-white shadow-[0_30px_80px_rgba(18,38,60,0.18)] lg:p-10">
         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-brand-seafoam">
           <span className="h-2 w-2 rounded-full bg-brand-sky" />
