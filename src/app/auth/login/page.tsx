@@ -78,7 +78,7 @@ function LoginForm() {
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium uppercase tracking-[0.18em] text-white/55">
+        <div className="mt-6 flex flex-nowrap items-center justify-between gap-2 whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
           <span className="inline-flex items-center gap-1.5">
             <svg className="h-3.5 w-3.5 text-brand-seafoam" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="10" width="16" height="10" rx="2" />
