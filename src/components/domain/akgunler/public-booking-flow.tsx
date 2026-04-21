@@ -2000,13 +2000,15 @@ function BookingSearchCard({
               />
             </div>
             {requireConsent && (
-              <ConsentCheckboxes
-                aydinlatma={acceptedAydinlatma}
-                onAydinlatmaChange={setAcceptedAydinlatma}
-                riza={acceptedRiza}
-                onRizaChange={setAcceptedRiza}
-                invalid={consentError}
-              />
+              <div className="hidden lg:block">
+                <ConsentCheckboxes
+                  aydinlatma={acceptedAydinlatma}
+                  onAydinlatmaChange={setAcceptedAydinlatma}
+                  riza={acceptedRiza}
+                  onRizaChange={setAcceptedRiza}
+                  invalid={consentError}
+                />
+              </div>
             )}
           </div>
         ) : (
@@ -2026,13 +2028,15 @@ function BookingSearchCard({
             />
             </div>
             {requireConsent && (
-              <ConsentCheckboxes
-                aydinlatma={acceptedAydinlatma}
-                onAydinlatmaChange={setAcceptedAydinlatma}
-                riza={acceptedRiza}
-                onRizaChange={setAcceptedRiza}
-                invalid={consentError}
-              />
+              <div className="hidden lg:block">
+                <ConsentCheckboxes
+                  aydinlatma={acceptedAydinlatma}
+                  onAydinlatmaChange={setAcceptedAydinlatma}
+                  riza={acceptedRiza}
+                  onRizaChange={setAcceptedRiza}
+                  invalid={consentError}
+                />
+              </div>
             )}
           </div>
         )}
@@ -2158,6 +2162,18 @@ function BookingSearchCard({
             {submitLabel}
           </button>
         </div>
+
+        {requireConsent && (
+          <div className="lg:hidden">
+            <ConsentCheckboxes
+              aydinlatma={acceptedAydinlatma}
+              onAydinlatmaChange={setAcceptedAydinlatma}
+              riza={acceptedRiza}
+              onRizaChange={setAcceptedRiza}
+              invalid={consentError}
+            />
+          </div>
+        )}
       </form>
     </>
   );
