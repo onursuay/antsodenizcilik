@@ -63,9 +63,12 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
+  overflow-x: hidden;
+  max-width: 100vw;
   background:
     radial-gradient(circle at top left, rgba(94, 188, 213, 0.16), transparent 24%),
     radial-gradient(circle at 82% 12%, rgba(27, 122, 133, 0.09), transparent 20%),

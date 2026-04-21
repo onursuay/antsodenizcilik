@@ -54,7 +54,20 @@ export default function AcikRizaMetniPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-lg font-semibold text-slate-800">3. Rızanın Geri Alınması</h2>
+            <h2 className="mb-2 text-lg font-semibold text-slate-800">3. Ödeme Verileri</h2>
+            <p>
+              Ödeme işlemleri sırasında kart bilgileri, yetkili ödeme altyapısı ve
+              ilgili banka/ödeme kuruluşu tarafından işlenmektedir. Şirket, kart
+              numarası, CVV/CVC ve son kullanma tarihi gibi hassas ödeme verilerini
+              kendi sistemlerinde saklamaz. Ödeme sürecinin tamamlanabilmesi için
+              rezervasyon bilgileri, işlem referansları ve gerekli sınırlı veriler
+              ilgili hizmet sağlayıcılar, ödeme kuruluşları, bankalar ve iş ortakları
+              ile paylaşılabilir.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-lg font-semibold text-slate-800">4. Rızanın Geri Alınması</h2>
             <p>
               Açık rızamı dilediğim zaman{" "}
               <a
@@ -70,7 +83,7 @@ export default function AcikRizaMetniPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-lg font-semibold text-slate-800">4. Haklarım</h2>
+            <h2 className="mb-2 text-lg font-semibold text-slate-800">5. Haklarım</h2>
             <p>
               KVKK&apos;nın 11. maddesi kapsamında sahip olduğum haklar{" "}
               <a

@@ -2472,7 +2472,7 @@ function ConsentCheckboxes({
 }) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
-      <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600 sm:text-sm">
+      <label className="flex cursor-pointer items-center gap-2 whitespace-nowrap text-[11px] text-slate-600 sm:text-sm">
         <input
           type="checkbox"
           checked={aydinlatma}
@@ -2492,7 +2492,7 @@ function ConsentCheckboxes({
           &apos;ni okudum ve kabul ediyorum.
         </span>
       </label>
-      <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600 sm:text-sm">
+      <label className="flex cursor-pointer items-center gap-2 whitespace-nowrap text-[11px] text-slate-600 sm:text-sm">
         <input
           type="checkbox"
           checked={riza}

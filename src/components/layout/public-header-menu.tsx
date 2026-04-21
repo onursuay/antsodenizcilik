@@ -21,6 +21,7 @@ const NAV_LINKS = [
 
 export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   const [kurumsalOpen, setKurumsalOpen] = useState(false);
+  const [mobileKurumsalOpen, setMobileKurumsalOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -33,6 +34,7 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     setMobileOpen(false);
     setKurumsalOpen(false);
+    setMobileKurumsalOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -236,22 +238,37 @@ export function PublicHeaderMenu({ signedIn }: { signedIn: boolean }) {
                 </Link>
               ))}
 
-              <div className="rounded-xl px-4 py-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  Kurumsal
-                </p>
-                <div className="space-y-1">
-                  {KURUMSAL_ITEMS.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-lg px-2 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-ocean"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setMobileKurumsalOpen((v) => !v)}
+                  aria-expanded={mobileKurumsalOpen}
+                  className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-ocean"
+                >
+                  <span>Kurumsal</span>
+                  <svg
+                    className={`h-4 w-4 transition-transform ${mobileKurumsalOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileKurumsalOpen && (
+                  <div className="mt-1 space-y-1 pl-3">
+                    {KURUMSAL_ITEMS.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block rounded-lg px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-ocean"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {NAV_LINKS.slice(2).map((link) => (
