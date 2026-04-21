@@ -369,7 +369,7 @@ export function PublicBookingHome() {
               <span className="mt-1 block md:mt-1.5">AYRICALIĞINI YAŞAYIN</span>
             </h1>
             <p className="mx-auto mt-6 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:mt-7 md:whitespace-nowrap md:text-base lg:text-lg">
-              Akdeniz&apos;in Kıbrıs&apos;a en yakın noktası Anamur&apos;dan Girne&apos;ye sadece 1 Saat 45 Dakikada Ulaşın.
+              Akdeniz&rsquo;in Kıbrıs&rsquo;a en yakın noktası Anamur&rsquo;dan Girne&rsquo;ye yalnızca 1 saat 45 dakikada ulaşın.
             </p>
           </div>
 
