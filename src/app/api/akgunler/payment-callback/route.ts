@@ -48,6 +48,19 @@ export async function POST(request: Request) {
       md: !!md,
     });
 
+    // 1. 3D Secure sonucu — hata callback'inde sepet_id gelmeyebilir, önce bunu kontrol et
+    console.log("[callback] step=result_check result:", result);
+    if (result !== "success") {
+      // Akgünler hata mesajını error_description veya error_message alanında gönderebilir
+      const errorMsg =
+        (formData.get("error_description") as string) ||
+        (formData.get("error_message") as string) ||
+        (formData.get("error") as string) ||
+        "3D Secure basarisiz";
+      console.log("[callback] step=fail reason=3d_failed error_msg:", errorMsg);
+      return failRedirect(errorMsg);
+    }
+
     if (!sepetId || sepetId <= 0) {
       console.log("[callback] step=fail reason=gecersiz_sepetId sepetId:", sepetId);
       return failRedirect("Gecersiz sepet");
@@ -60,13 +73,6 @@ export async function POST(request: Request) {
     const ctValid = verifyCartToken(sepetId, ct);
     console.log("[callback] step=ct_verify result:", ctValid);
     if (!ctValid) return failRedirect("Gecersiz istek");
-
-    console.log("[callback] step=result_check result:", result);
-    if (result !== "success") {
-      const errorMsg = (formData.get("error_message") as string) ?? "3D Secure basarisiz";
-      console.log("[callback] step=fail reason=3d_failed error_message:", errorMsg);
-      return failRedirect(errorMsg);
-    }
 
     if (!cavv && !eci && !xid && !md) {
       console.log("[callback] step=fail reason=3d_fields_missing");
