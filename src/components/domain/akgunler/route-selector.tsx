@@ -1,7 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PassengerVehiclePopover, type YolcuSayi } from "./passenger-vehicle-popover";
+
+// ── Schedule availability (local types — no server import) ────────────────
+interface ScheduleSlot { direction: string; time: string; }
+interface ScheduleDayLocal { date: string; weekday: string; trips: ScheduleSlot[]; }
+interface NearestSailing { date: string; time: string; displayDate: string; weekday: string; }
+type ReturnIntent = "same_day" | "multi_day" | "unsure";
+
+const MONTHS_TR = [
+  "Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
+  "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık",
+];
+
+function pushDataLayer(event: Record<string, unknown>): void {
+  if (typeof window === "undefined") return;
+  const win = window as typeof window & { dataLayer?: unknown[] };
+  win.dataLayer = win.dataLayer ?? [];
+  win.dataLayer.push(event);
+}
+
+function ymdToDmy(ymd: string): string {
+  const [y, m, d] = ymd.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function dmyToYmd(dmy: string): string {
+  const parts = dmy.split("/");
+  if (parts.length !== 3) return "";
+  const [d, m, y] = parts;
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+function hasSailingOnDate(
+  days: ScheduleDayLocal[],
+  dateYMD: string,
+  direction: string,
+): boolean {
+  const dmy = ymdToDmy(dateYMD);
+  const day = days.find((d) => d.date === dmy);
+  return day ? day.trips.some((t) => t.direction === direction) : false;
+}
+
+function getNearestSailings(
+  days: ScheduleDayLocal[],
+  fromDateYMD: string,
+  direction: string,
+  count = 5,
+): NearestSailing[] {
+  const sorted = [...days].sort((a, b) =>
+    dmyToYmd(a.date).localeCompare(dmyToYmd(b.date)),
+  );
+  const results: NearestSailing[] = [];
+  for (const day of sorted) {
+    const ymd = dmyToYmd(day.date);
+    if (!ymd || ymd < fromDateYMD) continue;
+    for (const trip of day.trips) {
+      if (trip.direction !== direction) continue;
+      const [y, m, d] = ymd.split("-");
+      results.push({
+        date: ymd,
+        time: trip.time,
+        displayDate: `${Number(d)} ${MONTHS_TR[Number(m) - 1]} ${y}`,
+        weekday: day.weekday,
+      });
+      if (results.length >= count) return results;
+    }
+  }
+  return results;
+}
+// ─────────────────────────────────────────────────────────────────────────
 
 interface YolcuTur {
   id: number;
@@ -37,22 +106,7 @@ function formatDateTR(dateStr: string): string {
   const [y, m, d] = dateStr.split("-");
   const date = new Date(Number(y), Number(m) - 1, Number(d));
   const days = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-  const months = [
-    "Ocak",
-    "Şubat",
-    "Mart",
-    "Nisan",
-    "Mayıs",
-    "Haziran",
-    "Temmuz",
-    "Ağustos",
-    "Eylül",
-    "Ekim",
-    "Kasım",
-    "Aralık",
-  ];
-
-  return `${Number(d)} ${months[date.getMonth()]} ${days[date.getDay()]}`;
+  return `${Number(d)} ${MONTHS_TR[date.getMonth()]} ${days[date.getDay()]}`;
 }
 
 function getDefaultGuzergahId(guzergahlar: GuzergahData[]): number {
@@ -62,11 +116,7 @@ function getDefaultGuzergahId(guzergahlar: GuzergahData[]): number {
 function getDefaultYolcuTurleri(guzergahlar: GuzergahData[]): YolcuSayi[] {
   const ilkGuzergah = guzergahlar[0];
   const defaultTur = ilkGuzergah?.yolcu_turleri[0];
-
-  if (defaultTur) {
-    return [{ id: defaultTur.id, sayi: 1 }];
-  }
-
+  if (defaultTur) return [{ id: defaultTur.id, sayi: 1 }];
   return [{ id: 1, sayi: 1 }];
 }
 
@@ -86,10 +136,10 @@ function SearchField({
   return (
     <div className={`h-full rounded-[24px] bg-[#f2f6f8] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_12px_28px_rgba(18,38,60,0.04)] ring-1 ring-[#e4eef2] transition hover:bg-white ${className ?? ""}`}>
       <div className="mb-2 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.04)] ring-1 ring-slate-200/70">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl bg-white text-brand-ocean shadow-[0_8px_18px_rgba(18,38,60,0.04)] ring-1 ring-slate-200/70">
           {icon}
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
             {label}
           </p>
@@ -123,7 +173,7 @@ function ToggleButton({
       }`}
     >
       <span
-        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border ${
           active ? "border-brand-sky bg-brand-sky/10" : "border-slate-300"
         }`}
       >
@@ -164,6 +214,137 @@ function SummaryStat({
   );
 }
 
+// ── Sailing alert cards ───────────────────────────────────────────────────
+
+function SailingDateButton({
+  sailing,
+  onClick,
+}: {
+  sailing: NearestSailing;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="min-w-0 rounded-full border border-brand-sky/30 bg-white px-3 py-1.5 text-sm font-medium text-brand-ocean shadow-sm transition hover:border-brand-sky hover:bg-brand-sky/5 active:scale-95"
+    >
+      <span className="whitespace-nowrap">{sailing.displayDate} · {sailing.time}</span>
+    </button>
+  );
+}
+
+function DepartureSailingAlert({
+  direction,
+  nearestSailings,
+  onSelectDate,
+}: {
+  direction: string;
+  nearestSailings: NearestSailing[];
+  onSelectDate: (date: string) => void;
+}) {
+  return (
+    <div className="w-full rounded-[20px] border border-amber-200 bg-amber-50/80 px-4 py-4 shadow-sm ring-1 ring-amber-100 sm:px-5">
+      <p className="text-sm text-slate-600">
+        Seçtiğiniz tarihte{" "}
+        <span className="font-semibold text-slate-800">{direction}</span>{" "}
+        seferi bulunmamaktadır.
+      </p>
+      {nearestSailings.length > 0 ? (
+        <>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+            Uygun gidiş seferleri:
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nearestSailings.map((s) => (
+              <SailingDateButton
+                key={`${s.date}-${s.time}`}
+                sailing={s}
+                onClick={() => onSelectDate(s.date)}
+              />
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-400">
+            Bu tarihlerden birini seçerek devam edebilirsiniz.
+          </p>
+        </>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400">
+          Yakın tarihlerde sefer bulunamadı. Lütfen farklı bir tarih deneyin.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ReturnSailingAlert({
+  direction,
+  nearestSailings,
+  returnIntent,
+  onSelectIntent,
+  onSelectDate,
+}: {
+  direction: string;
+  nearestSailings: NearestSailing[];
+  returnIntent: ReturnIntent | null;
+  onSelectIntent: (intent: ReturnIntent) => void;
+  onSelectDate: (date: string) => void;
+}) {
+  const intentOptions: { value: ReturnIntent; label: string }[] = [
+    { value: "same_day", label: "Aynı gün" },
+    { value: "multi_day", label: "Birkaç gün sonra" },
+    { value: "unsure", label: "Emin değilim" },
+  ];
+
+  return (
+    <div className="w-full rounded-[20px] border border-amber-200 bg-amber-50/80 px-4 py-4 shadow-sm ring-1 ring-amber-100 sm:px-5">
+      <p className="mb-3 text-sm font-semibold text-slate-800">Dönüş planınız nedir?</p>
+      <div className="flex flex-wrap gap-2">
+        {intentOptions.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onSelectIntent(opt.value)}
+            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
+              returnIntent === opt.value
+                ? "border-brand-sky bg-brand-sky/10 text-brand-ocean"
+                : "border-slate-200 bg-white text-slate-600 hover:border-brand-sky/40 hover:text-brand-ocean"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 text-sm text-slate-600">
+        Seçtiğiniz dönüş tarihinde{" "}
+        <span className="font-semibold text-slate-800">{direction}</span>{" "}
+        seferi bulunmamaktadır.
+      </p>
+      {nearestSailings.length > 0 ? (
+        <>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+            Uygun dönüş seferleri:
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nearestSailings.map((s) => (
+              <SailingDateButton
+                key={`${s.date}-${s.time}`}
+                sailing={s}
+                onClick={() => onSelectDate(s.date)}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400">
+          Yakın tarihlerde dönüş seferi bulunamadı. Lütfen farklı bir tarih deneyin.
+        </p>
+      )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
   const [tripType, setTripType] = useState<"tek-gidis" | "gidis-donus">("tek-gidis");
   const [guzergahId, setGuzergahId] = useState<number>(() => getDefaultGuzergahId(guzergahlar));
@@ -174,6 +355,14 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
   const [yolcuTurleri, setYolcuTurleri] = useState<YolcuSayi[]>(() =>
     getDefaultYolcuTurleri(guzergahlar)
   );
+
+  // Schedule availability state
+  const [scheduleDays, setScheduleDays] = useState<ScheduleDayLocal[] | null>(null);
+  const [departureAlert, setDepartureAlert] = useState<NearestSailing[] | null>(null);
+  const [returnAlert, setReturnAlert] = useState<NearestSailing[] | null>(null);
+  const [returnIntent, setReturnIntent] = useState<ReturnIntent | null>(null);
+  const lastEventDepDateRef = useRef<string>("");
+  const lastEventRetDateRef = useRef<string>("");
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -200,6 +389,86 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     setVarisSehirId(0);
   }, [guzergahId, guzergahlar]);
 
+  // Fetch schedule once on mount for sailing availability checks
+  useEffect(() => {
+    fetch("/api/akgunler/schedule")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { days?: unknown } | null) => {
+        if (data?.days && Array.isArray(data.days)) {
+          setScheduleDays(data.days as ScheduleDayLocal[]);
+        }
+      })
+      .catch(() => {}); // graceful degradation: no alerts if fetch fails
+  }, []);
+
+  // Departure sailing availability check
+  useEffect(() => {
+    if (!scheduleDays || !tarih || !cikisSehirId || !varisSehirId) {
+      setDepartureAlert(null);
+      return;
+    }
+    const sehirler = guzergahlar.find((g) => g.id === guzergahId)?.sehirler ?? [];
+    const cikisSehirAd = sehirler.find((s) => s.id === cikisSehirId)?.ad;
+    const varisSehirAd = sehirler.find((s) => s.id === varisSehirId)?.ad;
+    if (!cikisSehirAd || !varisSehirAd) { setDepartureAlert(null); return; }
+
+    const direction = `${cikisSehirAd} → ${varisSehirAd}`;
+    if (hasSailingOnDate(scheduleDays, tarih, direction)) {
+      setDepartureAlert(null);
+      return;
+    }
+
+    const nearest = getNearestSailings(scheduleDays, tarih, direction, 5);
+    setDepartureAlert(nearest);
+
+    if (tarih !== lastEventDepDateRef.current) {
+      lastEventDepDateRef.current = tarih;
+      pushDataLayer({
+        event: "unavailable_sailing_date_selected",
+        direction: "departure",
+        route: direction,
+        selected_date: tarih,
+        nearest_available_dates: nearest.map((s) => s.date),
+        trip_type: tripType === "tek-gidis" ? "one_way" : "round_trip",
+      });
+    }
+  }, [tarih, scheduleDays, cikisSehirId, varisSehirId, guzergahId, guzergahlar, tripType]);
+
+  // Return sailing availability check (gidis-donus only)
+  useEffect(() => {
+    if (!scheduleDays || !donusTarih || !cikisSehirId || !varisSehirId || tripType !== "gidis-donus") {
+      setReturnAlert(null);
+      if (tripType !== "gidis-donus") setReturnIntent(null);
+      return;
+    }
+    const sehirler = guzergahlar.find((g) => g.id === guzergahId)?.sehirler ?? [];
+    const cikisSehirAd = sehirler.find((s) => s.id === cikisSehirId)?.ad;
+    const varisSehirAd = sehirler.find((s) => s.id === varisSehirId)?.ad;
+    if (!cikisSehirAd || !varisSehirAd) { setReturnAlert(null); return; }
+
+    const direction = `${varisSehirAd} → ${cikisSehirAd}`;
+    if (hasSailingOnDate(scheduleDays, donusTarih, direction)) {
+      setReturnAlert(null);
+      setReturnIntent(null);
+      return;
+    }
+
+    const nearest = getNearestSailings(scheduleDays, donusTarih, direction, 5);
+    setReturnAlert(nearest);
+
+    if (donusTarih !== lastEventRetDateRef.current) {
+      lastEventRetDateRef.current = donusTarih;
+      pushDataLayer({
+        event: "unavailable_sailing_date_selected",
+        direction: "return",
+        route: direction,
+        selected_date: donusTarih,
+        nearest_available_dates: nearest.map((s) => s.date),
+        trip_type: "round_trip",
+      });
+    }
+  }, [donusTarih, scheduleDays, cikisSehirId, varisSehirId, tripType, guzergahId, guzergahlar]);
+
   const selectedGuzergah = guzergahlar.find((g) => g.id === guzergahId) ?? null;
   const sehirler = selectedGuzergah?.sehirler ?? [];
   const cikisSehir = sehirler.find((s) => s.id === cikisSehirId)?.ad;
@@ -211,6 +480,34 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     Boolean(varisSehirId) &&
     Boolean(tarih) &&
     (tripType === "tek-gidis" || Boolean(donusTarih));
+
+  function handleReturnIntentSelect(intent: ReturnIntent) {
+    setReturnIntent(intent);
+    const sehirlerLocal = guzergahlar.find((g) => g.id === guzergahId)?.sehirler ?? [];
+    const cikisSehirAd = sehirlerLocal.find((s) => s.id === cikisSehirId)?.ad ?? "";
+    const varisSehirAd = sehirlerLocal.find((s) => s.id === varisSehirId)?.ad ?? "";
+    const departureDirection = `${cikisSehirAd} → ${varisSehirAd}`;
+    const returnDirection = `${varisSehirAd} → ${cikisSehirAd}`;
+    const hasDep = scheduleDays ? hasSailingOnDate(scheduleDays, tarih, departureDirection) : true;
+    const nearestDep = scheduleDays && tarih && !hasDep
+      ? (getNearestSailings(scheduleDays, tarih, departureDirection, 1)[0] ?? null)
+      : null;
+    const nearestRet = returnAlert && returnAlert.length > 0 ? returnAlert[0] : null;
+
+    pushDataLayer({
+      event: "travel_intent_selected",
+      intent,
+      trip_type: "round_trip",
+      departure_route: departureDirection,
+      return_route: returnDirection,
+      selected_departure_date: tarih,
+      selected_return_date: donusTarih,
+      has_departure_sailing: hasDep,
+      has_return_sailing: false,
+      nearest_departure_sailing_date: nearestDep?.date ?? null,
+      nearest_return_sailing_date: nearestRet?.date ?? null,
+    });
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -370,6 +667,15 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
         </button>
       </div>
 
+      {/* Departure sailing alert — visible when selected date has no sailing */}
+      {departureAlert !== null && cikisSehirId > 0 && varisSehirId > 0 && (
+        <DepartureSailingAlert
+          direction={`${cikisSehir ?? ""} → ${varisSehir ?? ""}`}
+          nearestSailings={departureAlert}
+          onSelectDate={(date) => setTarih(date)}
+        />
+      )}
+
       <div
         className={`grid gap-[5px] ${
           tripType === "gidis-donus" ? "lg:grid-cols-[0.95fr_1.05fr]" : "lg:grid-cols-[0.95fr_1.05fr]"
@@ -429,6 +735,17 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
           </div>
         </div>
       </div>
+
+      {/* Return sailing alert — only in gidis-donus mode, with intent toggle */}
+      {tripType === "gidis-donus" && returnAlert !== null && cikisSehirId > 0 && varisSehirId > 0 && (
+        <ReturnSailingAlert
+          direction={`${varisSehir ?? ""} → ${cikisSehir ?? ""}`}
+          nearestSailings={returnAlert}
+          returnIntent={returnIntent}
+          onSelectIntent={handleReturnIntentSelect}
+          onSelectDate={(date) => setDonusTarih(date)}
+        />
+      )}
     </form>
   );
 }
@@ -518,3 +835,6 @@ function SearchIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// Exported for potential external use; currently unused internally
+export { SummaryStat };

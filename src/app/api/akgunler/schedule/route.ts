@@ -6,7 +6,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const route = searchParams.get("route") ?? undefined;
     const data = await getFerrySchedule(route);
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch (error) {
     console.error("Akgunler schedule error:", error);
     return NextResponse.json(
