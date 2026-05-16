@@ -340,8 +340,16 @@ export function PaymentForm({
                 <div>
                   <p className="text-base font-semibold text-slate-900">Satış ve ödeme onayı</p>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    Satış sözleşmesini kabul ediyor, ödemenin 3D Secure doğrulama adımı ile güvenli
-                    şekilde tamamlanacağını onaylıyorsunuz.
+                    <a
+                      href="/kural-ve-kosullar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-brand-ocean hover:underline"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      Kural ve Koşullar
+                    </a>
+                    ’ı okudum ve kabul ediyorum.
                   </p>
                 </div>
               </label>
