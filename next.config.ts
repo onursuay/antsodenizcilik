@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const AKGUNLER_PAYMENT_HOST = "https://www.akgunlerbilet.com";
 const TURNSTILE_HOST = "https://challenges.cloudflare.com";
+const GOOGLE_TAG_MANAGER_HOST = "https://www.googletagmanager.com";
 
 const securityHeaders = [
   // HTTPS zorunluluğu — 2 yıl, alt alan adları dahil
@@ -38,7 +39,7 @@ const securityHeaders = [
       "default-src 'self'",
       // Next.js App Router hydration için unsafe-inline gerekli.
       // unsafe-eval development'ta gerekli; production'da kaldırılıyor.
-      `script-src 'self' 'unsafe-inline' ${TURNSTILE_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' ${TURNSTILE_HOST} ${GOOGLE_TAG_MANAGER_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       // Tailwind ve Next.js inline style'ları için
       "style-src 'self' 'unsafe-inline'",
       // Görseller: kendi origin + data URI (önizlemeler)
@@ -50,7 +51,7 @@ const securityHeaders = [
       // Form POST: yalnızca kendi sayfalar ve Akgünler 3D Secure
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
       // Cloudflare Turnstile challenge widget iframe
-      `frame-src ${TURNSTILE_HOST}`,
+      `frame-src ${TURNSTILE_HOST} ${GOOGLE_TAG_MANAGER_HOST}`,
       // Bu sayfayı hiçbir iframe içine alamaz
       "frame-ancestors 'none'",
       // Plugin nesneleri (Flash vb.) yasak
@@ -68,13 +69,14 @@ const paymentSecurityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' ${GOOGLE_TAG_MANAGER_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
       // Ödeme sayfalarında Supabase bağlantısı gerekmez
       "connect-src 'self'",
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
+      `frame-src ${GOOGLE_TAG_MANAGER_HOST}`,
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
