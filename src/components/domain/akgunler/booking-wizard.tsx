@@ -497,7 +497,7 @@ export function AkgunlerBookingWizard() {
 
           <section id="sss" className="mx-auto w-full max-w-[86rem] px-4 pb-5 sm:px-6 lg:px-8">
             <HomeSectionHeader
-              eyebrow="Sıkca Sorulan Sorular"
+              eyebrow="Sıkça Sorulan Sorular"
               title="Biletleme sürecinde en çok sorulan konular"
               description="Rezervasyon akışında karar vermeyi kolaylaştıran temel bilgileri sayfanın sonunda akordiyon olarak topladık."
             />

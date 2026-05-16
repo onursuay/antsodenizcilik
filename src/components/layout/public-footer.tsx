@@ -4,7 +4,7 @@ import Image from "next/image";
 const QUICK_LINKS = [
   { label: "Ana Sayfa", href: "/" },
   { label: "Sefer Takvimi", href: "/sefer-takvimi" },
-  { label: "Sıkca Sorulan Sorular", href: "/sss" },
+  { label: "Sıkça Sorulan Sorular", href: "/sss" },
   { label: "İletişim", href: "/iletisim" },
 ] as const;
 
