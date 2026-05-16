@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProcessingOverlay } from "./processing-overlay";
+import { TravelNoticeModal } from "./travel-notice-modal";
 
 type TripType = "tek-gidis" | "gidis-donus";
 
@@ -346,6 +347,8 @@ export function PublicBookingHome() {
 
   return (
     <div className="min-h-screen bg-[#f5fafc] text-[#171d1e]">
+      <TravelNoticeModal />
+
       <section
         id="bilet-al"
         className="relative z-10 flex min-h-[560px] flex-col items-center justify-start px-6 pb-16 pt-10 md:pt-14"
@@ -1771,7 +1774,18 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
                 }
                 className="mt-0.5 h-4 w-4 rounded border-slate-300"
               />
-              <span>Kullanım şartlarını okudum ve kabul ediyorum.</span>
+              <span>
+                <a
+                  href="/kural-ve-kosullar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#006971] hover:underline"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  Kural ve Koşullar
+                </a>
+                ’ı okudum ve kabul ediyorum.
+              </span>
             </label>
           </SectionCard>
 

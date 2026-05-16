@@ -1,0 +1,68 @@
+.frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 1px;
+  background:
+    linear-gradient(135deg, rgba(23, 48, 71, 0.9), rgba(27, 122, 133, 0.72), rgba(94, 188, 213, 0.78)),
+    rgba(23, 48, 71, 0.92);
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 34%,
+    rgba(216, 240, 245, 0.05) 42%,
+    rgba(216, 240, 245, 0.95) 50%,
+    rgba(94, 188, 213, 0.35) 56%,
+    transparent 66%,
+    transparent 100%
+  );
+  transform: translateX(-75%);
+  animation: travel-notice-border-shimmer 4.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.frame > * {
+  position: relative;
+  z-index: 1;
+}
+
+.scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(27, 122, 133, 0.42) transparent;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(27, 122, 133, 0.36);
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes travel-notice-border-shimmer {
+  0% {
+    transform: translateX(-75%);
+  }
+  100% {
+    transform: translateX(75%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame::before {
+    animation: none;
+    opacity: 0;
+  }
+}
