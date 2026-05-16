@@ -261,23 +261,26 @@ function saiDmyToYmd(dmy: string): string {
   const [d, m, y] = parts;
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
-function saiHasSailing(days: ScheduleDay[], dateYMD: string, direction: string): boolean {
+function saiHasSailing(days: ScheduleDay[], dateYMD: string): boolean {
   const dmy = saiYmdToDmy(dateYMD);
   const day = days.find((d) => d.date === dmy);
-  return day ? day.trips.some((t) => t.direction === direction) : false;
+  // Ferry operates both directions on the same day — any trip means sailing day
+  return day ? day.trips.length > 0 : false;
 }
-function saiNearest(days: ScheduleDay[], fromYMD: string, direction: string, count = 5): NearestSailing[] {
+function saiNearest(days: ScheduleDay[], fromYMD: string, count = 5): NearestSailing[] {
   const sorted = [...days].sort((a, b) => saiDmyToYmd(a.date).localeCompare(saiDmyToYmd(b.date)));
+  const seen = new Set<string>();
   const results: NearestSailing[] = [];
   for (const day of sorted) {
     const ymd = saiDmyToYmd(day.date);
-    if (!ymd || ymd < fromYMD) continue;
-    for (const trip of day.trips) {
-      if (trip.direction !== direction) continue;
-      const [y, m, d] = ymd.split("-");
-      results.push({ date: ymd, time: trip.time, displayDate: `${Number(d)} ${SAI_MONTHS[Number(m) - 1]} ${y}`, weekday: day.weekday });
-      if (results.length >= count) return results;
-    }
+    if (!ymd || ymd < fromYMD || seen.has(ymd)) continue;
+    if (day.trips.length === 0) continue;
+    seen.add(ymd);
+    const [y, m, d] = ymd.split("-");
+    // Show earliest trip time on that day
+    const earliestTime = day.trips.map(t => t.time).sort()[0];
+    results.push({ date: ymd, time: earliestTime, displayDate: `${Number(d)} ${SAI_MONTHS[Number(m) - 1]} ${y}`, weekday: day.weekday });
+    if (results.length >= count) return results;
   }
   return results;
 }
@@ -2103,8 +2106,8 @@ function BookingSearchCard({
     const arrPort = getPortName(guzergahlar, search, "to");
     if (!depPort || !arrPort) { setDepartureAlert(null); return; }
     const direction = `${depPort} → ${arrPort}`;
-    if (saiHasSailing(scheduleDays, search.gidisTarihi, direction)) { setDepartureAlert(null); return; }
-    const nearest = saiNearest(scheduleDays, search.gidisTarihi, direction, 5);
+    if (saiHasSailing(scheduleDays, search.gidisTarihi)) { setDepartureAlert(null); return; }
+    const nearest = saiNearest(scheduleDays, search.gidisTarihi, 5);
     setDepartureAlert(nearest);
     if (search.gidisTarihi !== lastSaiDepDateRef.current) {
       lastSaiDepDateRef.current = search.gidisTarihi;
@@ -2123,8 +2126,8 @@ function BookingSearchCard({
     const arrPort = getPortName(guzergahlar, search, "to");
     if (!depPort || !arrPort) { setReturnAlert(null); return; }
     const direction = `${arrPort} → ${depPort}`;
-    if (saiHasSailing(scheduleDays, search.donusTarihi, direction)) { setReturnAlert(null); setReturnIntent(null); return; }
-    const nearest = saiNearest(scheduleDays, search.donusTarihi, direction, 5);
+    if (saiHasSailing(scheduleDays, search.donusTarihi)) { setReturnAlert(null); setReturnIntent(null); return; }
+    const nearest = saiNearest(scheduleDays, search.donusTarihi, 5);
     setReturnAlert(nearest);
     if (search.donusTarihi !== lastSaiRetDateRef.current) {
       lastSaiRetDateRef.current = search.donusTarihi;
@@ -2159,8 +2162,8 @@ function BookingSearchCard({
     const arrPort = getPortName(guzergahlar, search, "to");
     const departureDirection = `${depPort} → ${arrPort}`;
     const returnDirection = `${arrPort} → ${depPort}`;
-    const hasDep = scheduleDays ? saiHasSailing(scheduleDays, search.gidisTarihi, departureDirection) : true;
-    const nearestDep = scheduleDays && search.gidisTarihi && !hasDep ? (saiNearest(scheduleDays, search.gidisTarihi, departureDirection, 1)[0] ?? null) : null;
+    const hasDep = scheduleDays ? saiHasSailing(scheduleDays, search.gidisTarihi) : true;
+    const nearestDep = scheduleDays && search.gidisTarihi && !hasDep ? (saiNearest(scheduleDays, search.gidisTarihi, 1)[0] ?? null) : null;
     const nearestRet = returnAlert && returnAlert.length > 0 ? returnAlert[0] : null;
     saiPushDataLayer({ event: "travel_intent_selected", intent, trip_type: "round_trip", departure_route: departureDirection, return_route: returnDirection, selected_departure_date: search.gidisTarihi, selected_return_date: search.donusTarihi, has_departure_sailing: hasDep, has_return_sailing: false, nearest_departure_sailing_date: nearestDep?.date ?? null, nearest_return_sailing_date: nearestRet?.date ?? null });
   }
