@@ -1448,14 +1448,6 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         <form onSubmit={handleCheckoutSubmit} className="space-y-5">
           {error && <ErrorPanel message={error} />}
 
-          <SectionCard title="Seyahat ile ilgili Uyarılar" compact>
-            <ul className="space-y-2 text-sm leading-6 text-slate-600">
-              <li>Check-in sırasında kimlik veya pasaport belgenizi yanınızda bulundurunuz.</li>
-              <li>Yolcu bilgileri seyahat belgesindeki haliyle eksiksiz girilmelidir.</li>
-              <li>Ödeme sonrasında biletleme işlemi Akgünler 3D Secure ekranında tamamlanır.</li>
-            </ul>
-          </SectionCard>
-
           <SectionCard title="İletişim Bilgisi" compact>
             <div className="grid gap-4 md:grid-cols-3">
               <FormField label="E-posta Adresi">
