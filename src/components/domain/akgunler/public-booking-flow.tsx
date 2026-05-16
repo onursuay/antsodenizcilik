@@ -1316,24 +1316,39 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
     setError(null);
 
     try {
-      const yolcular = session.passengers.yolcular.map((yolcu, index) => ({
-        id: yolcu.yolcu_id,
-        insan_ad: String(forms[index]?.insan_ad ?? "").trim().toUpperCase(),
-        insan_soyad: String(forms[index]?.insan_soyad ?? "").trim().toUpperCase(),
-        insan_cinsiyet: String(forms[index]?.insan_cinsiyet ?? "") as "E" | "K",
-        insan_pasaport_no: String(forms[index]?.insan_pasaport_no ?? "").trim(),
-        insan_dogum_tarihi: formatBirthDateForApi(String(forms[index]?.insan_dogum_tarihi ?? "")),
-        insan_ulke_id: Number(forms[index]?.insan_ulke_id ?? 0),
-        vergi_tur_id: forms[index]?.vergi_tur_id
-          ? Number(forms[index]?.vergi_tur_id)
-          : undefined,
-        yolcu_tel_no:
-          index === 0
-            ? contact.phone.trim()
-            : index === 1 && contact.phone2.trim()
-              ? contact.phone2.trim()
-              : undefined,
-      }));
+      let _humanPhoneIndex = 0;
+      const yolcular = session.passengers.yolcular.map((yolcu, index) => {
+        if (yolcu.yolcu_tipi !== "insan") {
+          return {
+            id: yolcu.yolcu_id,
+            insan_ad: "",
+            insan_soyad: "",
+            insan_cinsiyet: "E" as const,
+            insan_pasaport_no: "",
+            insan_dogum_tarihi: "",
+            insan_ulke_id: 0,
+          };
+        }
+        const currentHumanIndex = _humanPhoneIndex++;
+        return {
+          id: yolcu.yolcu_id,
+          insan_ad: String(forms[index]?.insan_ad ?? "").trim().toUpperCase(),
+          insan_soyad: String(forms[index]?.insan_soyad ?? "").trim().toUpperCase(),
+          insan_cinsiyet: String(forms[index]?.insan_cinsiyet ?? "") as "E" | "K",
+          insan_pasaport_no: String(forms[index]?.insan_pasaport_no ?? "").trim(),
+          insan_dogum_tarihi: formatBirthDateForApi(String(forms[index]?.insan_dogum_tarihi ?? "")),
+          insan_ulke_id: Number(forms[index]?.insan_ulke_id ?? 0),
+          vergi_tur_id: forms[index]?.vergi_tur_id
+            ? Number(forms[index]?.vergi_tur_id)
+            : undefined,
+          yolcu_tel_no:
+            currentHumanIndex === 0
+              ? contact.phone.trim()
+              : currentHumanIndex === 1 && contact.phone2.trim()
+                ? contact.phone2.trim()
+                : undefined,
+        };
+      });
 
       const passengerResponse = await fetch("/api/akgunler/passengers", {
         method: "POST",
@@ -1499,136 +1514,179 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
 
           <SectionCard title="Yolcular">
             <div className="space-y-4">
-              {session.passengers.yolcular.map((yolcu, index) => (
-                <div key={yolcu.yolcu_id} className="rounded-[12px] border border-slate-200 bg-white p-4">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {index + 1}. {yolcu.yolcu_tur_ad}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {toLira(yolcu.toplam_fiyat_genel).toLocaleString("tr-TR", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}{" "}
-                        TL
-                      </p>
+              {session.passengers.yolcular.map((yolcu, index) => {
+                if (yolcu.yolcu_tipi !== "insan") {
+                  const turAdUpper = (yolcu.yolcu_tur_ad ?? "").toUpperCase();
+                  const isPet = turAdUpper.includes("PET") || turAdUpper.includes("EVCİL");
+                  const fieldLabel = isPet ? "Evcil Hayvan" : "Bisiklet";
+                  const fieldPlaceholder = isPet
+                    ? "Örn. kedi, küçük köpek"
+                    : "Örn. katlanır bisiklet, çocuk bisikleti";
+                  return (
+                    <div key={yolcu.yolcu_id} className="rounded-[12px] border border-slate-200 bg-[#fafbfd] p-4">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {index + 1}. {yolcu.yolcu_tur_ad}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {toLira(yolcu.toplam_fiyat_genel).toLocaleString("tr-TR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}{" "}
+                            TL
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
+                          DİĞER
+                        </span>
+                      </div>
+                      <FormField label={fieldLabel}>
+                        <input
+                          type="text"
+                          value={String(forms[index]?.aciklama ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "aciklama", event.target.value)
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                          placeholder={fieldPlaceholder}
+                        />
+                      </FormField>
                     </div>
-                    <div className="flex rounded-full border border-slate-200 bg-[#f8fafc] p-1">
-                      <button
-                        type="button"
-                        onClick={() => updatePassenger(index, "insan_cinsiyet", "E")}
-                        className={`rounded-full px-4 py-2 text-xs font-semibold ${
-                          forms[index]?.insan_cinsiyet === "E"
-                            ? "bg-[#10253d] text-white"
-                            : "text-slate-600"
-                        }`}
-                      >
-                        Bay
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updatePassenger(index, "insan_cinsiyet", "K")}
-                        className={`rounded-full px-4 py-2 text-xs font-semibold ${
-                          forms[index]?.insan_cinsiyet === "K"
-                            ? "bg-[#10253d] text-white"
-                            : "text-slate-600"
-                        }`}
-                      >
-                        Bayan
-                      </button>
-                    </div>
-                  </div>
+                  );
+                }
 
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_100px_1fr_1fr]">
-                    <FormField label="Ad">
-                      <input
-                        type="text"
-                        required
-                        value={String(forms[index]?.insan_ad ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "insan_ad", event.target.value.toUpperCase())
-                        }
-                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
-                      />
-                    </FormField>
-                    <FormField label="Soyad">
-                      <input
-                        type="text"
-                        required
-                        value={String(forms[index]?.insan_soyad ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "insan_soyad", event.target.value.toUpperCase())
-                        }
-                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
-                      />
-                    </FormField>
-                    <FormField label="Cinsiyet">
-                      <input
-                        type="text"
-                        readOnly
-                        value={forms[index]?.insan_cinsiyet === "K" ? "Bayan" : forms[index]?.insan_cinsiyet === "E" ? "Bay" : ""}
-                        className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none"
-                      />
-                    </FormField>
-                    <FormField label="Doğum Tarihi">
-                      <input
-                        type="date"
-                        required
-                        value={String(forms[index]?.insan_dogum_tarihi ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "insan_dogum_tarihi", event.target.value)
-                        }
-                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
-                      />
-                    </FormField>
-                    <FormField label="Uyruk">
-                      <select
-                        required
-                        value={String(forms[index]?.insan_ulke_id ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "insan_ulke_id", Number(event.target.value))
-                        }
-                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
-                      >
-                        <option value="">Seçiniz</option>
-                        {ulkeler.map((ulke) => (
-                          <option key={ulke.id} value={ulke.id}>
-                            {ulke.title}
-                          </option>
-                        ))}
-                      </select>
-                    </FormField>
-                    <FormField label="TC / Pasaport">
-                      <input
-                        type="text"
-                        required
-                        value={String(forms[index]?.insan_pasaport_no ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "insan_pasaport_no", event.target.value)
-                        }
-                        className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
-                      />
-                    </FormField>
-                    <FormField label="Yolcu Vergi Türü">
-                      <select
-                        value={String(forms[index]?.vergi_tur_id ?? "")}
-                        onChange={(event) =>
-                          updatePassenger(index, "vergi_tur_id", event.target.value)
-                        }
-                        className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean lg:col-span-2"
-                      >
-                        <option value="">Seçiniz</option>
-                        {yolcu.vergi_turleri.map((vergi) => (
-                          <option key={vergi.id} value={vergi.id}>
-                            {vergi.aciklama}
-                          </option>
-                        ))}
-                      </select>
-                    </FormField>
+                return (
+                  <div key={yolcu.yolcu_id} className="rounded-[12px] border border-slate-200 bg-white p-4">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {index + 1}. {yolcu.yolcu_tur_ad}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {toLira(yolcu.toplam_fiyat_genel).toLocaleString("tr-TR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}{" "}
+                          TL
+                        </p>
+                      </div>
+                      <div className="flex rounded-full border border-slate-200 bg-[#f8fafc] p-1">
+                        <button
+                          type="button"
+                          onClick={() => updatePassenger(index, "insan_cinsiyet", "E")}
+                          className={`rounded-full px-4 py-2 text-xs font-semibold ${
+                            forms[index]?.insan_cinsiyet === "E"
+                              ? "bg-[#10253d] text-white"
+                              : "text-slate-600"
+                          }`}
+                        >
+                          Bay
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updatePassenger(index, "insan_cinsiyet", "K")}
+                          className={`rounded-full px-4 py-2 text-xs font-semibold ${
+                            forms[index]?.insan_cinsiyet === "K"
+                              ? "bg-[#10253d] text-white"
+                              : "text-slate-600"
+                          }`}
+                        >
+                          Bayan
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_100px_1fr_1fr]">
+                      <FormField label="Ad">
+                        <input
+                          type="text"
+                          required
+                          value={String(forms[index]?.insan_ad ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "insan_ad", event.target.value.toUpperCase())
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                        />
+                      </FormField>
+                      <FormField label="Soyad">
+                        <input
+                          type="text"
+                          required
+                          value={String(forms[index]?.insan_soyad ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "insan_soyad", event.target.value.toUpperCase())
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                        />
+                      </FormField>
+                      <FormField label="Cinsiyet">
+                        <input
+                          type="text"
+                          readOnly
+                          value={forms[index]?.insan_cinsiyet === "K" ? "Bayan" : forms[index]?.insan_cinsiyet === "E" ? "Bay" : ""}
+                          className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none"
+                        />
+                      </FormField>
+                      <FormField label="Doğum Tarihi">
+                        <input
+                          type="date"
+                          required
+                          value={String(forms[index]?.insan_dogum_tarihi ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "insan_dogum_tarihi", event.target.value)
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                        />
+                      </FormField>
+                      <FormField label="Uyruk">
+                        <select
+                          required
+                          value={String(forms[index]?.insan_ulke_id ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "insan_ulke_id", Number(event.target.value))
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                        >
+                          <option value="">Seçiniz</option>
+                          {ulkeler.map((ulke) => (
+                            <option key={ulke.id} value={ulke.id}>
+                              {ulke.title}
+                            </option>
+                          ))}
+                        </select>
+                      </FormField>
+                      <FormField label="TC / Pasaport">
+                        <input
+                          type="text"
+                          required
+                          value={String(forms[index]?.insan_pasaport_no ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "insan_pasaport_no", event.target.value)
+                          }
+                          className="h-[48px] w-full rounded-[14px] border border-slate-200 px-4 text-sm outline-none focus:border-brand-ocean"
+                        />
+                      </FormField>
+                      <FormField label="Yolcu Vergi Türü">
+                        <select
+                          value={String(forms[index]?.vergi_tur_id ?? "")}
+                          onChange={(event) =>
+                            updatePassenger(index, "vergi_tur_id", event.target.value)
+                          }
+                          className="h-[44px] w-full rounded-[8px] border border-slate-200 px-3 text-sm outline-none focus:border-brand-ocean lg:col-span-2"
+                        >
+                          <option value="">Seçiniz</option>
+                          {yolcu.vergi_turleri.map((vergi) => (
+                            <option key={vergi.id} value={vergi.id}>
+                              {vergi.aciklama}
+                            </option>
+                          ))}
+                        </select>
+                      </FormField>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </SectionCard>
 
@@ -2320,6 +2378,23 @@ function TripCard({
   );
 }
 
+function isPetItem(item: YolcuTur): boolean {
+  const code = (item.yolcu_kodu ?? "").toUpperCase();
+  const title = (item.title ?? "").toUpperCase();
+  return code === "PET" || title.includes("PET") || title.includes("EVCİL");
+}
+
+function isBisikletItem(item: YolcuTur): boolean {
+  const code = (item.yolcu_kodu ?? "").toUpperCase();
+  const title = (item.title ?? "").toUpperCase();
+  return (
+    code.includes("BISIKLET") ||
+    code.includes("BİSİKLET") ||
+    title.includes("BISIKLET") ||
+    title.includes("BİSİKLET")
+  );
+}
+
 function PassengerVehicleDialog({
   guzergah,
   value,
@@ -2331,6 +2406,8 @@ function PassengerVehicleDialog({
   onChange: (items: YolcuSayi[]) => void;
   onClose: () => void;
 }) {
+  const [infoNotice, setInfoNotice] = useState<"pet" | "bisiklet" | null>(null);
+
   if (!guzergah) return null;
 
   return (
@@ -2361,6 +2438,36 @@ function PassengerVehicleDialog({
           </button>
         </div>
 
+        {infoNotice && (
+          <div className="flex items-start gap-3 border-b border-slate-100 bg-[#f0f9fa] px-5 py-3">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-[#10253d]">
+                {infoNotice === "pet"
+                  ? "Evcil dostlarımızı ücretsiz taşıyoruz."
+                  : "Yolcu beraber bisikletinizi ücretsiz taşıyoruz."}
+              </p>
+              {infoNotice === "pet" && (
+                <a
+                  href="https://veteriner.gov.ct.tr/KarantinaQuarantine-KKTC"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-0.5 block text-xs font-medium text-[#006971] hover:underline"
+                >
+                  Evcil hayvan evrakları ve karantina bilgileri
+                </a>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setInfoNotice(null)}
+              aria-label="Kapat"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         <div className="max-h-[60vh] overflow-y-auto px-5 py-4">
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {guzergah.yolcu_turleri.map((item) => (
@@ -2371,9 +2478,13 @@ function PassengerVehicleDialog({
                 onDecrease={() =>
                   onChange(updateCount(value, item.id, getCount(value, item.id) - 1))
                 }
-                onIncrease={() =>
-                  onChange(updateCount(value, item.id, getCount(value, item.id) + 1))
-                }
+                onIncrease={() => {
+                  if (getCount(value, item.id) === 0) {
+                    if (isPetItem(item)) setInfoNotice("pet");
+                    else if (isBisikletItem(item)) setInfoNotice("bisiklet");
+                  }
+                  onChange(updateCount(value, item.id, getCount(value, item.id) + 1));
+                }}
               />
             ))}
           </div>
