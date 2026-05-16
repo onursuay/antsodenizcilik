@@ -88,13 +88,6 @@ function LoginForm() {
           </span>
           <span className="inline-flex items-center gap-1.5">
             <svg className="h-3.5 w-3.5 text-brand-seafoam" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" />
-              <path d="M9 12l2 2 4-4" />
-            </svg>
-            Akgünler yetkili acentesi
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <svg className="h-3.5 w-3.5 text-brand-seafoam" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="10" rx="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>

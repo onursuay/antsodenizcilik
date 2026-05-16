@@ -3,12 +3,17 @@
 // Cloudflare korumalı sayfayı Turhost üzerinden çeker
 // Turhost outbound IP: 94.199.206.76 (Akgünler whitelist'inde)
 
-define('PROXY_SECRET', '8354115b3a1baab1f30d33923b69ca94e1c792ba14598591a69380a8f88ebdcf');
+$proxySecret = getenv('AKGUNLER_PROXY_SECRET') ?: '';
+if ($proxySecret === '') {
+    http_response_code(500);
+    echo json_encode(['error' => 'Proxy secret is not configured']);
+    exit;
+}
 
 // Secret doğrula
 $headers = getallheaders();
 $receivedSecret = $headers['X-Proxy-Secret'] ?? $headers['x-proxy-secret'] ?? '';
-if ($receivedSecret !== PROXY_SECRET) {
+if (!hash_equals($proxySecret, $receivedSecret)) {
     http_response_code(403);
     echo json_encode(['error' => 'Forbidden']);
     exit;

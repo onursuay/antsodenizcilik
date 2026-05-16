@@ -81,7 +81,7 @@ const HERO_FEATURES = [
   },
   {
     eyebrow: "Seyahat süresi",
-    title: "Yaklaşık 2,5 saat",
+    title: "1 saat 45 dakika",
     description: "Sefer detayında güncel saat bilgisiyle planınızı netleştirin.",
   },
   {

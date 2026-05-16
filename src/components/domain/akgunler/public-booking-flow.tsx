@@ -241,16 +241,10 @@ function normalizeCategoryLabel(rawTitle: string) {
 function buildPassengerSummary(guzergah: GuzergahData | null, value: YolcuSayi[]) {
   if (!guzergah) return "Yolcu ve araç seçin";
 
-  const all = [
-    ...guzergah.yolcu_turleri,
-    ...guzergah.kabin_turleri,
-    ...guzergah.arac_turleri,
-  ];
-
   const labels = value
     .filter((item) => item.sayi > 0)
     .map((item) => {
-      const found = all.find((entry) => entry.id === item.id);
+      const found = guzergah.yolcu_turleri.find((entry) => entry.id === item.id);
       return found ? `${item.sayi} ${normalizeCategoryLabel(found.title)}` : null;
     })
     .filter(Boolean);
@@ -369,7 +363,7 @@ export function PublicBookingHome() {
               <span className="mt-1 block md:mt-1.5">AYRICALIĞINI YAŞAYIN</span>
             </h1>
             <p className="mx-auto mt-6 max-w-full animate-hero-sub px-2 text-sm font-medium leading-6 text-white/90 opacity-0 md:mt-7 md:whitespace-nowrap md:text-base lg:text-lg">
-              Akdeniz&rsquo;in Kıbrıs&rsquo;a en yakın noktası Anamur&rsquo;dan Girne&rsquo;ye yalnızca 1 saat 45 dakikada ulaşın.
+              Akdeniz&rsquo;in Kıbrıs&rsquo;a en yakın noktası Anamur&rsquo;dan Girne&rsquo;ye yalnızca 1 saat 45 dakika içinde ulaşın.
             </p>
           </div>
 
@@ -424,7 +418,7 @@ const FEATURES = [
   {
     title: "EN YAKIN ROTA",
     description:
-      "Kıbrıs'a en yakın noktada bulunan Antso Limanı'ndan, Girne'ye 1,5 saatte ulaşın.",
+      "Kıbrıs'a en yakın noktada bulunan Antso Limanı'ndan, Girne'ye 1 saat 45 dakika içinde ulaşın.",
     icon: (
       <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
         <path d="M32 8c-7.18 0-13 5.82-13 13 0 9.75 13 25 13 25s13-15.25 13-25c0-7.18-5.82-13-13-13z" fill="#0f2d4c" />
@@ -490,16 +484,16 @@ function WhyChooseUsSection() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-16 select-none text-center font-headline text-[80px] font-extrabold uppercase leading-none tracking-tight text-[#e2eef5]/70 md:text-[140px]"
       >
-        Anamur Deniz
+        Antso
         <br />
-        Otobüsleri
+        Denizcilik
       </span>
 
       <div ref={ref} className="relative mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
           <p className="mb-3 flex items-center justify-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-[#56b9d0]">
             <span className="h-px w-8 bg-[#56b9d0]" />
-            Anamur Deniz Otobüsleri
+            Antso Denizcilik
             <span className="h-px w-8 bg-[#56b9d0]" />
           </p>
           <h2 className="font-headline text-3xl font-extrabold tracking-tight text-[#0f2d4c] md:text-5xl">
@@ -1869,7 +1863,6 @@ function BookingSearchCard({
   const [acceptedAydinlatma, setAcceptedAydinlatma] = useState(false);
   const [acceptedRiza, setAcceptedRiza] = useState(false);
   const [consentError, setConsentError] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
   const isGidisDonus = search.tripType === "gidis-donus";
 
   useEffect(() => {
@@ -1879,15 +1872,13 @@ function BookingSearchCard({
   }, [guzergahlar, initialSearch]);
 
   useEffect(() => {
-    function handleOutside(event: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
-        setPopoverOpen(false);
-      }
+    if (!popoverOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setPopoverOpen(false);
     }
-
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, []);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [popoverOpen]);
 
   useEffect(() => {
     if (acceptedAydinlatma && acceptedRiza) setConsentError(false);
@@ -2116,7 +2107,7 @@ function BookingSearchCard({
             />
           )}
 
-          <div ref={popoverRef} className="relative block">
+          <div className="relative block">
             <span
               className={`mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] ${
                 variant === "hero" ? "ml-1 text-[#595f61]" : "text-slate-400"
@@ -2127,6 +2118,9 @@ function BookingSearchCard({
             <button
               type="button"
               onClick={() => setPopoverOpen((current) => !current)}
+              aria-haspopup="dialog"
+              aria-expanded={popoverOpen}
+              aria-controls="yolcu-sayisi-dialog"
               className={`flex w-full items-center text-left ${
                 variant === "hero" ? HERO_FIELD_CLASS : FIELD_CLASS
               }`}
@@ -2136,15 +2130,6 @@ function BookingSearchCard({
                 {buildPassengerSummary(guzergah, search.yolcuTurleri)}
               </span>
             </button>
-
-            {popoverOpen && (
-              <PassengerVehiclePanel
-                guzergah={guzergah}
-                value={search.yolcuTurleri}
-                onChange={(items) => updateSearch({ yolcuTurleri: items })}
-                onClose={() => setPopoverOpen(false)}
-              />
-            )}
           </div>
 
           <button
@@ -2175,6 +2160,15 @@ function BookingSearchCard({
           </div>
         )}
       </form>
+
+      {popoverOpen && (
+        <PassengerVehicleDialog
+          guzergah={guzergah}
+          value={search.yolcuTurleri}
+          onChange={(items) => updateSearch({ yolcuTurleri: items })}
+          onClose={() => setPopoverOpen(false)}
+        />
+      )}
     </>
   );
 }
@@ -2285,7 +2279,7 @@ function TripCard({
               <span className="text-[#1f4aa8]">⛴</span>
               <span className="h-px flex-1 bg-slate-200" />
             </div>
-            <p className="text-[11px] text-slate-400">Yaklaşık 2 sa 30 dk</p>
+            <p className="text-[11px] text-slate-400">1 saat 45 dakika</p>
           </div>
 
           <div className="text-right">
@@ -2320,7 +2314,7 @@ function TripCard({
   );
 }
 
-function PassengerVehiclePanel({
+function PassengerVehicleDialog({
   guzergah,
   value,
   onChange,
@@ -2334,18 +2328,36 @@ function PassengerVehiclePanel({
   if (!guzergah) return null;
 
   return (
-    <div className="absolute right-0 top-[calc(100%+8px)] z-30 w-[min(640px,92vw)] rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.16)] before:absolute before:bottom-full before:right-10 before:border-[10px] before:border-transparent before:border-b-white before:content-['']">
-      <div className="max-h-[460px] space-y-4 overflow-y-auto pr-1">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#0b1e2e]/60 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        id="yolcu-sayisi-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Yolcu Sayısı"
+        className="w-[min(640px,100%)] max-h-[90vh] overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.24)]"
+      >
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.22em] text-slate-500">
             Yolcu Sayısı
           </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-            {[
-              ...guzergah.yolcu_turleri,
-              ...guzergah.kabin_turleri,
-              ...guzergah.arac_turleri,
-            ].map((item) => (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Kapat"
+            className="-mr-2 inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="max-h-[60vh] overflow-y-auto px-5 py-4">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {guzergah.yolcu_turleri.map((item) => (
               <CountRow
                 key={item.id}
                 label={normalizeCategoryLabel(item.title)}
@@ -2360,15 +2372,17 @@ function PassengerVehiclePanel({
             ))}
           </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={onClose}
-        className="mt-4 h-[44px] w-full rounded-[14px] bg-[#10253d] text-sm font-semibold text-white"
-      >
-        Tamam
-      </button>
+        <div className="border-t border-slate-100 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[44px] w-full rounded-[14px] bg-[#10253d] text-sm font-semibold text-white"
+          >
+            Tamam
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

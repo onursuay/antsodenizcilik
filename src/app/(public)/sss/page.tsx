@@ -28,7 +28,7 @@ const FAQS = [
   },
   {
     q: "Yolculuk süresi ne kadar?",
-    a: "Anamur-Girne feribotu yaklaşık 2,5 – 3 saat sürmektedir. Hava ve deniz koşullarına bağlı olarak süre değişebilir.",
+    a: "Anamur-Girne feribotu 1 saat 45 dakika sürmektedir. Hava ve deniz koşullarına bağlı olarak süre değişebilir.",
   },
   {
     q: "Araçlı geçiş yapabilir miyim?",
@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: "Sefer iptali veya değişiklik olursa ne olur?",
-    a: "Olası iptal veya değişikliklerde Akgünler Denizcilik müşterilerini bilgilendirir. Detaylı bilgi için info@antsodenizcilik.com adresine yazabilir ya da +90 530 257 48 55 numaralı telefonu arayabilirsiniz.",
+    a: "Olası iptal veya değişikliklerde Antso Denizcilik müşterilerini bilgilendirir. Detaylı bilgi için info@antsodenizcilik.com adresine yazabilir ya da +90 530 257 48 55 numaralı telefonu arayabilirsiniz.",
   },
   {
     q: "Liman vergisi veya ek ücretler var mı?",

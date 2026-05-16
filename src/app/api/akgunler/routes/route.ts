@@ -22,9 +22,9 @@ export async function GET() {
             id: g.id,
             baslik: g.baslik,
             sehirler: bilgi.sehirler,
-            yolcu_turleri: bilgi.yolcu_turleri.filter(
-              (yt) => yt.yolcu_tipi === "insan"
-            ),
+            // Akgünler'den gelen kategori sırasını ve tiplerini eksiltmeden taşı.
+            // Route 61'de "ozel" gibi tipler de satılabilir; sessizce düşürülmemeli.
+            yolcu_turleri: bilgi.yolcu_turleri,
             arac_turleri: bilgi.yolcu_turleri.filter(
               (yt) => yt.yolcu_tipi === "diger"
             ),
