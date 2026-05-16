@@ -36,16 +36,19 @@ function dmyToYmd(dmy: string): string {
 function hasSailingOnDate(
   days: ScheduleDayLocal[],
   dateYMD: string,
+  direction?: string,
 ): boolean {
   const dmy = ymdToDmy(dateYMD);
   const day = days.find((d) => d.date === dmy);
-  // Ferry operates both directions on the same day — any trip means sailing day
-  return day ? day.trips.length > 0 : false;
+  if (!day) return false;
+  if (direction && day.trips.some((t) => t.direction === direction)) return true;
+  return day.trips.length > 0;
 }
 
 function getNearestSailings(
   days: ScheduleDayLocal[],
   fromDateYMD: string,
+  direction?: string,
   count = 5,
 ): NearestSailing[] {
   const sorted = [...days].sort((a, b) =>
@@ -56,18 +59,21 @@ function getNearestSailings(
   for (const day of sorted) {
     const ymd = dmyToYmd(day.date);
     if (!ymd || ymd < fromDateYMD || seen.has(ymd)) continue;
-    if (day.trips.length === 0) continue;
+    const matchTrip = direction ? day.trips.find((t) => t.direction === direction) : undefined;
+    if (direction && !matchTrip) continue;
+    if (!matchTrip && day.trips.length === 0) continue;
     seen.add(ymd);
     const [y, m, d] = ymd.split("-");
-    const earliestTime = day.trips.map((t) => t.time).sort()[0];
+    const time = matchTrip?.time ?? day.trips.map((t) => t.time).sort()[0];
     results.push({
       date: ymd,
-      time: earliestTime,
+      time,
       displayDate: `${Number(d)} ${MONTHS_TR[Number(m) - 1]} ${y}`,
       weekday: day.weekday,
     });
     if (results.length >= count) return results;
   }
+  if (direction && results.length === 0) return getNearestSailings(days, fromDateYMD, undefined, count);
   return results;
 }
 // ─────────────────────────────────────────────────────────────────────────
@@ -394,7 +400,8 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     fetch("/api/akgunler/schedule")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: { days?: unknown } | null) => {
-        if (data?.days && Array.isArray(data.days)) {
+        // Only set when we have actual days — empty array means Cloudflare block, not real empty schedule
+        if (data?.days && Array.isArray(data.days) && (data.days as unknown[]).length > 0) {
           setScheduleDays(data.days as ScheduleDayLocal[]);
         }
       })
@@ -413,12 +420,12 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     if (!cikisSehirAd || !varisSehirAd) { setDepartureAlert(null); return; }
 
     const direction = `${cikisSehirAd} → ${varisSehirAd}`;
-    if (hasSailingOnDate(scheduleDays, tarih)) {
+    if (hasSailingOnDate(scheduleDays, tarih, direction)) {
       setDepartureAlert(null);
       return;
     }
 
-    const nearest = getNearestSailings(scheduleDays, tarih, 5);
+    const nearest = getNearestSailings(scheduleDays, tarih, direction, 5);
     setDepartureAlert(nearest);
 
     if (tarih !== lastEventDepDateRef.current) {
@@ -447,13 +454,13 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     if (!cikisSehirAd || !varisSehirAd) { setReturnAlert(null); return; }
 
     const direction = `${varisSehirAd} → ${cikisSehirAd}`;
-    if (hasSailingOnDate(scheduleDays, donusTarih)) {
+    if (hasSailingOnDate(scheduleDays, donusTarih, direction)) {
       setReturnAlert(null);
       setReturnIntent(null);
       return;
     }
 
-    const nearest = getNearestSailings(scheduleDays, donusTarih, 5);
+    const nearest = getNearestSailings(scheduleDays, donusTarih, direction, 5);
     setReturnAlert(nearest);
 
     if (donusTarih !== lastEventRetDateRef.current) {
@@ -488,9 +495,9 @@ export function RouteSelector({ guzergahlar, onSearch }: RouteSelectorProps) {
     const varisSehirAd = sehirlerLocal.find((s) => s.id === varisSehirId)?.ad ?? "";
     const departureDirection = `${cikisSehirAd} → ${varisSehirAd}`;
     const returnDirection = `${varisSehirAd} → ${cikisSehirAd}`;
-    const hasDep = scheduleDays ? hasSailingOnDate(scheduleDays, tarih) : true;
+    const hasDep = scheduleDays ? hasSailingOnDate(scheduleDays, tarih, departureDirection) : true;
     const nearestDep = scheduleDays && tarih && !hasDep
-      ? (getNearestSailings(scheduleDays, tarih, 1)[0] ?? null)
+      ? (getNearestSailings(scheduleDays, tarih, departureDirection, 1)[0] ?? null)
       : null;
     const nearestRet = returnAlert && returnAlert.length > 0 ? returnAlert[0] : null;
 

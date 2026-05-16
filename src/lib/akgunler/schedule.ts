@@ -122,9 +122,10 @@ function parseTableHeaders(tableHtml: string): string[] {
   const headMatch = tableHtml.match(/<thead[\s\S]*?<\/thead>/i);
   if (!headMatch) return [];
   const thMatches = Array.from(headMatch[0].matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi));
+  // Do NOT filter(Boolean) here — preserve empty date-column header so that
+  // parseScheduleDays' slice(1) correctly skips it and finds both direction headers.
   return thMatches
     .map((m) => stripTags(m[1]).replace(/\s+/g, " ").trim())
-    .filter(Boolean)
     .map((label) => label.replace(/\s*-\s*/g, " → "));
 }
 
