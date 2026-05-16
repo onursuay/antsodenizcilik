@@ -239,6 +239,50 @@ function normalizeCategoryLabel(rawTitle: string) {
   return upper;
 }
 
+// ── Sailing availability helpers ─────────────────────────────────────────
+interface NearestSailing { date: string; time: string; displayDate: string; weekday: string; }
+type ReturnIntent = "same_day" | "multi_day" | "unsure";
+
+const SAI_MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+
+function saiPushDataLayer(event: Record<string, unknown>): void {
+  if (typeof window === "undefined") return;
+  const win = window as typeof window & { dataLayer?: unknown[] };
+  win.dataLayer = win.dataLayer ?? [];
+  win.dataLayer.push(event);
+}
+function saiYmdToDmy(ymd: string): string {
+  const [y, m, d] = ymd.split("-");
+  return `${d}/${m}/${y}`;
+}
+function saiDmyToYmd(dmy: string): string {
+  const parts = dmy.split("/");
+  if (parts.length !== 3) return "";
+  const [d, m, y] = parts;
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+function saiHasSailing(days: ScheduleDay[], dateYMD: string, direction: string): boolean {
+  const dmy = saiYmdToDmy(dateYMD);
+  const day = days.find((d) => d.date === dmy);
+  return day ? day.trips.some((t) => t.direction === direction) : false;
+}
+function saiNearest(days: ScheduleDay[], fromYMD: string, direction: string, count = 5): NearestSailing[] {
+  const sorted = [...days].sort((a, b) => saiDmyToYmd(a.date).localeCompare(saiDmyToYmd(b.date)));
+  const results: NearestSailing[] = [];
+  for (const day of sorted) {
+    const ymd = saiDmyToYmd(day.date);
+    if (!ymd || ymd < fromYMD) continue;
+    for (const trip of day.trips) {
+      if (trip.direction !== direction) continue;
+      const [y, m, d] = ymd.split("-");
+      results.push({ date: ymd, time: trip.time, displayDate: `${Number(d)} ${SAI_MONTHS[Number(m) - 1]} ${y}`, weekday: day.weekday });
+      if (results.length >= count) return results;
+    }
+  }
+  return results;
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 function buildPassengerSummary(guzergah: GuzergahData | null, value: YolcuSayi[]) {
   if (!guzergah) return "Yolcu ve araç seçin";
 
@@ -1901,6 +1945,91 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
   );
 }
 
+function SaiDateBtn({ sailing, onClick }: { sailing: NearestSailing; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="min-w-0 rounded-full border border-[#34a8b3]/40 bg-white px-3 py-1.5 text-sm font-medium text-[#006971] shadow-sm transition hover:border-[#34a8b3] hover:bg-[#eff4f7] active:scale-95"
+    >
+      <span className="whitespace-nowrap">{sailing.displayDate} · {sailing.time}</span>
+    </button>
+  );
+}
+
+function SaiDepAlert({ direction, nearestSailings, onSelectDate }: {
+  direction: string;
+  nearestSailings: NearestSailing[];
+  onSelectDate: (date: string) => void;
+}) {
+  return (
+    <div className="w-full rounded-[18px] border border-amber-200 bg-amber-50/80 px-4 py-4 shadow-sm ring-1 ring-amber-100 sm:px-5">
+      <p className="text-sm text-slate-600">
+        Seçtiğiniz tarihte <span className="font-semibold text-slate-800">{direction}</span> seferi bulunmamaktadır.
+      </p>
+      {nearestSailings.length > 0 ? (
+        <>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uygun gidiş seferleri:</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nearestSailings.map((s) => <SaiDateBtn key={`${s.date}-${s.time}`} sailing={s} onClick={() => onSelectDate(s.date)} />)}
+          </div>
+          <p className="mt-3 text-xs text-slate-400">Bu tarihlerden birini seçerek devam edebilirsiniz.</p>
+        </>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400">Yakın tarihlerde sefer bulunamadı. Lütfen farklı bir tarih deneyin.</p>
+      )}
+    </div>
+  );
+}
+
+function SaiRetAlert({ direction, nearestSailings, returnIntent, onSelectIntent, onSelectDate }: {
+  direction: string;
+  nearestSailings: NearestSailing[];
+  returnIntent: ReturnIntent | null;
+  onSelectIntent: (intent: ReturnIntent) => void;
+  onSelectDate: (date: string) => void;
+}) {
+  const opts: { value: ReturnIntent; label: string }[] = [
+    { value: "same_day", label: "Aynı gün" },
+    { value: "multi_day", label: "Birkaç gün sonra" },
+    { value: "unsure", label: "Emin değilim" },
+  ];
+  return (
+    <div className="w-full rounded-[18px] border border-amber-200 bg-amber-50/80 px-4 py-4 shadow-sm ring-1 ring-amber-100 sm:px-5">
+      <p className="mb-3 text-sm font-semibold text-slate-800">Dönüş planınız nedir?</p>
+      <div className="flex flex-wrap gap-2">
+        {opts.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onSelectIntent(opt.value)}
+            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
+              returnIntent === opt.value
+                ? "border-[#34a8b3] bg-[#eff4f7] text-[#006971]"
+                : "border-slate-200 bg-white text-slate-600 hover:border-[#34a8b3]/50 hover:text-[#006971]"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 text-sm text-slate-600">
+        Seçtiğiniz dönüş tarihinde <span className="font-semibold text-slate-800">{direction}</span> seferi bulunmamaktadır.
+      </p>
+      {nearestSailings.length > 0 ? (
+        <>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uygun dönüş seferleri:</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nearestSailings.map((s) => <SaiDateBtn key={`${s.date}-${s.time}`} sailing={s} onClick={() => onSelectDate(s.date)} />)}
+          </div>
+        </>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400">Yakın tarihlerde dönüş seferi bulunamadı. Lütfen farklı bir tarih deneyin.</p>
+      )}
+    </div>
+  );
+}
+
 function BookingSearchCard({
   guzergahlar,
   initialSearch,
@@ -1927,6 +2056,12 @@ function BookingSearchCard({
   const [acceptedAydinlatma, setAcceptedAydinlatma] = useState(false);
   const [acceptedRiza, setAcceptedRiza] = useState(false);
   const [consentError, setConsentError] = useState(false);
+  const [scheduleDays, setScheduleDays] = useState<ScheduleDay[] | null>(null);
+  const [departureAlert, setDepartureAlert] = useState<NearestSailing[] | null>(null);
+  const [returnAlert, setReturnAlert] = useState<NearestSailing[] | null>(null);
+  const [returnIntent, setReturnIntent] = useState<ReturnIntent | null>(null);
+  const lastSaiDepDateRef = useRef<string>("");
+  const lastSaiRetDateRef = useRef<string>("");
   const isGidisDonus = search.tripType === "gidis-donus";
 
   useEffect(() => {
@@ -1948,6 +2083,55 @@ function BookingSearchCard({
     if (acceptedAydinlatma && acceptedRiza) setConsentError(false);
   }, [acceptedAydinlatma, acceptedRiza]);
 
+  // Fetch schedule once for sailing availability checks
+  useEffect(() => {
+    fetch("/api/akgunler/schedule")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { days?: unknown } | null) => {
+        if (data?.days && Array.isArray(data.days)) setScheduleDays(data.days as ScheduleDay[]);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Departure sailing availability check
+  useEffect(() => {
+    if (!scheduleDays || !search.gidisTarihi || !search.cikisSehirId || !search.varisSehirId) {
+      setDepartureAlert(null);
+      return;
+    }
+    const depPort = getPortName(guzergahlar, search, "from");
+    const arrPort = getPortName(guzergahlar, search, "to");
+    if (!depPort || !arrPort) { setDepartureAlert(null); return; }
+    const direction = `${depPort} → ${arrPort}`;
+    if (saiHasSailing(scheduleDays, search.gidisTarihi, direction)) { setDepartureAlert(null); return; }
+    const nearest = saiNearest(scheduleDays, search.gidisTarihi, direction, 5);
+    setDepartureAlert(nearest);
+    if (search.gidisTarihi !== lastSaiDepDateRef.current) {
+      lastSaiDepDateRef.current = search.gidisTarihi;
+      saiPushDataLayer({ event: "unavailable_sailing_date_selected", direction: "departure", route: direction, selected_date: search.gidisTarihi, nearest_available_dates: nearest.map((s) => s.date), trip_type: search.tripType === "tek-gidis" ? "one_way" : "round_trip" });
+    }
+  }, [search.gidisTarihi, scheduleDays, search.cikisSehirId, search.varisSehirId, guzergahlar, search.tripType]);
+
+  // Return sailing availability check (gidis-donus only)
+  useEffect(() => {
+    if (!scheduleDays || !search.donusTarihi || !search.cikisSehirId || !search.varisSehirId || search.tripType !== "gidis-donus") {
+      setReturnAlert(null);
+      if (search.tripType !== "gidis-donus") setReturnIntent(null);
+      return;
+    }
+    const depPort = getPortName(guzergahlar, search, "from");
+    const arrPort = getPortName(guzergahlar, search, "to");
+    if (!depPort || !arrPort) { setReturnAlert(null); return; }
+    const direction = `${arrPort} → ${depPort}`;
+    if (saiHasSailing(scheduleDays, search.donusTarihi, direction)) { setReturnAlert(null); setReturnIntent(null); return; }
+    const nearest = saiNearest(scheduleDays, search.donusTarihi, direction, 5);
+    setReturnAlert(nearest);
+    if (search.donusTarihi !== lastSaiRetDateRef.current) {
+      lastSaiRetDateRef.current = search.donusTarihi;
+      saiPushDataLayer({ event: "unavailable_sailing_date_selected", direction: "return", route: direction, selected_date: search.donusTarihi, nearest_available_dates: nearest.map((s) => s.date), trip_type: "round_trip" });
+    }
+  }, [search.donusTarihi, scheduleDays, search.cikisSehirId, search.varisSehirId, search.tripType, guzergahlar]);
+
   const guzergah = getSelectedGuzergah(guzergahlar, search);
   const sehirler = guzergah?.sehirler ?? [];
   const isValid =
@@ -1967,6 +2151,18 @@ function BookingSearchCard({
       cikisSehirId: current.varisSehirId,
       varisSehirId: current.cikisSehirId,
     }));
+  }
+
+  function handleReturnIntentSelect(intent: ReturnIntent) {
+    setReturnIntent(intent);
+    const depPort = getPortName(guzergahlar, search, "from");
+    const arrPort = getPortName(guzergahlar, search, "to");
+    const departureDirection = `${depPort} → ${arrPort}`;
+    const returnDirection = `${arrPort} → ${depPort}`;
+    const hasDep = scheduleDays ? saiHasSailing(scheduleDays, search.gidisTarihi, departureDirection) : true;
+    const nearestDep = scheduleDays && search.gidisTarihi && !hasDep ? (saiNearest(scheduleDays, search.gidisTarihi, departureDirection, 1)[0] ?? null) : null;
+    const nearestRet = returnAlert && returnAlert.length > 0 ? returnAlert[0] : null;
+    saiPushDataLayer({ event: "travel_intent_selected", intent, trip_type: "round_trip", departure_route: departureDirection, return_route: returnDirection, selected_departure_date: search.gidisTarihi, selected_return_date: search.donusTarihi, has_departure_sailing: hasDep, has_return_sailing: false, nearest_departure_sailing_date: nearestDep?.date ?? null, nearest_return_sailing_date: nearestRet?.date ?? null });
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -2211,6 +2407,24 @@ function BookingSearchCard({
             {submitLabel}
           </button>
         </div>
+
+        {departureAlert !== null && search.cikisSehirId > 0 && search.varisSehirId > 0 && (
+          <SaiDepAlert
+            direction={`${getPortName(guzergahlar, search, "from")} → ${getPortName(guzergahlar, search, "to")}`}
+            nearestSailings={departureAlert}
+            onSelectDate={(date) => updateSearch({ gidisTarihi: date })}
+          />
+        )}
+
+        {isGidisDonus && returnAlert !== null && search.cikisSehirId > 0 && search.varisSehirId > 0 && (
+          <SaiRetAlert
+            direction={`${getPortName(guzergahlar, search, "to")} → ${getPortName(guzergahlar, search, "from")}`}
+            nearestSailings={returnAlert}
+            returnIntent={returnIntent}
+            onSelectIntent={handleReturnIntentSelect}
+            onSelectDate={(date) => updateSearch({ donusTarihi: date })}
+          />
+        )}
 
         {requireConsent && (
           <div className="lg:hidden">
