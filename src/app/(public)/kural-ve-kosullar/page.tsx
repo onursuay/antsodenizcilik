@@ -16,7 +16,7 @@ const sections = [
   {
     title: "2. Check-in ve Biniş Kartı Kuralları",
     items: [
-      "Satın alınan biletler, sefer günü AKGÜNLER yetkili ofisine ibraz edilmelidir.",
+      "Satın alınan biletler, sefer günü yetkili acenteye ibraz edilmelidir.",
       "Yolcular, sefer saatinden en geç 2 saat önce hazır bulunmalıdır.",
       "Bayram, yılbaşı ve özel dönemlerde yolcuların en az 3 saat önce hazır bulunması gerekir.",
       "Araçlı yolcular için check-in işlemleri seferden 60 dakika önce kapanır.",
