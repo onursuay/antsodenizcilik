@@ -6,11 +6,12 @@
 export interface CheckoutRequestBody {
   sepetId: number;
   email: string;
+  ccHolder: string;
+  toplamFiyat: number;
   cartToken: string;
   // Kart alanlarını eklemek derleme hatasına neden olur:
   ccNr?: never;
   ccCvc2?: never;
-  ccHolder?: never;
   ccExpMonth?: never;
   ccExpYear?: never;
 }

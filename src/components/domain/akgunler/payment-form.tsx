@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 interface SeferData {
   id: number;
@@ -87,24 +87,9 @@ export function PaymentForm({
   const [cvv, setCvv] = useState("");
   const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [initData, setInitData] = useState<CheckoutInitData | null>(null);
-  const [initError, setInitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  // Bileşen yüklendiğinde sunucudan statik form alanlarını al.
-  // Kart verisi bu istekte YOK — sunucuya asla ulaşmaz.
-  useEffect(() => {
-    fetch("/api/akgunler/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sepetId, email: "", cartToken }),
-    })
-      .then((res) => res.json())
-      .then((data: CheckoutInitData) => setInitData(data))
-      .catch(() => setInitError("Ödeme ekranı yüklenemedi. Lütfen sayfayı yenileyin."));
-  }, [sepetId]);
 
   function clearSensitiveCardState() {
     setCardNumber("");
@@ -114,37 +99,63 @@ export function PaymentForm({
     setCardHolder("");
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!initData) {
-      clearSensitiveCardState();
-      setSubmitError("Ödeme bilgileri henüz hazır değil. Lütfen sayfayı yenileyin.");
-      return;
-    }
 
     setSubmitting(true);
     setSubmitError(null);
 
-    // E-posta alanını staticParams içine güncelle, ardından formu doğrudan Akgünler'e gönder.
-    // Kart verisi (cc_nr, cc_cvc2) sunucuya hiç gitmez; tarayıcıdan Akgünler'e doğrudan POST edilir.
-    const emailInput = formRef.current?.querySelector<HTMLInputElement>('input[name="email"]');
-    if (emailInput) emailInput.value = email;
+    try {
+      // Checkout endpoint'i submit anında çağır: email/ccHolder/toplamFiyat'ı imzalanmış callback URL'sine gömecek.
+      // Akgünler 3DS callback'i sadece cavv/eci/xid/md/result POST eder; bu yüzden bizim sepetId+price+email+ccHolder
+      // değerlerimizi URL'e koymamız ve HMAC ile imzalamamız gerekiyor.
+      const initResponse = await fetch("/api/akgunler/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sepetId,
+          email,
+          ccHolder: cardHolder,
+          toplamFiyat,
+          cartToken,
+        }),
+      });
 
-    formRef.current?.submit();
+      if (!initResponse.ok) {
+        const errBody = await initResponse.json().catch(() => ({}));
+        throw new Error(errBody?.error ?? "Ödeme ekranı hazırlanamadı");
+      }
+
+      const initData = (await initResponse.json()) as CheckoutInitData;
+
+      // staticParams'ı (sepet_id, dil, _redirection_url, email) form'a yansıt.
+      // Kart alanları zaten form içinde input olarak var — sunucuya hiç gitmedi.
+      const form = formRef.current;
+      if (!form) throw new Error("Form bulunamadı");
+
+      form.action = initData.formAction;
+      for (const [name, value] of Object.entries(initData.staticParams)) {
+        let input = form.querySelector<HTMLInputElement>(`input[type="hidden"][name="${name}"]`);
+        if (!input) {
+          input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          form.appendChild(input);
+        }
+        input.value = value;
+      }
+
+      form.submit();
+    } catch (err) {
+      clearSensitiveCardState();
+      setSubmitting(false);
+      setSubmitError(err instanceof Error ? err.message : "Ödeme başlatılamadı. Lütfen tekrar deneyin.");
+    }
   }
 
   const cardPreviewNumber = cardNumber || "0000 0000 0000 0000";
   const cardPreviewName = cardHolder || "AD SOYAD";
   const cardPreviewExpiry = expMonth && expYear ? `${expMonth}/${expYear.slice(-2)}` : "AA/YY";
-
-  if (initError) {
-    return (
-      <div className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-[0_18px_40px_rgba(239,68,68,0.08)]">
-        {initError}
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -186,23 +197,18 @@ export function PaymentForm({
 
           {/*
             Bu form doğrudan Akgünler'e POST eder.
-            Statik hidden alanlar sunucudan gelir (sepet_id, dil, _redirection_url).
+            Statik hidden alanlar (sepet_id, dil, _redirection_url, email) submit anında
+            sunucudan alınıp imperative olarak eklenir; callback URL'i kullanıcının girdiği
+            email/ccHolder/toplamFiyat ile imzalanır.
             Kart alanları (cc_nr, cc_cvc2 vb.) yalnızca burada — tarayıcıdan Akgünler'e gider,
             bizim sunucumuza asla ulaşmaz.
           */}
           <form
             ref={formRef}
             method="POST"
-            action={initData?.formAction ?? ""}
             onSubmit={handleSubmit}
             className="antso-box-stack"
           >
-            {/* Sunucudan gelen statik hidden alanlar */}
-            {initData &&
-              Object.entries(initData.staticParams).map(([name, value]) => (
-                <input key={name} type="hidden" name={name} value={name === "email" ? email : value} />
-              ))}
-
             {/* Kart alanları — tarayıcıda kalır, sunucuya gitmez */}
             <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_18px_46px_rgba(18,38,60,0.06)] ring-1 ring-white">
               <div className="bg-[linear-gradient(135deg,#1b7a85_0%,#5ebcd5_100%)] px-6 py-6 text-white">
@@ -365,7 +371,7 @@ export function PaymentForm({
               </button>
               <button
                 type="submit"
-                disabled={submitting || !agreed || !initData}
+                disabled={submitting || !agreed}
                 className="antso-gradient-cta inline-flex flex-1 items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {submitting ? "Yönlendiriliyor..." : `Güvenli öde · ${formatPrice(toplamFiyat)} TL`}

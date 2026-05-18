@@ -39,3 +39,52 @@ export function verifyCartToken(sepetId: number, token: string): boolean {
     return false;
   }
 }
+
+// Payment callback token — Akgünler 3DS callback'inde sepetId/price100/email/ccHolder
+// POST body'sinde dönmüyor; bu değerleri URL'e koyup HMAC ile bağlıyoruz.
+function paymentPayload(sepetId: number, price100: number, email: string, ccHolder: string, expiresAt: number) {
+  return `payment-cb:${sepetId}:${price100}:${email}:${ccHolder}:${expiresAt}`;
+}
+
+export function generatePaymentCallbackToken(
+  sepetId: number,
+  price100: number,
+  email: string,
+  ccHolder: string
+): string {
+  const expiresAt = Math.floor(Date.now() / 1000) + TTL_SECONDS;
+  const mac = createHmac("sha256", secret())
+    .update(paymentPayload(sepetId, price100, email, ccHolder, expiresAt))
+    .digest("hex");
+  return `${expiresAt}.${mac}`;
+}
+
+export function verifyPaymentCallbackToken(
+  sepetId: number,
+  price100: number,
+  email: string,
+  ccHolder: string,
+  token: string
+): boolean {
+  if (!token || !sepetId || !price100) return false;
+
+  const dot = token.indexOf(".");
+  if (dot === -1) return false;
+
+  const expiresAt = parseInt(token.slice(0, dot), 10);
+  const mac = token.slice(dot + 1);
+
+  if (isNaN(expiresAt) || Math.floor(Date.now() / 1000) > expiresAt) return false;
+
+  const expected = createHmac("sha256", secret())
+    .update(paymentPayload(sepetId, price100, email, ccHolder, expiresAt))
+    .digest("hex");
+
+  if (mac.length !== expected.length) return false;
+
+  try {
+    return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(mac, "hex"));
+  } catch {
+    return false;
+  }
+}

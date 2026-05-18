@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildStaticFormParams, AKGUNLER_3D_PAYMENT_URL } from "@/lib/akgunler/client";
-import { verifyCartToken, generateCartToken } from "@/lib/akgunler/cart-token";
+import { verifyCartToken, generatePaymentCallbackToken } from "@/lib/akgunler/cart-token";
 import type { CheckoutRequestBody } from "@/lib/akgunler/types";
 
 // Kart verisi bu endpoint'e asla gelmemeli.
@@ -15,9 +15,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Gecersiz istek" }, { status: 400 });
     }
 
-    const { sepetId, email, cartToken } = body as unknown as CheckoutRequestBody;
+    const { sepetId, email, ccHolder, toplamFiyat, cartToken } = body as unknown as CheckoutRequestBody;
 
-    if (!sepetId || !email) {
+    if (!sepetId || !email || !ccHolder || !toplamFiyat) {
       return NextResponse.json({ error: "Eksik parametreler" }, { status: 400 });
     }
 
@@ -26,13 +26,23 @@ export async function POST(request: Request) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bilet.antsodenizcilik.com";
-    const ct = generateCartToken(sepetId);
-    const callbackUrl = `${appUrl}/api/akgunler/payment-callback?ct=${ct}`;
+
+    // Akgünler 3DS callback'i sadece cavv/eci/xid/md/result POST eder.
+    // sepetId, price_100, email, ccHolder bizim sorumluluğumuzda — URL'e HMAC ile imzalı koyuyoruz.
+    // ct (cart token) confirmation/tickets sayfası için aynen geri taşınır.
+    const pt = generatePaymentCallbackToken(sepetId, toplamFiyat, email, ccHolder);
+    const callbackUrl = new URL(`${appUrl}/api/akgunler/payment-callback`);
+    callbackUrl.searchParams.set("sid", String(sepetId));
+    callbackUrl.searchParams.set("p", String(toplamFiyat));
+    callbackUrl.searchParams.set("em", email);
+    callbackUrl.searchParams.set("cn", ccHolder);
+    callbackUrl.searchParams.set("pt", pt);
+    callbackUrl.searchParams.set("ct", cartToken);
 
     const staticParams = buildStaticFormParams({
       sepetId,
       email,
-      redirectionUrl: callbackUrl,
+      redirectionUrl: callbackUrl.toString(),
     });
 
     return NextResponse.json({
