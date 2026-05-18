@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { trackAddPaymentInfo } from "@/lib/analytics/events";
 
 interface SeferData {
   id: number;
@@ -106,6 +107,21 @@ export function PaymentForm({
 
     setSubmitting(true);
     setSubmitError(null);
+
+    // Funnel: "Güvenli Ödeme Yap" tıklandı (Meta: AddPaymentInfo)
+    trackAddPaymentInfo({
+      transactionId: sepetId,
+      value: toplamFiyat / 100,
+      currency: "TRY",
+      paymentType: "credit_card",
+      items: yolcular.map((y) => ({
+        item_id: String(y.yolcu_id),
+        item_name: `${cikisSehirAd} → ${varisSehirAd}`,
+        item_category: y.yolcu_tur_ad,
+        price: y.toplam_fiyat_genel / 100,
+        quantity: 1,
+      })),
+    });
 
     try {
       // Checkout endpoint'i submit anında çağır: email/ccHolder/toplamFiyat'ı imzalanmış callback URL'sine gömecek.

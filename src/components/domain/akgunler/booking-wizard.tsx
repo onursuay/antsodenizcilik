@@ -8,6 +8,7 @@ import { ProcessingOverlay } from "./processing-overlay";
 import { RouteSelector } from "./route-selector";
 import { SailingList } from "./sailing-list";
 import { CHECKOUT_SESSION_KEY } from "@/app/(payment)/akgunler/checkout/checkout-client";
+import { trackSearch, trackBeginCheckout } from "@/lib/analytics/events";
 
 interface GuzergahData {
   id: number;
@@ -210,6 +211,17 @@ export function AkgunlerBookingWizard() {
       setCartToken(data.cart_token ?? "");
       setSelectedSeferId(0);
       setStep("sailing");
+
+      // Funnel: arama sonucu görüntülendi (Meta: Search)
+      const fromName = params.guzergah.sehirler.find((s) => s.id === params.cikisSehirId)?.ad ?? "";
+      const toName = params.guzergah.sehirler.find((s) => s.id === params.varisSehirId)?.ad ?? "";
+      trackSearch({
+        from: fromName,
+        to: toName,
+        date: params.tarih,
+        tripType: params.tripType,
+        passengers: params.yolcuTurleri.reduce((sum, t) => sum + t.sayi, 0),
+      });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Sefer aranamadı");
     } finally {
@@ -242,6 +254,23 @@ export function AkgunlerBookingWizard() {
 
       setYolcular(data.yolcular ?? []);
       setStep("passenger");
+
+      // Funnel: sefer seçildi, yolcu adımına geçiliyor (Meta: InitiateCheckout)
+      const sefer = seferler.find((s) => s.id === seferId);
+      if (sefer) {
+        trackBeginCheckout({
+          transactionId: sepetId,
+          value: (sefer.ucret ?? 0) / 100,
+          currency: "TRY",
+          items: [{
+            item_id: String(sefer.id),
+            item_name: `${cikisSehirAd} → ${varisSehirAd}`,
+            item_category: sefer.trip_number,
+            price: (sefer.ucret ?? 0) / 100,
+            quantity: totalPassengers || 1,
+          }],
+        });
+      }
     } catch (requestError) {
       setError(
         requestError instanceof Error

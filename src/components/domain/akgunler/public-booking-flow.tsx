@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProcessingOverlay } from "./processing-overlay";
 import { TravelNoticeModal } from "./travel-notice-modal";
+import { trackBeginCheckout, trackAddPaymentInfo } from "@/lib/analytics/events";
 
 type TripType = "tek-gidis" | "gidis-donus";
 
@@ -1344,6 +1345,31 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
       .catch(() => undefined);
   }, []);
 
+  // Funnel: checkout sayfası açıldı (Meta: InitiateCheckout)
+  // Session yüklendikten sonra bir kere fire et
+  const beginCheckoutFired = useRef(false);
+  useEffect(() => {
+    if (beginCheckoutFired.current) return;
+    if (!session?.passengers?.yolcular?.length) return;
+
+    beginCheckoutFired.current = true;
+    const from = getPortName(session.guzergahlar, session.search, "from");
+    const to = getPortName(session.guzergahlar, session.search, "to");
+    const total = getDisplayPrice(session) / 100;
+    trackBeginCheckout({
+      transactionId: session.sailings.s_id,
+      value: total,
+      currency: "TRY",
+      items: session.passengers.yolcular.map((y) => ({
+        item_id: String(y.yolcu_id),
+        item_name: `${from} → ${to}`,
+        item_category: y.yolcu_tur_ad,
+        price: y.toplam_fiyat_genel / 100,
+        quantity: 1,
+      })),
+    });
+  }, [session]);
+
   useEffect(() => {
     if (checkoutPayload && autoFormRef.current) {
       autoFormRef.current.submit();
@@ -1366,6 +1392,23 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
 
     setSubmitting(true);
     setError(null);
+
+    // Funnel: "Güvenli Ödeme Yap" tıklandı (Meta: AddPaymentInfo)
+    const from = getPortName(session.guzergahlar, session.search, "from");
+    const to = getPortName(session.guzergahlar, session.search, "to");
+    trackAddPaymentInfo({
+      transactionId: session.sailings.s_id,
+      value: getDisplayPrice(session) / 100,
+      currency: "TRY",
+      paymentType: "credit_card",
+      items: session.passengers.yolcular.map((y) => ({
+        item_id: String(y.yolcu_id),
+        item_name: `${from} → ${to}`,
+        item_category: y.yolcu_tur_ad,
+        price: y.toplam_fiyat_genel / 100,
+        quantity: 1,
+      })),
+    });
 
     try {
       let _humanPhoneIndex = 0;
