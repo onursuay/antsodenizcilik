@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PurchaseTracking } from "@/components/analytics/purchase-tracking";
 
 interface Bilet {
   id: number;
@@ -118,6 +119,7 @@ export default async function AkgunlerConfirmationPage({
 
   return (
     <div className="pb-16">
+      <PurchaseTracking sepetId={id} biletler={biletler} />
       <section className="relative overflow-hidden bg-brand-ink text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(60,146,183,0.24),transparent_30%),radial-gradient(circle_at_right,rgba(209,162,77,0.14),transparent_24%)]" />
         <div className="relative mx-auto max-w-[86rem] px-4 py-12 sm:px-6 lg:px-8">
