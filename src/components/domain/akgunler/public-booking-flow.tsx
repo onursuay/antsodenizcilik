@@ -1433,6 +1433,8 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
         body: JSON.stringify({
           sepetId: session.sailings.s_id,
           email: contact.email.trim(),
+          ccHolder: payment.holder.trim().toUpperCase(),
+          toplamFiyat: passengerJson.toplam_fiyat ?? getDisplayPrice(session),
           cartToken: session.cartToken,
         }),
       });
