@@ -37,6 +37,12 @@ export async function GET(request: Request) {
   }
 }
 
+// Akgünler tel_no regex: /^[A-Za-z0-9-+ ]*$/, max 32 karakter.
+// Kullanıcı parantez/nokta/slash yazarsa Akgünler "yanlis_formatli_deger: tel_no" döner.
+function sanitizePhone(phone: string): string {
+  return phone.replace(/[^A-Za-z0-9\-+ ]/g, "").trim().slice(0, 32);
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json() as {
@@ -53,7 +59,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Gecersiz oturum" }, { status: 403 });
     }
 
-    const result = await setYolcuBilgisi(body.s_id, body.yolcular);
+    const sanitizedYolcular = body.yolcular.map((y) => ({
+      ...y,
+      yolcu_tel_no: y.yolcu_tel_no ? sanitizePhone(y.yolcu_tel_no) : y.yolcu_tel_no,
+    }));
+
+    const result = await setYolcuBilgisi(body.s_id, sanitizedYolcular);
 
     return NextResponse.json(result);
   } catch (error) {
