@@ -83,3 +83,25 @@ export function trackAddPaymentInfo(params: {
     },
   });
 }
+
+// "Dönüş planınız nedir?" 3 buton — aynı gün / birkaç gün sonra / emin değilim
+export function trackReturnPlanSelect(plan: "same_day" | "multi_day" | "unsure") {
+  safePush({
+    event: "ticket_donus_plani_secimi",
+    plan_secimi: plan,
+  });
+}
+
+// Alternatif sefer önerisinden tarih seçimi (gidiş veya dönüş için)
+export function trackAlternativeSailingSelect(params: {
+  direction: "gidis" | "donus";
+  date: string;
+  time?: string;
+}) {
+  safePush({
+    event: "ticket_uygun_sefer_secimi",
+    yon: params.direction,
+    tarih: params.date,
+    saat: params.time ?? "",
+  });
+}

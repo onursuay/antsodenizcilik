@@ -325,6 +325,38 @@
         "waitForTags": {"type": "BOOLEAN", "value": "false"},
         "checkValidation": {"type": "BOOLEAN", "value": "false"},
         "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "130",
+        "name": "Ticket - Event - Donus Plani Secimi",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "ticket_donus_plani_secimi"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "131",
+        "name": "Ticket - Event - Uygun Sefer Secimi",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "ticket_uygun_sefer_secimi"}
+            ]
+          }
+        ]
       }
     ],
     "tag": [
@@ -719,6 +751,70 @@
           }
         ],
         "firingTriggerId": ["123"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "330",
+        "name": "Ticket - GA4 - Donus Plani Secimi",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_donus_plani_secimi"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "plan_secimi"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - plan_secimi}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["130"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "331",
+        "name": "Ticket - GA4 - Uygun Sefer Secimi",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_uygun_sefer_secimi"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "yon"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - yon}}"}
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "tarih"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - tarih}}"}
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "saat"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - saat}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["131"]
       }
     ],
     "variable": [
@@ -766,6 +862,54 @@
         "type": "v",
         "parameter": [
           {"type": "TEMPLATE", "key": "name", "value": "search_term"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "210",
+        "name": "DLV - plan_secimi",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "plan_secimi"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "211",
+        "name": "DLV - yon",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "yon"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "212",
+        "name": "DLV - tarih",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "tarih"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "213",
+        "name": "DLV - saat",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "saat"},
           {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
           {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
         ]

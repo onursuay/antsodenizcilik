@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProcessingOverlay } from "./processing-overlay";
 import { TravelNoticeModal } from "./travel-notice-modal";
-import { trackBeginCheckout, trackAddPaymentInfo } from "@/lib/analytics/events";
+import {
+  trackBeginCheckout,
+  trackAddPaymentInfo,
+  trackReturnPlanSelect,
+  trackAlternativeSailingSelect,
+} from "@/lib/analytics/events";
 
 type TripType = "tek-gidis" | "gidis-donus";
 
@@ -2025,7 +2030,16 @@ function SaiDepAlert({ direction, nearestSailings, onSelectDate }: {
         <>
           <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uygun gidiş seferleri:</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {nearestSailings.map((s) => <SaiDateBtn key={`${s.date}-${s.time}`} sailing={s} onClick={() => onSelectDate(s.date)} />)}
+            {nearestSailings.map((s) => (
+              <SaiDateBtn
+                key={`${s.date}-${s.time}`}
+                sailing={s}
+                onClick={() => {
+                  trackAlternativeSailingSelect({ direction: "gidis", date: s.date, time: s.time });
+                  onSelectDate(s.date);
+                }}
+              />
+            ))}
           </div>
           <p className="mt-3 text-xs text-slate-400">Bu tarihlerden birini seçerek devam edebilirsiniz.</p>
         </>
@@ -2056,7 +2070,10 @@ function SaiRetAlert({ direction, nearestSailings, returnIntent, onSelectIntent,
           <button
             key={opt.value}
             type="button"
-            onClick={() => onSelectIntent(opt.value)}
+            onClick={() => {
+              trackReturnPlanSelect(opt.value);
+              onSelectIntent(opt.value);
+            }}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
               returnIntent === opt.value
                 ? "border-[#34a8b3] bg-[#eff4f7] text-[#006971]"
@@ -2074,7 +2091,16 @@ function SaiRetAlert({ direction, nearestSailings, returnIntent, onSelectIntent,
         <>
           <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Uygun dönüş seferleri:</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {nearestSailings.map((s) => <SaiDateBtn key={`${s.date}-${s.time}`} sailing={s} onClick={() => onSelectDate(s.date)} />)}
+            {nearestSailings.map((s) => (
+              <SaiDateBtn
+                key={`${s.date}-${s.time}`}
+                sailing={s}
+                onClick={() => {
+                  trackAlternativeSailingSelect({ direction: "donus", date: s.date, time: s.time });
+                  onSelectDate(s.date);
+                }}
+              />
+            ))}
           </div>
         </>
       ) : (

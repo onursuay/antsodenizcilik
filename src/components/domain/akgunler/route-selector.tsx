@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PassengerVehiclePopover, type YolcuSayi } from "./passenger-vehicle-popover";
+import { trackReturnPlanSelect, trackAlternativeSailingSelect } from "@/lib/analytics/events";
 
 // ── Schedule availability (local types — no server import) ────────────────
 interface ScheduleSlot { direction: string; time: string; }
@@ -266,7 +267,10 @@ function DepartureSailingAlert({
               <SailingDateButton
                 key={`${s.date}-${s.time}`}
                 sailing={s}
-                onClick={() => onSelectDate(s.date)}
+                onClick={() => {
+                  trackAlternativeSailingSelect({ direction: "gidis", date: s.date, time: s.time });
+                  onSelectDate(s.date);
+                }}
               />
             ))}
           </div>
@@ -310,7 +314,10 @@ function ReturnSailingAlert({
           <button
             key={opt.value}
             type="button"
-            onClick={() => onSelectIntent(opt.value)}
+            onClick={() => {
+              trackReturnPlanSelect(opt.value);
+              onSelectIntent(opt.value);
+            }}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium transition active:scale-95 ${
               returnIntent === opt.value
                 ? "border-brand-sky bg-brand-sky/10 text-brand-ocean"
@@ -336,7 +343,10 @@ function ReturnSailingAlert({
               <SailingDateButton
                 key={`${s.date}-${s.time}`}
                 sailing={s}
-                onClick={() => onSelectDate(s.date)}
+                onClick={() => {
+                  trackAlternativeSailingSelect({ direction: "donus", date: s.date, time: s.time });
+                  onSelectDate(s.date);
+                }}
               />
             ))}
           </div>
