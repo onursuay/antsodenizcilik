@@ -19,18 +19,14 @@ interface Props {
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
-    fbq?: (
-      command: string,
-      eventName: string,
-      params?: Record<string, unknown>
-    ) => void;
   }
 }
 
-// 1) dataLayer.push — GA4 Enhanced Ecommerce / GTM tag'ları için (Meta Pixel GTM tag'ı varsa o yakalar)
-// 2) fbq('track', 'Purchase', ...) — Meta Pixel doğrudan ateşleme (fallback, GTM tag yoksa garanti)
-//    Eğer GTM'de de Pixel Purchase tag'ı kurarsanız çift event olur; o durumda GTM tag'ı kaldırın
-//    veya buradaki fbq çağrısını kapatın.
+// GA4 Enhanced Ecommerce standardında dataLayer.push.
+// GTM'deki Meta Pixel Purchase, GA4 Purchase, Google Ads Conversion tag'ları
+// "purchase" custom event'ini trigger olarak kullanır.
+// Pixel base script + fbq doğrudan çağrısı kasten kaldırıldı — duplicate'ı önlemek için
+// tüm Meta event'leri GTM üzerinden gitsin.
 export function PurchaseTracking({ sepetId, biletler }: Props) {
   useEffect(() => {
     if (!biletler.length) return;
@@ -38,7 +34,6 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
 
     const totalValue = biletler.reduce((sum, b) => sum + b.price_100, 0) / 100;
 
-    // (1) dataLayer event
     window.dataLayer = window.dataLayer ?? [];
     window.dataLayer.push({ ecommerce: null });
     window.dataLayer.push({
@@ -56,17 +51,6 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
         })),
       },
     });
-
-    // (2) Meta Pixel doğrudan Purchase event
-    if (typeof window.fbq === "function") {
-      window.fbq("track", "Purchase", {
-        value: totalValue,
-        currency: "TRY",
-        content_ids: [sepetId],
-        content_type: "product",
-        num_items: biletler.length,
-      });
-    }
   }, [sepetId, biletler]);
 
   return null;
