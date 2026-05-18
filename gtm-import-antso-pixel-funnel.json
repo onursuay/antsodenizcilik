@@ -1,0 +1,775 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2026-05-18 13:30:00",
+  "containerVersion": {
+    "path": "accounts/0/containers/0/versions/0",
+    "accountId": "0",
+    "containerId": "0",
+    "containerVersionId": "0",
+    "container": {
+      "path": "accounts/0/containers/0",
+      "accountId": "0",
+      "containerId": "0",
+      "name": "antsodenizcilik",
+      "publicId": "GTM-W8KD79ZD",
+      "usageContext": ["WEB"]
+    },
+    "trigger": [
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "100",
+        "name": "Ticket - Event - Search",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "view_search_results"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "101",
+        "name": "Ticket - Event - BeginCheckout",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "begin_checkout"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "102",
+        "name": "Ticket - Event - AddPaymentInfo",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "add_payment_info"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "103",
+        "name": "Ticket - Event - Purchase",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "purchase"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "110",
+        "name": "Ticket - Click - Telefon",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "tel:"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "111",
+        "name": "Ticket - Click - Email",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "mailto:"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "112",
+        "name": "Ticket - Click - Bilet Al CTA",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "#bilet-al"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "113",
+        "name": "Ticket - Click - Sefer Takvimi",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/sefer-takvimi"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "114",
+        "name": "Ticket - Click - Giris Yap",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/auth/login"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "115",
+        "name": "Ticket - Click - SSS",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/sss"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "116",
+        "name": "Ticket - Click - Iletisim",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/iletisim"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "117",
+        "name": "Ticket - Click - Kurumsal",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/kurumsal/"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "118",
+        "name": "Ticket - Click - Kural ve Kosullar",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "/kural-ve-kosullar"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "120",
+        "name": "Ticket - Click - Sosyal Facebook",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "facebook.com"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "121",
+        "name": "Ticket - Click - Sosyal Instagram",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "instagram.com"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "122",
+        "name": "Ticket - Click - Sosyal LinkedIn",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "linkedin.com"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "123",
+        "name": "Ticket - Click - Sosyal YouTube",
+        "type": "LINK_CLICK",
+        "filter": [
+          {
+            "type": "CONTAINS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{Click URL}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "youtube.com"}
+            ]
+          }
+        ],
+        "waitForTags": {"type": "BOOLEAN", "value": "false"},
+        "checkValidation": {"type": "BOOLEAN", "value": "false"},
+        "waitForTagsTimeout": {"type": "TEMPLATE", "value": "2000"}
+      }
+    ],
+    "tag": [
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "300",
+        "name": "Ticket - Meta Pixel - Base + PageView",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>\n!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');\nfbq('init', '992839852225789');\nfbq('track', 'PageView');\n</script>"
+          },
+          {"type": "BOOLEAN", "key": "supportDocumentWrite", "value": "false"}
+        ],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "301",
+        "name": "Ticket - Meta Pixel - Search",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>\nfbq('track', 'Search', {\n  search_string: '{{DLV - search_term}}',\n  content_category: 'ferry'\n});\n</script>"
+          },
+          {"type": "BOOLEAN", "key": "supportDocumentWrite", "value": "false"}
+        ],
+        "firingTriggerId": ["100"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "302",
+        "name": "Ticket - Meta Pixel - InitiateCheckout",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>\nfbq('track', 'InitiateCheckout', {\n  value: {{DLV - ecommerce.value}},\n  currency: '{{DLV - ecommerce.currency}}',\n  content_ids: ['{{DLV - ecommerce.transaction_id}}'],\n  content_type: 'product'\n});\n</script>"
+          },
+          {"type": "BOOLEAN", "key": "supportDocumentWrite", "value": "false"}
+        ],
+        "firingTriggerId": ["101"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "303",
+        "name": "Ticket - Meta Pixel - AddPaymentInfo",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>\nfbq('track', 'AddPaymentInfo', {\n  value: {{DLV - ecommerce.value}},\n  currency: '{{DLV - ecommerce.currency}}',\n  content_ids: ['{{DLV - ecommerce.transaction_id}}'],\n  content_type: 'product'\n});\n</script>"
+          },
+          {"type": "BOOLEAN", "key": "supportDocumentWrite", "value": "false"}
+        ],
+        "firingTriggerId": ["102"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "304",
+        "name": "Ticket - Meta Pixel - Purchase",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>\nfbq('track', 'Purchase', {\n  value: {{DLV - ecommerce.value}},\n  currency: '{{DLV - ecommerce.currency}}',\n  content_ids: ['{{DLV - ecommerce.transaction_id}}'],\n  content_type: 'product'\n});\n</script>"
+          },
+          {"type": "BOOLEAN", "key": "supportDocumentWrite", "value": "false"}
+        ],
+        "firingTriggerId": ["103"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "310",
+        "name": "Ticket - GA4 - Telefon Tikla",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_telefon_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "telefon_numarasi"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click URL}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["110"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "311",
+        "name": "Ticket - GA4 - Email Tikla",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_email_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "email_adresi"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click URL}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["111"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "312",
+        "name": "Ticket - GA4 - Bilet Al CTA",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_bilet_al_cta"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "buton_metni"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click Text}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["112"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "313",
+        "name": "Ticket - GA4 - Sefer Takvimi",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sefer_takvimi_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "buton_metni"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click Text}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["113"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "314",
+        "name": "Ticket - GA4 - Giris Yap",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_giris_yap_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "buton_metni"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click Text}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["114"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "315",
+        "name": "Ticket - GA4 - SSS",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sss_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "buton_metni"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click Text}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["115"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "316",
+        "name": "Ticket - GA4 - Iletisim",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_iletisim_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "buton_metni"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click Text}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["116"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "317",
+        "name": "Ticket - GA4 - Kurumsal Sayfa",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_kurumsal_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "sayfa_url"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{Click URL}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["117"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "318",
+        "name": "Ticket - GA4 - Kural ve Kosullar",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_kural_kosullar_tikla"}
+        ],
+        "firingTriggerId": ["118"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "320",
+        "name": "Ticket - GA4 - Sosyal Facebook",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "platform"},
+                  {"type": "TEMPLATE", "key": "value", "value": "facebook"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["120"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "321",
+        "name": "Ticket - GA4 - Sosyal Instagram",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "platform"},
+                  {"type": "TEMPLATE", "key": "value", "value": "instagram"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["121"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "322",
+        "name": "Ticket - GA4 - Sosyal LinkedIn",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "platform"},
+                  {"type": "TEMPLATE", "key": "value", "value": "linkedin"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["122"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "323",
+        "name": "Ticket - GA4 - Sosyal YouTube",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "platform"},
+                  {"type": "TEMPLATE", "key": "value", "value": "youtube"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["123"]
+      }
+    ],
+    "variable": [
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "200",
+        "name": "DLV - ecommerce.transaction_id",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "ecommerce.transaction_id"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "201",
+        "name": "DLV - ecommerce.value",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "ecommerce.value"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "202",
+        "name": "DLV - ecommerce.currency",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "ecommerce.currency"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "203",
+        "name": "DLV - search_term",
+        "type": "v",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "name", "value": "search_term"},
+          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
+          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
+        ]
+      }
+    ]
+  }
+}

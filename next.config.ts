@@ -5,6 +5,18 @@ const TURNSTILE_HOST = "https://challenges.cloudflare.com";
 const GOOGLE_TAG_MANAGER_HOST = "https://www.googletagmanager.com";
 const META_PIXEL_SCRIPT_HOST = "https://connect.facebook.net";
 const META_PIXEL_IMG_HOST = "https://www.facebook.com";
+// GA4 ve Google Ads endpoint'leri (event collection + remarketing)
+const GA4_HOSTS = [
+  "https://www.google-analytics.com",
+  "https://*.google-analytics.com",
+  "https://analytics.google.com",
+  "https://www.google.com",
+  "https://stats.g.doubleclick.net",
+  "https://www.googleadservices.com",
+  "https://googleads.g.doubleclick.net",
+].join(" ");
+// Meta Conversions API Gateway (server-side Pixel)
+const META_CAPI_GATEWAY = "https://*.conversionsapigateway.com";
 
 const securityHeaders = [
   // HTTPS zorunluluğu — 2 yıl, alt alan adları dahil
@@ -44,12 +56,12 @@ const securityHeaders = [
       `script-src 'self' 'unsafe-inline' ${TURNSTILE_HOST} ${GOOGLE_TAG_MANAGER_HOST} ${META_PIXEL_SCRIPT_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       // Tailwind ve Next.js inline style'ları için
       "style-src 'self' 'unsafe-inline'",
-      // Görseller: kendi origin + data URI (önizlemeler) + Meta Pixel noscript fallback
-      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST}`,
+      // Görseller: kendi origin + data URI + Meta Pixel + GA4 collect (img beacon fallback)
+      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST} ${GA4_HOSTS}`,
       // next/font/google fontları build'de indirilip self'ten servis edilir
       "font-src 'self'",
-      // XHR/fetch: kendi API'ler + Supabase (auth, realtime) + Meta Pixel beacon
-      `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${META_PIXEL_IMG_HOST}`,
+      // XHR/fetch: kendi API'ler + Supabase + Meta Pixel + GA4 + Meta CAPI Gateway
+      `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${META_PIXEL_IMG_HOST} ${GA4_HOSTS} ${META_CAPI_GATEWAY}`,
       // Form POST: yalnızca kendi sayfalar ve Akgünler 3D Secure
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
       // Cloudflare Turnstile challenge widget iframe
@@ -73,10 +85,10 @@ const paymentSecurityHeaders = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline' ${GOOGLE_TAG_MANAGER_HOST} ${META_PIXEL_SCRIPT_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST}`,
+      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST} ${GA4_HOSTS}`,
       "font-src 'self'",
-      // Ödeme sayfalarında Supabase bağlantısı gerekmez; Meta Pixel beacon eklendi
-      `connect-src 'self' ${META_PIXEL_IMG_HOST}`,
+      // Ödeme sayfalarında Supabase bağlantısı gerekmez; Meta Pixel + GA4 + Meta CAPI eklendi
+      `connect-src 'self' ${META_PIXEL_IMG_HOST} ${GA4_HOSTS} ${META_CAPI_GATEWAY}`,
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
       `frame-src ${GOOGLE_TAG_MANAGER_HOST}`,
       "frame-ancestors 'none'",
