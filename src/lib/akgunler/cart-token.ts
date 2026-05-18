@@ -40,21 +40,29 @@ export function verifyCartToken(sepetId: number, token: string): boolean {
   }
 }
 
-// Payment callback token — Akgünler 3DS callback'inde sepetId/price100/email/ccHolder
+// Payment callback token — Akgünler 3DS callback'inde sepetId/price100/email/ccHolder/phone
 // POST body'sinde dönmüyor; bu değerleri URL'e koyup HMAC ile bağlıyoruz.
-function paymentPayload(sepetId: number, price100: number, email: string, ccHolder: string, expiresAt: number) {
-  return `payment-cb:${sepetId}:${price100}:${email}:${ccHolder}:${expiresAt}`;
+function paymentPayload(
+  sepetId: number,
+  price100: number,
+  email: string,
+  ccHolder: string,
+  phone: string,
+  expiresAt: number
+) {
+  return `payment-cb:${sepetId}:${price100}:${email}:${ccHolder}:${phone}:${expiresAt}`;
 }
 
 export function generatePaymentCallbackToken(
   sepetId: number,
   price100: number,
   email: string,
-  ccHolder: string
+  ccHolder: string,
+  phone: string
 ): string {
   const expiresAt = Math.floor(Date.now() / 1000) + TTL_SECONDS;
   const mac = createHmac("sha256", secret())
-    .update(paymentPayload(sepetId, price100, email, ccHolder, expiresAt))
+    .update(paymentPayload(sepetId, price100, email, ccHolder, phone, expiresAt))
     .digest("hex");
   return `${expiresAt}.${mac}`;
 }
@@ -64,6 +72,7 @@ export function verifyPaymentCallbackToken(
   price100: number,
   email: string,
   ccHolder: string,
+  phone: string,
   token: string
 ): boolean {
   if (!token || !sepetId || !price100) return false;
@@ -77,7 +86,7 @@ export function verifyPaymentCallbackToken(
   if (isNaN(expiresAt) || Math.floor(Date.now() / 1000) > expiresAt) return false;
 
   const expected = createHmac("sha256", secret())
-    .update(paymentPayload(sepetId, price100, email, ccHolder, expiresAt))
+    .update(paymentPayload(sepetId, price100, email, ccHolder, phone, expiresAt))
     .digest("hex");
 
   if (mac.length !== expected.length) return false;

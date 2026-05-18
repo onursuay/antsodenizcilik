@@ -27,6 +27,7 @@ interface PaymentFormProps {
   cikisSehirAd: string;
   varisSehirAd: string;
   yolcular: YolcuData[];
+  phone?: string;
 }
 
 interface CheckoutInitData {
@@ -79,6 +80,7 @@ export function PaymentForm({
   cikisSehirAd,
   varisSehirAd,
   yolcular,
+  phone = "",
 }: PaymentFormProps) {
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -117,6 +119,7 @@ export function PaymentForm({
           email,
           ccHolder: cardHolder,
           toplamFiyat,
+          phone,
           cartToken,
         }),
       });

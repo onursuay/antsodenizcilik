@@ -1435,6 +1435,7 @@ export function PublicBookingCheckoutPage({ sessionId }: { sessionId: string }) 
           email: contact.email.trim(),
           ccHolder: payment.holder.trim().toUpperCase(),
           toplamFiyat: passengerJson.toplam_fiyat ?? getDisplayPrice(session),
+          phone: contact.phone.trim(),
           cartToken: session.cartToken,
         }),
       });

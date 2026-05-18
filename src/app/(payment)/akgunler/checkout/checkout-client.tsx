@@ -26,6 +26,7 @@ interface CheckoutSession {
   cikisSehirAd: string;
   varisSehirAd: string;
   yolcular: YolcuData[];
+  phone?: string;
 }
 
 export const CHECKOUT_SESSION_KEY = "akgunler_payment_session";
@@ -89,6 +90,7 @@ export function CheckoutClient({
         cikisSehirAd={session.cikisSehirAd}
         varisSehirAd={session.varisSehirAd}
         yolcular={session.yolcular}
+        phone={session.phone ?? ""}
       />
     </div>
   );

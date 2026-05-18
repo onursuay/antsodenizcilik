@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     const price100 = parseInt(searchParams.get("p") ?? "0", 10);
     const email = searchParams.get("em") ?? "";
     const ccHolder = searchParams.get("cn") ?? "";
+    const phone = searchParams.get("tel") ?? "";
     const pt = searchParams.get("pt") ?? "";
     const ct = searchParams.get("ct") ?? "";
 
@@ -72,8 +73,8 @@ export async function POST(request: Request) {
       return failRedirect("E-posta bilgisi eksik");
     }
 
-    const ptValid = verifyPaymentCallbackToken(sepetId, price100, email, ccHolder, pt);
-    console.log("[callback] step=pt_verify result:", ptValid);
+    const ptValid = verifyPaymentCallbackToken(sepetId, price100, email, ccHolder, phone, pt);
+    console.log("[callback] step=pt_verify result:", ptValid, "phone_present:", !!phone);
     if (!ptValid) return failRedirect("Gecersiz istek");
 
     if (!cavv && !eci && !xid && !md) {
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       return failRedirect("3D dogrulama verileri eksik");
     }
 
-    console.log("[callback] step=bileteDonustur3D_calling");
+    console.log("[callback] step=bileteDonustur3D_calling tel_len:", phone.length);
     await bileteDonustur3D({
       sepetId,
       ccHolder,
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
       eci,
       xid,
       md,
+      telNo: phone, // tüm yolcuların telefonunu üzerine yazar — eski kirli sepetleri kurtarır
     });
     console.log("[callback] step=bileteDonustur3D_success");
 

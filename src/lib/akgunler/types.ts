@@ -8,6 +8,7 @@ export interface CheckoutRequestBody {
   email: string;
   ccHolder: string;
   toplamFiyat: number;
+  phone?: string;
   cartToken: string;
   // Kart alanlarını eklemek derleme hatasına neden olur:
   ccNr?: never;

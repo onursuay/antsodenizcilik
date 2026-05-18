@@ -272,6 +272,11 @@ export function AkgunlerBookingWizard() {
         throw new Error(data.error);
       }
 
+      // İlk yolcunun telefonunu sakla — payment-callback'te tüm yolcuların telefonunu üzerine yazmak için kullanılacak
+      const firstPhone = yolcuBilgileri
+        .map((y) => String(y.yolcu_tel_no ?? "").trim())
+        .find((p) => p.length > 0) ?? "";
+
       // Özet verisini sessionStorage'a kaydet; ödeme sayfası okuyacak
       sessionStorage.setItem(
         CHECKOUT_SESSION_KEY,
@@ -281,6 +286,7 @@ export function AkgunlerBookingWizard() {
           cikisSehirAd,
           varisSehirAd,
           yolcular,
+          phone: firstPhone,
         })
       );
       router.push(`/akgunler/checkout?sid=${sepetId}&ct=${encodeURIComponent(cartToken)}`);
