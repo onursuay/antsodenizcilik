@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const AKGUNLER_PAYMENT_HOST = "https://www.akgunlerbilet.com";
 const TURNSTILE_HOST = "https://challenges.cloudflare.com";
 const GOOGLE_TAG_MANAGER_HOST = "https://www.googletagmanager.com";
+const META_PIXEL_SCRIPT_HOST = "https://connect.facebook.net";
+const META_PIXEL_IMG_HOST = "https://www.facebook.com";
 
 const securityHeaders = [
   // HTTPS zorunluluğu — 2 yıl, alt alan adları dahil
@@ -39,15 +41,15 @@ const securityHeaders = [
       "default-src 'self'",
       // Next.js App Router hydration için unsafe-inline gerekli.
       // unsafe-eval development'ta gerekli; production'da kaldırılıyor.
-      `script-src 'self' 'unsafe-inline' ${TURNSTILE_HOST} ${GOOGLE_TAG_MANAGER_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' ${TURNSTILE_HOST} ${GOOGLE_TAG_MANAGER_HOST} ${META_PIXEL_SCRIPT_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       // Tailwind ve Next.js inline style'ları için
       "style-src 'self' 'unsafe-inline'",
-      // Görseller: kendi origin + data URI (önizlemeler)
-      "img-src 'self' data: blob:",
+      // Görseller: kendi origin + data URI (önizlemeler) + Meta Pixel noscript fallback
+      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST}`,
       // next/font/google fontları build'de indirilip self'ten servis edilir
       "font-src 'self'",
-      // XHR/fetch: kendi API'ler + Supabase (auth, realtime)
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      // XHR/fetch: kendi API'ler + Supabase (auth, realtime) + Meta Pixel beacon
+      `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${META_PIXEL_IMG_HOST}`,
       // Form POST: yalnızca kendi sayfalar ve Akgünler 3D Secure
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
       // Cloudflare Turnstile challenge widget iframe
@@ -69,12 +71,12 @@ const paymentSecurityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' ${GOOGLE_TAG_MANAGER_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' ${GOOGLE_TAG_MANAGER_HOST} ${META_PIXEL_SCRIPT_HOST}${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
+      `img-src 'self' data: blob: ${META_PIXEL_IMG_HOST}`,
       "font-src 'self'",
-      // Ödeme sayfalarında Supabase bağlantısı gerekmez
-      "connect-src 'self'",
+      // Ödeme sayfalarında Supabase bağlantısı gerekmez; Meta Pixel beacon eklendi
+      `connect-src 'self' ${META_PIXEL_IMG_HOST}`,
       `form-action 'self' ${AKGUNLER_PAYMENT_HOST}`,
       `frame-src ${GOOGLE_TAG_MANAGER_HOST}`,
       "frame-ancestors 'none'",
