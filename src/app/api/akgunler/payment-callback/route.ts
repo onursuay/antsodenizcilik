@@ -99,13 +99,16 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof AkgunlerApiError) {
-      console.error("[callback] step=akgunler_error", {
+      console.error("[callback] step=akgunler_error_full", {
         hata: error.hata,
         hata_aciklama: error.hataAciklama,
+        message: error.message,
+        stack: error.stack,
       });
-    } else {
-      console.error("[callback] step=unexpected_error", error instanceof Error ? error.message : String(error));
+      // hata_aciklama'yı kullanıcıya doğrudan göster (sadece hata kodu değil)
+      return failRedirect(error.hataAciklama || error.hata || "Akgunler hatasi");
     }
+    console.error("[callback] step=unexpected_error", error instanceof Error ? error.message : String(error));
     const msg = error instanceof Error ? error.message : "Bilet olusturulamadi";
     return failRedirect(msg);
   }

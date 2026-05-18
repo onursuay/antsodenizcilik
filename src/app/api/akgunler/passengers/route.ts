@@ -38,9 +38,17 @@ export async function GET(request: Request) {
 }
 
 // Akgünler tel_no regex: /^[A-Za-z0-9-+ ]*$/, max 32 karakter.
-// Kullanıcı parantez/nokta/slash yazarsa Akgünler "yanlis_formatli_deger: tel_no" döner.
+// Daha güvenli olması için ham veriyi sadece rakam + opsiyonel başta '+' bırakacak şekilde normalize ediyoruz.
 function sanitizePhone(phone: string): string {
-  return phone.replace(/[^A-Za-z0-9\-+ ]/g, "").trim().slice(0, 32);
+  const digitsAndPlus = phone.replace(/[^\d+]/g, "");
+  // Sadece baştaki + işaretine izin ver, diğerlerini sil
+  const cleaned = digitsAndPlus.replace(/(?!^)\+/g, "");
+  return cleaned.slice(0, 32);
+}
+
+// Diagnostic: gizli/unicode karakterleri görmek için char-code listesi üret
+function charCodes(s: string): string {
+  return Array.from(s).map((c) => c.charCodeAt(0)).join(",");
 }
 
 export async function POST(request: Request) {
@@ -59,10 +67,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Gecersiz oturum" }, { status: 403 });
     }
 
+    // Ham telefon değerlerini logla (char-code ile)
+    console.log("[passengers] step=raw_phones", body.yolcular.map((y, i) => ({
+      idx: i,
+      tel: y.yolcu_tel_no ?? null,
+      tel_len: y.yolcu_tel_no?.length ?? 0,
+      tel_codes: y.yolcu_tel_no ? charCodes(y.yolcu_tel_no) : null,
+    })));
+
     const sanitizedYolcular = body.yolcular.map((y) => ({
       ...y,
       yolcu_tel_no: y.yolcu_tel_no ? sanitizePhone(y.yolcu_tel_no) : y.yolcu_tel_no,
     }));
+
+    console.log("[passengers] step=sanitized_phones", sanitizedYolcular.map((y, i) => ({
+      idx: i,
+      tel: y.yolcu_tel_no ?? null,
+      tel_len: y.yolcu_tel_no?.length ?? 0,
+      tel_codes: y.yolcu_tel_no ? charCodes(y.yolcu_tel_no) : null,
+    })));
 
     const result = await setYolcuBilgisi(body.s_id, sanitizedYolcular);
 
