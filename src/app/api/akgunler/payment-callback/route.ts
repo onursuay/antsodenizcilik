@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { bileteDonustur3D } from "@/lib/akgunler/client";
 import { verifyPaymentCallbackToken } from "@/lib/akgunler/cart-token";
 import { AkgunlerApiError } from "@/lib/akgunler/errors";
+import { sendPurchaseEvent } from "@/lib/analytics/meta-capi";
 
 export async function POST(request: Request) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bilet.antsodenizcilik.com";
@@ -95,6 +96,15 @@ export async function POST(request: Request) {
       telNo: phone, // tüm yolcuların telefonunu üzerine yazar — eski kirli sepetleri kurtarır
     });
     console.log("[callback] step=bileteDonustur3D_success");
+
+    sendPurchaseEvent({
+      email,
+      phone: phone || undefined,
+      value: price100 / 100,
+      orderId: sepetId,
+      clientIpAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      clientUserAgent: request.headers.get("user-agent") ?? undefined,
+    }).catch(() => {});
 
     return NextResponse.redirect(
       `${appUrl}/akgunler/confirmation/${sepetId}?ct=${encodeURIComponent(ct)}`
