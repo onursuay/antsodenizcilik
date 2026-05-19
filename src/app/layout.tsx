@@ -48,14 +48,14 @@ export default function RootLayout({
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-W8KD79ZD');`,
+})(window,document,'script','dataLayer','GTM-NCTR6VFG');`,
           }}
         />
       </head>
       <body className="min-h-full flex flex-col">
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-W8KD79ZD"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-NCTR6VFG"
             height="0"
             width="0"
             style={{ display: "none", visibility: "hidden" }}
