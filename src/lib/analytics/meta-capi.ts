@@ -13,10 +13,17 @@ export async function sendPurchaseEvent(params: {
   value: number;
   currency?: string;
   orderId: string | number;
+  eventId?: string;
   clientIpAddress?: string;
   clientUserAgent?: string;
 }): Promise<void> {
-  if (!PIXEL_ID || !TOKEN) return;
+  if (!PIXEL_ID || !TOKEN) {
+    console.warn(
+      "[meta-capi] META_PIXEL_ID veya META_CAPI_TOKEN tanımlı değil — Purchase CAPI GÖNDERİLMEDİ. " +
+        "Vercel env değişkenlerini kontrol edin."
+    );
+    return;
+  }
 
   const userData: Record<string, string> = { em: sha256(params.email) };
   if (params.phone) {
@@ -29,6 +36,7 @@ export async function sendPurchaseEvent(params: {
     data: [
       {
         event_name: "Purchase",
+        event_id: params.eventId ?? `purchase.${params.orderId}`,
         event_time: Math.floor(Date.now() / 1000),
         event_source_url: `${process.env.NEXT_PUBLIC_APP_URL}/akgunler/confirmation/${params.orderId}`,
         action_source: "website",

@@ -38,6 +38,9 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
     window.dataLayer.push({ ecommerce: null });
     window.dataLayer.push({
       event: "purchase",
+      // Server CAPI ile aynı event_id → Meta browser↔server dedup.
+      // GTM'de Meta Pixel Purchase tag'ının "Event ID" alanı bu değişkene ({{dlv - event_id}}) bağlanmalı.
+      event_id: `purchase.${sepetId}`,
       ecommerce: {
         transaction_id: sepetId,
         value: totalValue,

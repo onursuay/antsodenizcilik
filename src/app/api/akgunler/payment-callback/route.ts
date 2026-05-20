@@ -8,8 +8,11 @@ export async function POST(request: Request) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bilet.antsodenizcilik.com";
 
   function failRedirect(msg: string) {
+    // 303 See Other: POST sonrası tarayıcının GET ile confirmation'a gitmesini zorlar.
+    // (307 olsaydı tarayıcı 3DS form gövdesini sayfaya yeniden POST ederdi → temiz PageView oluşmaz.)
     return NextResponse.redirect(
-      `${appUrl}/akgunler/confirmation/error?hata=${encodeURIComponent(msg)}`
+      `${appUrl}/akgunler/confirmation/error?hata=${encodeURIComponent(msg)}`,
+      303
     );
   }
 
@@ -102,12 +105,16 @@ export async function POST(request: Request) {
       phone: phone || undefined,
       value: price100 / 100,
       orderId: sepetId,
+      // Browser pixel ile aynı event_id → Meta tarafında dedup (çift sayım engellenir)
+      eventId: `purchase.${sepetId}`,
       clientIpAddress: request.headers.get("x-forwarded-for") ?? undefined,
       clientUserAgent: request.headers.get("user-agent") ?? undefined,
-    }).catch(() => {});
+    }).catch((e) => console.error("[callback] CAPI Purchase gönderilemedi:", e));
 
+    // 303: başarılı ödeme sonrası confirmation'a temiz GET navigasyonu (bkz. failRedirect notu)
     return NextResponse.redirect(
-      `${appUrl}/akgunler/confirmation/${sepetId}?ct=${encodeURIComponent(ct)}`
+      `${appUrl}/akgunler/confirmation/${sepetId}?ct=${encodeURIComponent(ct)}`,
+      303
     );
   } catch (error) {
     if (error instanceof AkgunlerApiError) {
