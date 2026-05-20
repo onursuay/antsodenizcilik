@@ -858,6 +858,84 @@
           }
         ],
         "firingTriggerId": ["131"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "340",
+        "name": "Google Tag - GA4 Config",
+        "type": "googtag",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "tagId", "value": "G-F7WC7VFX9K"}
+        ],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "344",
+        "name": "Ticket - GA4 - Search",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "view_search_results"},
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {"type": "TEMPLATE", "key": "name", "value": "search_term"},
+                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - search_term}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["100"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "341",
+        "name": "Ticket - GA4 - Begin Checkout",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "begin_checkout"},
+          {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
+          {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
+        ],
+        "firingTriggerId": ["101"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "342",
+        "name": "Ticket - GA4 - Add Payment Info",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "add_payment_info"},
+          {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
+          {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
+        ],
+        "firingTriggerId": ["102"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "343",
+        "name": "Ticket - GA4 - Purchase",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "purchase"},
+          {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
+          {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
+        ],
+        "firingTriggerId": ["103"]
       }
     ],
     "variable": [
