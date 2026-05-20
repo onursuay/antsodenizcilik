@@ -84,11 +84,17 @@ export function trackAddPaymentInfo(params: {
   });
 }
 
-// "Dönüş planınız nedir?" 3 buton — aynı gün / birkaç gün sonra / emin değilim
+// "Dönüş planınız nedir?" 3 buton — her seçim AYRI bir GA4 event'i olarak gönderilir
+// (tek event + parametre yerine), böylece GA4'te her biri ayrı event/Anahtar Olay olur.
+const RETURN_PLAN_EVENT: Record<"same_day" | "multi_day" | "unsure", string> = {
+  same_day: "donus_plani_ayni_gun",
+  multi_day: "donus_plani_birkac_gun",
+  unsure: "donus_plani_emin_degil",
+};
+
 export function trackReturnPlanSelect(plan: "same_day" | "multi_day" | "unsure") {
   safePush({
-    event: "ticket_donus_plani_secimi",
-    plan_secimi: plan,
+    event: RETURN_PLAN_EVENT[plan],
   });
 }
 

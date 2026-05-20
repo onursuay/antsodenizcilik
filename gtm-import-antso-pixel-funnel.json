@@ -330,14 +330,46 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "130",
-        "name": "Ticket - Event - Donus Plani Secimi",
+        "name": "Ticket - Event - Donus Plani - Ayni Gun",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
             "type": "EQUALS",
             "parameter": [
               {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
-              {"type": "TEMPLATE", "key": "arg1", "value": "ticket_donus_plani_secimi"}
+              {"type": "TEMPLATE", "key": "arg1", "value": "donus_plani_ayni_gun"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "132",
+        "name": "Ticket - Event - Donus Plani - Birkac Gun",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "donus_plani_birkac_gun"}
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "133",
+        "name": "Ticket - Event - Donus Plani - Emin Degil",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {"type": "TEMPLATE", "key": "arg0", "value": "{{_event}}"},
+              {"type": "TEMPLATE", "key": "arg1", "value": "donus_plani_emin_degil"}
             ]
           }
         ]
@@ -756,26 +788,37 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "330",
-        "name": "Ticket - GA4 - Donus Plani Secimi",
+        "name": "Ticket - GA4 - Donus Plani Ayni Gun",
         "type": "gaawe",
         "parameter": [
           {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
-          {"type": "TEMPLATE", "key": "eventName", "value": "ticket_donus_plani_secimi"},
-          {
-            "type": "LIST",
-            "key": "eventParameters",
-            "list": [
-              {
-                "type": "MAP",
-                "map": [
-                  {"type": "TEMPLATE", "key": "name", "value": "plan_secimi"},
-                  {"type": "TEMPLATE", "key": "value", "value": "{{DLV - plan_secimi}}"}
-                ]
-              }
-            ]
-          }
+          {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_ayni_gun"}
         ],
         "firingTriggerId": ["130"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "332",
+        "name": "Ticket - GA4 - Donus Plani Birkac Gun",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_birkac_gun"}
+        ],
+        "firingTriggerId": ["132"]
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "333",
+        "name": "Ticket - GA4 - Donus Plani Emin Degil",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_emin_degil"}
+        ],
+        "firingTriggerId": ["133"]
       },
       {
         "accountId": "0",
@@ -862,18 +905,6 @@
         "type": "v",
         "parameter": [
           {"type": "TEMPLATE", "key": "name", "value": "search_term"},
-          {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
-          {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
-        ]
-      },
-      {
-        "accountId": "0",
-        "containerId": "0",
-        "variableId": "210",
-        "name": "DLV - plan_secimi",
-        "type": "v",
-        "parameter": [
-          {"type": "TEMPLATE", "key": "name", "value": "plan_secimi"},
           {"type": "INTEGER", "key": "dataLayerVersion", "value": "2"},
           {"type": "BOOLEAN", "key": "setDefaultValue", "value": "false"}
         ]
