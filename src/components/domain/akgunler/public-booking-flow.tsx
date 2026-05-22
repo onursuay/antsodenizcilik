@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ProcessingOverlay } from "./processing-overlay";
 import { TravelNoticeModal } from "./travel-notice-modal";
 import {
+  trackSearch,
   trackBeginCheckout,
   trackAddPaymentInfo,
   trackReturnPlanSelect,
@@ -651,6 +652,14 @@ function ReferenceHeroSearchCard({
       if (!response.ok) {
         throw new Error(json.error ?? "Seferler getirilemedi.");
       }
+
+      trackSearch({
+        from: sehirler.find((s) => s.id === search.cikisSehirId)?.ad ?? "",
+        to: sehirler.find((s) => s.id === search.varisSehirId)?.ad ?? "",
+        date: search.gidisTarihi,
+        tripType: search.tripType,
+        passengers: search.yolcuTurleri.reduce((sum, t) => sum + t.sayi, 0),
+      });
 
       const id = makeSessionId();
       saveStoredSession({
@@ -2279,6 +2288,14 @@ function BookingSearchCard({
       if (!response.ok) {
         throw new Error(json.error ?? "Seferler getirilemedi.");
       }
+
+      trackSearch({
+        from: getPortName(guzergahlar, search, "from"),
+        to: getPortName(guzergahlar, search, "to"),
+        date: search.gidisTarihi,
+        tripType: search.tripType,
+        passengers: search.yolcuTurleri.reduce((sum, t) => sum + t.sayi, 0),
+      });
 
       const id = sessionId ?? makeSessionId();
       const session: BookingSession = {
