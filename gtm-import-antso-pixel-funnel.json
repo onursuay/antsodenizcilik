@@ -11,7 +11,7 @@
       "accountId": "0",
       "containerId": "0",
       "name": "antsodenizcilik",
-      "publicId": "GTM-W8KD79ZD",
+      "publicId": "GTM-NCTR6VFG",
       "usageContext": ["WEB"]
     },
     "trigger": [
@@ -479,7 +479,7 @@
         "name": "Ticket - GA4 - Telefon Tikla",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_telefon_tikla"},
           {
             "type": "LIST",
@@ -504,7 +504,7 @@
         "name": "Ticket - GA4 - Email Tikla",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_email_tikla"},
           {
             "type": "LIST",
@@ -529,7 +529,7 @@
         "name": "Ticket - GA4 - Bilet Al CTA",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_bilet_al_cta"},
           {
             "type": "LIST",
@@ -554,7 +554,7 @@
         "name": "Ticket - GA4 - Sefer Takvimi",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sefer_takvimi_tikla"},
           {
             "type": "LIST",
@@ -579,7 +579,7 @@
         "name": "Ticket - GA4 - Giris Yap",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_giris_yap_tikla"},
           {
             "type": "LIST",
@@ -604,7 +604,7 @@
         "name": "Ticket - GA4 - SSS",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sss_tikla"},
           {
             "type": "LIST",
@@ -629,7 +629,7 @@
         "name": "Ticket - GA4 - Iletisim",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_iletisim_tikla"},
           {
             "type": "LIST",
@@ -654,7 +654,7 @@
         "name": "Ticket - GA4 - Kurumsal Sayfa",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_kurumsal_tikla"},
           {
             "type": "LIST",
@@ -679,7 +679,7 @@
         "name": "Ticket - GA4 - Kural ve Kosullar",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_kural_kosullar_tikla"}
         ],
         "firingTriggerId": ["118"]
@@ -691,7 +691,7 @@
         "name": "Ticket - GA4 - Sosyal Facebook",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
           {
             "type": "LIST",
@@ -716,7 +716,7 @@
         "name": "Ticket - GA4 - Sosyal Instagram",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
           {
             "type": "LIST",
@@ -741,7 +741,7 @@
         "name": "Ticket - GA4 - Sosyal LinkedIn",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
           {
             "type": "LIST",
@@ -766,7 +766,7 @@
         "name": "Ticket - GA4 - Sosyal YouTube",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_sosyal_medya_tikla"},
           {
             "type": "LIST",
@@ -791,7 +791,7 @@
         "name": "Ticket - GA4 - Donus Plani Ayni Gun",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_ayni_gun"}
         ],
         "firingTriggerId": ["130"]
@@ -803,7 +803,7 @@
         "name": "Ticket - GA4 - Donus Plani Birkac Gun",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_birkac_gun"}
         ],
         "firingTriggerId": ["132"]
@@ -815,7 +815,7 @@
         "name": "Ticket - GA4 - Donus Plani Emin Degil",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "donus_plani_emin_degil"}
         ],
         "firingTriggerId": ["133"]
@@ -827,7 +827,7 @@
         "name": "Ticket - GA4 - Uygun Sefer Secimi",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "ticket_uygun_sefer_secimi"},
           {
             "type": "LIST",
@@ -866,7 +866,7 @@
         "name": "Google Tag - GA4 Config",
         "type": "googtag",
         "parameter": [
-          {"type": "TEMPLATE", "key": "tagId", "value": "G-F7WC7VFX9K"}
+          {"type": "TEMPLATE", "key": "tagId", "value": "G-J6DMZ6FNH1"}
         ],
         "firingTriggerId": ["2147479553"]
       },
@@ -877,7 +877,7 @@
         "name": "Ticket - GA4 - Search",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "view_search_results"},
           {
             "type": "LIST",
@@ -902,7 +902,7 @@
         "name": "Ticket - GA4 - Begin Checkout",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "begin_checkout"},
           {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
           {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
@@ -916,7 +916,7 @@
         "name": "Ticket - GA4 - Add Payment Info",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "add_payment_info"},
           {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
           {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
@@ -930,7 +930,7 @@
         "name": "Ticket - GA4 - Purchase",
         "type": "gaawe",
         "parameter": [
-          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-F7WC7VFX9K"},
+          {"type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-J6DMZ6FNH1"},
           {"type": "TEMPLATE", "key": "eventName", "value": "purchase"},
           {"type": "BOOLEAN", "key": "sendEcommerceData", "value": "true"},
           {"type": "TEMPLATE", "key": "getEcommerceDataFrom", "value": "dataLayer"}
