@@ -4,6 +4,21 @@ Bu dosya, Claude'un projeyi sıfırdan tanıması için yazılmıştır.
 
 ---
 
+## Otomatik Commit + Push
+
+Her değişiklik tamamlandıktan sonra, kullanıcı ayrıca "commit + push" demesine gerek kalmadan otomatik olarak:
+
+1. `npm run build` çalıştır ve **hata olmadığını doğrula** (zorunlu — `main` push'ta Vercel otomatik deploy eder)
+2. Değiştirilen dosyaları stage et
+3. Kısa ve açıklayıcı commit mesajı ile commit at
+4. `git push` ile `main`'e gönder
+
+**Build hata verirse push etme** — önce hatayı gider. Yalnızca net olumlu sonuçlar (düzeltilen bug, tamamlanan özellik) push edilir; başarısız/geçici denemeler gönderilmez.
+
+> Not: GTM container JSON (`gtm-import-antso-pixel-funnel.json`) gibi import artefaktları push edilse de GTM'i güncellemez — bunlar GTM arayüzünde manuel import + Publish gerektirir.
+
+---
+
 ## Proje Özeti
 
 **Antso Denizcilik** — Akgünler Denizcilik'in feribot biletlerini satan bir acentenin web sitesi.  
