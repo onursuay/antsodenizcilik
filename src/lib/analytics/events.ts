@@ -1,16 +1,14 @@
 // GA4 Enhanced Ecommerce + Meta Pixel funnel event'leri.
-// Tüm event'ler dataLayer'a push edilir; GTM tag'ları (GA4, Meta Pixel) custom event trigger
-// olarak buradaki event isimlerini dinler.
-//
-// Event eşleşmesi:
-//   view_search_results  → Meta: Search
-//   begin_checkout       → Meta: InitiateCheckout
-//   add_payment_info     → Meta: AddPaymentInfo
-//   purchase             → Meta: Purchase (purchase-tracking.tsx içinde)
+// Her fonksiyon hem window.gtag (GTM'in yüklediği GA4) hem dataLayer'a yazar.
+// GTM import JSON'u publish edilmese bile doğrudan gtag sayesinde GA4'e ulaşır.
 
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gtag?: (...args: any[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fbq?: (...args: any[]) => void;
   }
 }
 
@@ -18,6 +16,18 @@ function safePush(payload: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer ?? [];
   window.dataLayer.push(payload);
+}
+
+function safeGtag(eventName: string, params: Record<string, unknown>) {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
+    window.gtag("event", eventName, params);
+  }
+}
+
+function safeFbq(eventName: string, params: Record<string, unknown>) {
+  if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    window.fbq("track", eventName, params);
+  }
 }
 
 export interface EcommerceItem {
@@ -35,15 +45,17 @@ export function trackSearch(params: {
   tripType?: string;
   passengers?: number;
 }) {
-  safePush({
-    event: "view_search_results",
+  const payload = {
     search_term: `${params.from} → ${params.to}`,
     departure: params.from,
     arrival: params.to,
     travel_date: params.date,
     trip_type: params.tripType,
     passenger_count: params.passengers,
-  });
+  };
+  safePush({ event: "view_search_results", ...payload });
+  safeGtag("view_search_results", payload);
+  safeFbq("Search", { search_string: payload.search_term });
 }
 
 export function trackBeginCheckout(params: {
@@ -62,6 +74,13 @@ export function trackBeginCheckout(params: {
       items: params.items,
     },
   });
+  safeGtag("begin_checkout", {
+    transaction_id: params.transactionId,
+    value: params.value,
+    currency: params.currency,
+    items: params.items,
+  });
+  safeFbq("InitiateCheckout", { value: params.value, currency: params.currency });
 }
 
 export function trackAddPaymentInfo(params: {
@@ -82,10 +101,16 @@ export function trackAddPaymentInfo(params: {
       items: params.items,
     },
   });
+  safeGtag("add_payment_info", {
+    transaction_id: params.transactionId,
+    value: params.value,
+    currency: params.currency,
+    payment_type: params.paymentType ?? "credit_card",
+    items: params.items,
+  });
+  safeFbq("AddPaymentInfo", { value: params.value, currency: params.currency });
 }
 
-// "Dönüş planınız nedir?" 3 buton — her seçim AYRI bir GA4 event'i olarak gönderilir
-// (tek event + parametre yerine), böylece GA4'te her biri ayrı event/Anahtar Olay olur.
 const RETURN_PLAN_EVENT: Record<"same_day" | "multi_day" | "unsure", string> = {
   same_day: "donus_plani_ayni_gun",
   multi_day: "donus_plani_birkac_gun",
@@ -93,21 +118,17 @@ const RETURN_PLAN_EVENT: Record<"same_day" | "multi_day" | "unsure", string> = {
 };
 
 export function trackReturnPlanSelect(plan: "same_day" | "multi_day" | "unsure") {
-  safePush({
-    event: RETURN_PLAN_EVENT[plan],
-  });
+  const eventName = RETURN_PLAN_EVENT[plan];
+  safePush({ event: eventName });
+  safeGtag(eventName, {});
 }
 
-// Alternatif sefer önerisinden tarih seçimi (gidiş veya dönüş için)
 export function trackAlternativeSailingSelect(params: {
   direction: "gidis" | "donus";
   date: string;
   time?: string;
 }) {
-  safePush({
-    event: "ticket_uygun_sefer_secimi",
-    yon: params.direction,
-    tarih: params.date,
-    saat: params.time ?? "",
-  });
+  const payload = { yon: params.direction, tarih: params.date, saat: params.time ?? "" };
+  safePush({ event: "ticket_uygun_sefer_secimi", ...payload });
+  safeGtag("ticket_uygun_sefer_secimi", payload);
 }
