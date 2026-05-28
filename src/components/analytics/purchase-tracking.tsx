@@ -19,28 +19,25 @@ interface Props {
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fbq?: (...args: any[]) => void;
   }
 }
 
-// GA4 Enhanced Ecommerce standardında dataLayer.push.
-// GTM'deki Meta Pixel Purchase, GA4 Purchase, Google Ads Conversion tag'ları
-// "purchase" custom event'ini trigger olarak kullanır.
-// Pixel base script + fbq doğrudan çağrısı kasten kaldırıldı — duplicate'ı önlemek için
-// tüm Meta event'leri GTM üzerinden gitsin.
 export function PurchaseTracking({ sepetId, biletler }: Props) {
   useEffect(() => {
     if (!biletler.length) return;
     if (typeof window === "undefined") return;
 
     const totalValue = biletler.reduce((sum, b) => sum + b.price_100, 0) / 100;
+    const eventId = `purchase.${sepetId}`;
 
+    // GA4 Enhanced Ecommerce — GTM'deki GA4/Google Ads tag'ları bu event'i dinler.
     window.dataLayer = window.dataLayer ?? [];
     window.dataLayer.push({ ecommerce: null });
     window.dataLayer.push({
       event: "purchase",
-      // Server CAPI ile aynı event_id → Meta browser↔server dedup.
-      // GTM'de Meta Pixel Purchase tag'ının "Event ID" alanı bu değişkene ({{dlv - event_id}}) bağlanmalı.
-      event_id: `purchase.${sepetId}`,
+      event_id: eventId,
       ecommerce: {
         transaction_id: sepetId,
         value: totalValue,
@@ -54,6 +51,12 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
         })),
       },
     });
+
+    // Meta Pixel — GTM üzerinden yüklenen fbq'yu doğrudan çağır.
+    // event_id server CAPI ile eşleşir → Meta tarafında browser+server dedup olur.
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Purchase", { value: totalValue, currency: "TRY" }, { eventID: eventId });
+    }
   }, [sepetId, biletler]);
 
   return null;
