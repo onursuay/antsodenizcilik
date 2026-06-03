@@ -41,18 +41,7 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
       quantity: 1,
     }));
 
-    // GA4 — GTM bağımlılığı olmadan doğrudan gtag ile gönder.
-    // GTM her halükarda window.gtag'ı yükler (GA4 Config tag).
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "purchase", {
-        transaction_id: sepetId,
-        value: totalValue,
-        currency: "TRY",
-        items,
-      });
-    }
-
-    // dataLayer — GTM'de purchase tag'ı varsa oradan da gider (belt-and-suspenders).
+    // dataLayer — GTM her zaman okur; GA4 Config tag tetiklenmeden önce de queue'ya girer.
     window.dataLayer = window.dataLayer ?? [];
     window.dataLayer.push({ ecommerce: null });
     window.dataLayer.push({
@@ -66,10 +55,35 @@ export function PurchaseTracking({ sepetId, biletler }: Props) {
       },
     });
 
-    // Meta Pixel — GTM üzerinden yüklenen fbq + layout.tsx'teki base snippet.
+    // Meta Pixel — layout.tsx'teki base snippet her zaman yüklüdür.
     // event_id server CAPI ile eşleşir → Meta tarafında browser+server dedup olur.
     if (typeof window.fbq === "function") {
       window.fbq("track", "Purchase", { value: totalValue, currency: "TRY" }, { eventID: eventId });
+    }
+
+    // GA4 doğrudan gtag — GTM asenkron yüklendiği için window.gtag hazır olmayabilir.
+    // 3D Secure sonrası fresh page load'da race condition yaşanır; polling ile bekle.
+    const fireGtag = () => {
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "purchase", {
+          transaction_id: sepetId,
+          value: totalValue,
+          currency: "TRY",
+          items,
+        });
+        return true;
+      }
+      return false;
+    };
+
+    if (!fireGtag()) {
+      let elapsed = 0;
+      const interval = setInterval(() => {
+        elapsed += 100;
+        if (fireGtag() || elapsed >= 5000) {
+          clearInterval(interval);
+        }
+      }, 100);
     }
   }, [sepetId, biletler]);
 
