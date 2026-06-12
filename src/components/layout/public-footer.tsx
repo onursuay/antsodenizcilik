@@ -13,7 +13,7 @@ const KURUMSAL_LINKS = [
   { label: "Aydınlatma Metni", href: "/kurumsal/aydinlatma-metni" },
   { label: "Açık Rıza Metni", href: "/kurumsal/acik-riza-metni" },
   { label: "Kural ve Koşullar", href: "/kural-ve-kosullar" },
-  { label: "Çerez Politikası", href: "/kurumsal/cerez-politikasi" },
+  { label: "Çerez Politikası", href: "/kvkk" },
 ] as const;
 
 const SOCIAL_LINKS = [
